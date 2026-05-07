@@ -1114,10 +1114,10 @@ function intusApp() {
                     id: 'nav:library',
                     category: '库',
                     title: '库',
-                    description: '汇总会话、报告和资料',
+                    description: '汇总会话和报告',
                     meta: '资源入口',
                     action: 'library',
-                    keywords: ['资料', '资源', 'library']
+                    keywords: ['资源', 'library']
                 },
                 {
                     id: 'nav:agents',
@@ -1319,8 +1319,7 @@ function intusApp() {
             return [
                 { key: 'all', label: '全部' },
                 { key: 'session', label: '会话' },
-                { key: 'report', label: '报告' },
-                { key: 'document', label: '资料' }
+                { key: 'report', label: '报告' }
             ];
         },
 
@@ -1336,45 +1335,6 @@ function intusApp() {
             return items.filter(item => item.type === normalizedType).length;
         },
 
-        buildLibraryDocumentItems() {
-            const items = [];
-            const seen = new Set();
-            const sessions = Array.isArray(this.sessions) ? this.sessions : [];
-            const addDocument = (doc, session) => {
-                if (!doc || typeof doc !== 'object') return;
-                const title = String(doc.name || doc.filename || doc.title || '').trim();
-                if (!title) return;
-                const sessionId = String(session?.session_id || '').trim();
-                const key = `${sessionId}:${title}`;
-                if (seen.has(key)) return;
-                seen.add(key);
-                const updatedAt = doc.updated_at || doc.created_at || session?.updated_at || session?.created_at || '';
-                items.push({
-                    id: `document:${key}`,
-                    type: 'document',
-                    category: '资料',
-                    title,
-                    description: String(session?.topic || '参考资料').trim(),
-                    meta: updatedAt && typeof this.formatDate === 'function' ? this.formatDate(updatedAt) : '资料',
-                    updatedAt,
-                    action: 'session',
-                    sessionId,
-                    keywords: [title, session?.topic, session?.description, '资料', '参考资料', '导入']
-                });
-            };
-
-            sessions.forEach((session) => {
-                const docs = Array.isArray(session?.reference_materials) ? session.reference_materials : [];
-                docs.forEach(doc => addDocument(doc, session));
-            });
-
-            const currentDocs = Array.isArray(this.currentSession?.reference_materials)
-                ? this.currentSession.reference_materials
-                : [];
-            currentDocs.forEach(doc => addDocument(doc, this.currentSession));
-            return items;
-        },
-
         buildLibraryItems() {
             const sessionItems = this.buildGlobalSearchSessionEntries().map(item => ({
                 ...item,
@@ -1387,33 +1347,20 @@ function intusApp() {
                 type: 'report',
                 actionLabel: '查看报告'
             }));
-            const documentItems = this.buildLibraryDocumentItems().map(item => ({
-                ...item,
-                actionLabel: '打开会话'
-            }));
-            const importItem = {
-                id: 'document:import',
-                type: 'document',
-                category: '资料',
-                title: '导入资料',
-                description: '新建访谈后上传参考资料，让 AI 基于上下文追问。',
-                meta: '资料入口',
-                updatedAt: '',
-                action: 'import-docs',
-                actionLabel: '导入',
-                keywords: ['导入', '资料', '文档', '参考资料']
-            };
 
             return [
                 ...sessionItems,
-                ...reportItems,
-                ...documentItems,
-                importItem
+                ...reportItems
             ];
         },
 
         getLibraryItems() {
-            const typeFilter = String(this.libraryTypeFilter || 'all').trim();
+            const allowedTypes = new Set(this.getLibraryTypeOptions().map(option => option.key));
+            const rawTypeFilter = String(this.libraryTypeFilter || 'all').trim();
+            const typeFilter = allowedTypes.has(rawTypeFilter) ? rawTypeFilter : 'all';
+            if (this.libraryTypeFilter !== typeFilter) {
+                this.libraryTypeFilter = typeFilter;
+            }
             const queryTerms = this.normalizeGlobalSearchValue(this.librarySearchQuery)
                 .split(/\s+/)
                 .filter(Boolean);
@@ -1426,7 +1373,7 @@ function intusApp() {
                 items = items.filter(item => this.globalSearchEntryMatches(item, queryTerms));
             }
 
-            const typeRank = { session: 1, report: 2, document: 3 };
+            const typeRank = { session: 1, report: 2 };
             return items.sort((a, b) => {
                 if (this.librarySortOrder === 'type') {
                     const rankDelta = (typeRank[a.type] || 99) - (typeRank[b.type] || 99);
@@ -1444,8 +1391,7 @@ function intusApp() {
         getLibrarySummaryText() {
             const sessions = this.getLibraryTypeCount('session');
             const reports = this.getLibraryTypeCount('report');
-            const documents = this.getLibraryTypeCount('document');
-            return `会话 ${sessions} · 报告 ${reports} · 资料 ${documents}`;
+            return `会话 ${sessions} · 报告 ${reports}`;
         },
 
         clearLibrarySearch() {
@@ -2907,6 +2853,148 @@ function intusApp() {
                 if (value === undefined || value === null || value === '') return;
                 root.style.setProperty(key, value);
             });
+
+            this.ensureBrandUtilityOverrides();
+        },
+
+        ensureBrandUtilityOverrides() {
+            if (typeof document === 'undefined') return;
+
+            const styleId = 'dv-brand-utility-overrides';
+            let styleNode = document.getElementById(styleId);
+            if (!(styleNode instanceof HTMLStyleElement)) {
+                styleNode = document.createElement('style');
+                styleNode.id = styleId;
+                document.head.appendChild(styleNode);
+            }
+
+            styleNode.textContent = `
+.dv-brand-bg,
+.bg-\\[\\#1D4ED8\\],
+.bg-\\[\\#357BE2\\],
+.bg-blue-700,
+.bg-cta {
+    background-color: var(--dv-color-brand) !important;
+}
+
+.hover\\:bg-\\[\\#1E40AF\\]:hover,
+.hover\\:bg-\\[\\#2c6bd1\\]:hover,
+.hover\\:bg-blue-800:hover,
+.hover\\:bg-cta-hover:hover {
+    background-color: var(--dv-color-brand-hover) !important;
+}
+
+.dv-brand-text,
+.text-\\[\\#1D4ED8\\],
+.text-\\[\\#357BE2\\],
+.text-\\[\\#1D4ED8\\]\\/80,
+.text-\\[\\#1D4ED8\\]\\/90,
+.text-blue-700,
+.text-blue-600,
+.text-blue-500,
+.text-blue-400,
+.text-cta {
+    color: var(--dv-color-brand) !important;
+}
+
+.hover\\:text-\\[\\#1E40AF\\]:hover,
+.hover\\:text-\\[\\#357BE2\\]:hover,
+.hover\\:text-\\[\\#2c6bd1\\]:hover,
+.hover\\:text-cta:hover,
+.group:hover .group-hover\\:text-\\[\\#1D4ED8\\] {
+    color: var(--dv-color-brand-hover) !important;
+}
+
+.dv-brand-border,
+.border-\\[\\#1D4ED8\\],
+.border-\\[\\#357BE2\\],
+.border-blue-700,
+.border-cta {
+    border-color: var(--dv-color-brand) !important;
+}
+
+.dv-brand-soft-bg,
+.bg-\\[\\#EFF6FF\\],
+.bg-\\[\\#EFF6FF\\]\\/30,
+.bg-\\[\\#EFF6FF\\]\\/50,
+.bg-\\[\\#F7FAFF\\],
+.bg-blue-50,
+.bg-blue-50\\/30,
+.bg-blue-50\\/50,
+.bg-blue-100,
+.bg-cta\\/5,
+.bg-primary\\/5 {
+    background-color: var(--dv-brand-soft-bg) !important;
+}
+
+.hover\\:bg-\\[\\#1D4ED8\\]\\/10:hover,
+.hover\\:bg-\\[\\#EFF6FF\\]:hover,
+.hover\\:bg-blue-50:hover,
+.hover\\:bg-blue-100\\/80:hover,
+.hover\\:bg-cta\\/10:hover {
+    background-color: var(--dv-brand-soft-bg-strong) !important;
+}
+
+.dv-brand-soft-border,
+.border-\\[\\#EFF6FF\\],
+.border-\\[\\#D6E6FF\\],
+.border-\\[\\#1D4ED8\\]\\/10,
+.border-\\[\\#1D4ED8\\]\\/30,
+.border-blue-100,
+.border-blue-200,
+.border-blue-300 {
+    border-color: var(--dv-brand-soft-border) !important;
+}
+
+.hover\\:border-\\[\\#1D4ED8\\]\\/40:hover,
+.hover\\:border-\\[\\#1D4ED8\\]\\/50:hover,
+.hover\\:border-cta:hover,
+.hover\\:border-cta\\/50:hover {
+    border-color: var(--dv-brand-soft-border-strong) !important;
+}
+
+.focus\\:border-\\[\\#1D4ED8\\]:focus,
+.focus\\:border-\\[\\#357BE2\\]:focus,
+.focus\\:border-\\[\\#EFF6FF\\]:focus,
+.focus\\:border-cta:focus,
+.focus\\:border-primary:focus {
+    border-color: var(--dv-color-brand) !important;
+}
+
+.dv-brand-ring,
+.ring-\\[\\#1D4ED8\\]\\/20,
+.ring-cta\\/20,
+.ring-primary\\/20,
+.focus\\:ring-\\[\\#1D4ED8\\]\\/20:focus,
+.focus\\:ring-\\[\\#1D4ED8\\]\\/30:focus,
+.focus\\:ring-\\[\\#357BE2\\]\\/40:focus,
+.focus\\:ring-\\[\\#EFF6FF\\]:focus,
+.focus\\:ring-cta\\/50:focus,
+.focus\\:ring-primary\\/20:focus,
+.focus\\:ring-primary\\/30:focus {
+    --tw-ring-color: var(--dv-brand-ring-color) !important;
+}
+
+.from-\\[\\#1D4ED8\\] {
+    --tw-gradient-from: var(--dv-color-brand) var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: color-mix(in srgb, var(--dv-color-brand) 0%, transparent) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.from-\\[\\#EFF6FF\\] {
+    --tw-gradient-from: var(--dv-brand-soft-bg) var(--tw-gradient-from-position) !important;
+    --tw-gradient-to: color-mix(in srgb, var(--dv-brand-soft-bg) 0%, transparent) var(--tw-gradient-to-position) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.to-\\[\\#EEF2FF\\] {
+    --tw-gradient-to: var(--dv-brand-soft-bg-strong) var(--tw-gradient-to-position) !important;
+}
+
+.to-\\[\\#6366f1\\] {
+    --tw-gradient-to: var(--dv-color-brand-hover) var(--tw-gradient-to-position) !important;
+}
+`;
         },
 
         initTheme() {
@@ -7389,11 +7477,9 @@ function intusApp() {
 
         // 根据百分比计算进度条颜色
         getProgressColor(percentage) {
-            // 100% 时使用鼠尾草蓝（从配置文件读取），与完成状态图标保持一致
+            // 100% 时跟随当前主题品牌色，避免与主按钮色不一致。
             if (percentage >= 100) {
-                return (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.colors?.progressComplete)
-                    ? SITE_CONFIG.colors.progressComplete
-                    : '#1D4ED8';  // 默认品牌蓝
+                return 'var(--dv-color-brand)';
             }
 
             // 0-99%: 从浅灰 (#D4D4D4) 渐变到深灰 (#525252)
@@ -7415,9 +7501,9 @@ function intusApp() {
 
         getStepClass(idx) {
             if (idx < this.currentStep || (idx === 2 && this.generatingReport)) {
-                return 'bg-[#1D4ED8] text-white';
+                return 'dv-brand-bg text-white';
             } else if (idx === this.currentStep) {
-                return 'bg-cta text-white';
+                return 'dv-brand-bg text-white';
             }
             return 'bg-gray-200 text-gray-500';
         },

@@ -135,6 +135,14 @@ EXTENDED_EXTRA_SCENARIOS = [
     ),
 ]
 
+COMPAT_SCENARIOS = [
+    BrowserScenario(
+        "responsive-theme-compat",
+        "深色与响应式兼容性",
+        "确认深色与浅色模式下桌面、平板、移动端关键页面无横向溢出，关键 surface 与文本对比度达标。",
+    ),
+]
+
 LIVE_EXTENDED_SCENARIOS = [
     BrowserScenario(
         "live-login-license-flow",
@@ -166,6 +174,10 @@ SUITES = {
     "extended": {
         "description": "在 minimal 基础上补公开分享只读及刷新恢复、登录 provider 可见反馈、License 门禁视图、License 绑定成功与刷新恢复、访谈/报告详情恢复链路和配置中心页签切换",
         "scenarios": [*MINIMAL_SCENARIOS, *EXTENDED_EXTRA_SCENARIOS],
+    },
+    "compat": {
+        "description": "深色与浅色模式、桌面/平板/移动端响应式兼容性检查",
+        "scenarios": COMPAT_SCENARIOS,
     },
     "live-minimal": {
         "description": "隔离数据目录下启动真实后端，覆盖短信登录 + License 绑定 + 业务壳切换真链路",

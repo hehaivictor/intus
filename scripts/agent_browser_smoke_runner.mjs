@@ -309,6 +309,130 @@ function safeText(value, fallback = '') {
   return text || fallback;
 }
 
+function parseRgbValue(value) {
+  const match = String(value || '').match(/rgba?\(([^)]+)\)/);
+  if (!match) return null;
+  const parts = match[1]
+    .split(',')
+    .map((part) => Number.parseFloat(part.trim()))
+    .filter((part) => Number.isFinite(part));
+  if (parts.length < 3) return null;
+  return {
+    r: Math.max(0, Math.min(255, parts[0])),
+    g: Math.max(0, Math.min(255, parts[1])),
+    b: Math.max(0, Math.min(255, parts[2])),
+    a: parts.length >= 4 ? Math.max(0, Math.min(1, parts[3])) : 1,
+  };
+}
+
+function colorChannel(value) {
+  const normalized = value / 255;
+  return normalized <= 0.03928
+    ? normalized / 12.92
+    : Math.pow((normalized + 0.055) / 1.055, 2.4);
+}
+
+function colorLuminance(color) {
+  if (!color) return 0;
+  return 0.2126 * colorChannel(color.r) + 0.7152 * colorChannel(color.g) + 0.0722 * colorChannel(color.b);
+}
+
+function isBlueAccent(color) {
+  if (!color || color.a <= 0.05) return false;
+  return color.b > color.r + 35 && color.b > color.g + 14;
+}
+
+async function expectNeutralControl(locator, label, options = {}) {
+  const backgroundColor = await locator.evaluate((element) => window.getComputedStyle(element).backgroundColor);
+  const color = parseRgbValue(backgroundColor);
+  if (!color) {
+    throw new Error(`${label} 背景色无法解析: ${backgroundColor}`);
+  }
+  if (isBlueAccent(color)) {
+    throw new Error(`${label} 不应继续使用蓝色选中态: ${backgroundColor}`);
+  }
+  if (options.expectDark && colorLuminance(color) > 0.08) {
+    throw new Error(`${label} 选中态应为黑色或深中性色，当前为 ${backgroundColor}`);
+  }
+  if (options.expectLight && colorLuminance(color) < 0.64) {
+    throw new Error(`${label} 深色模式按钮应使用浅色中性底，当前为 ${backgroundColor}`);
+  }
+}
+
+async function assertNoVisibleBrandAccentMismatch(page, rootSelector, label) {
+  const issues = await page.evaluate(({ selector, pageLabel }) => {
+    const root = document.querySelector(selector) || document.body;
+    const parseColor = (value) => {
+      const match = String(value || '').match(/rgba?\(([^)]+)\)/);
+      if (!match) return null;
+      const parts = match[1]
+        .split(',')
+        .map((part) => Number.parseFloat(part.trim()))
+        .filter((part) => Number.isFinite(part));
+      if (parts.length < 3) return null;
+      return {
+        r: Math.max(0, Math.min(255, parts[0])),
+        g: Math.max(0, Math.min(255, parts[1])),
+        b: Math.max(0, Math.min(255, parts[2])),
+        a: parts.length >= 4 ? Math.max(0, Math.min(1, parts[3])) : 1,
+      };
+    };
+    const distance = (a, b) => {
+      if (!a || !b) return Number.POSITIVE_INFINITY;
+      return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
+    };
+    const isVisible = (node) => {
+      if (!(node instanceof HTMLElement)) return false;
+      const style = window.getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && Number(style.opacity || 1) > 0.01
+        && rect.width > 0
+        && rect.height > 0;
+    };
+    const isBlueAccentColor = (color) => color
+      && color.a > 0.25
+      && color.b > color.r + 35
+      && color.b > color.g + 8;
+    const describeNode = (node) => {
+      if (!(node instanceof HTMLElement)) return '';
+      if (node.id) return `#${node.id}`;
+      const className = String(node.className || '').trim().split(/\s+/).filter(Boolean).slice(0, 4).join('.');
+      const text = String(node.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 28);
+      return `${node.tagName.toLowerCase()}${className ? `.${className}` : ''}${text ? `:${text}` : ''}`;
+    };
+    const rootStyle = window.getComputedStyle(document.documentElement);
+    const brand = parseColor(rootStyle.getPropertyValue('--dv-color-brand'));
+    const brandHover = parseColor(rootStyle.getPropertyValue('--dv-color-brand-hover'));
+    const allowedDistance = 24;
+    const problems = [];
+    const properties = ['color', 'backgroundColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor'];
+    const nodes = Array.from(root.querySelectorAll('*')).filter(isVisible);
+    for (const node of nodes) {
+      const style = window.getComputedStyle(node);
+      for (const property of properties) {
+        const color = parseColor(style[property]);
+        if (!isBlueAccentColor(color)) continue;
+        if (distance(color, brand) <= allowedDistance || distance(color, brandHover) <= allowedDistance) continue;
+        problems.push(`${pageLabel}: ${describeNode(node)} ${property}=${style[property]} 未跟随品牌色`);
+        break;
+      }
+      for (const shadowColor of String(style.boxShadow || '').match(/rgba?\([^)]+\)/g) || []) {
+        const color = parseColor(shadowColor);
+        if (!isBlueAccentColor(color)) continue;
+        if (distance(color, brand) <= allowedDistance || distance(color, brandHover) <= allowedDistance) continue;
+        problems.push(`${pageLabel}: ${describeNode(node)} box-shadow=${shadowColor} 未跟随品牌色`);
+        break;
+      }
+    }
+    return problems.slice(0, 12);
+  }, { selector: rootSelector, pageLabel: label });
+  if (issues.length > 0) {
+    throw new Error(issues.join('\n'));
+  }
+}
+
 function cloneJsonValue(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
@@ -1077,6 +1201,9 @@ function buildApiHandler(baseUrl, options = {}) {
       return;
     }
     if (method === 'POST' && pathname === '/api/sessions/session-demo-001/next-question') {
+      if (Number(options?.nextQuestionDelayMs || 0) > 0) {
+        await sleep(Number(options.nextQuestionDelayMs));
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json; charset=utf-8',
@@ -1633,15 +1760,34 @@ async function lookupLiveUserRecord(liveContext) {
 }
 
 async function scenarioHelpDocs(browser, baseUrl) {
-  await runWithPage(browser, baseUrl, null, async (page) => {
-    await page.goto(`${baseUrl}/help.html`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('text=帮助文档', { timeout: 10000 });
-    const title = await page.title();
-    if (!title.includes('帮助文档')) {
-      throw new Error(`帮助页标题异常: ${title}`);
-    }
-  });
-  return '标题与帮助文档主文案可见';
+  for (const mode of ['light', 'dark']) {
+    await runWithPage(
+      browser,
+      baseUrl,
+      (themeMode) => {
+        localStorage.setItem('intus_theme_mode', themeMode);
+      },
+      async (page) => {
+        await page.goto(`${baseUrl}/help.html`, { waitUntil: 'domcontentloaded' });
+        await page.waitForSelector('text=帮助文档', { timeout: 10000 });
+        const title = await page.title();
+        if (!title.includes('帮助文档')) {
+          throw new Error(`帮助页标题异常: ${title}`);
+        }
+        const progressCardCount = await page.locator('.sidebar-card:visible', { hasText: '阅读进度' }).count();
+        if (progressCardCount > 0) {
+          throw new Error('帮助页侧栏不应继续显示阅读进度卡片');
+        }
+        const primaryButton = page.locator('.top-actions .btn.primary:visible').first();
+        await expectNeutralControl(primaryButton, `帮助页返回工作台按钮/${mode}`, {
+          expectDark: mode === 'light',
+          expectLight: mode === 'dark',
+        });
+      },
+      mode,
+    );
+  }
+  return '标题与帮助文档主文案可见，侧栏阅读进度和蓝色主按钮已移除';
 }
 
 async function scenarioSolutionShare(browser, baseUrl) {
@@ -1680,6 +1826,10 @@ async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
       if (String(placeholder || '').includes('例如')) {
         throw new Error(`工作台主题占位文案不应包含“例如”: ${placeholder}`);
       }
+
+      const activeGroupButton = page.getByRole('button', { name: '不分组', exact: true }).first();
+      await activeGroupButton.waitFor({ timeout: 15000 });
+      await expectNeutralControl(activeGroupButton, '工作台显示方式选中按钮', { expectDark: true });
 
       const topic = '数字化营销战略';
       await taskInput.fill(topic);
@@ -1731,6 +1881,18 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
       if (librarySearchCount > 0) {
         throw new Error('库页不应继续显示搜索框');
       }
+      const libraryDocumentFilterCount = await page.locator('.dv-library-segment button:has-text("资料"):visible').count();
+      if (libraryDocumentFilterCount > 0) {
+        throw new Error('库页不应继续显示资料筛选入口');
+      }
+      const libraryDocumentItemCount = await page.locator('.dv-library-item:visible .dv-library-type:has-text("资料")').count();
+      if (libraryDocumentItemCount > 0) {
+        throw new Error('库页不应继续显示资料资源模块');
+      }
+      const libraryImportItemCount = await page.locator('.dv-library-item:has-text("导入资料"):visible').count();
+      if (libraryImportItemCount > 0) {
+        throw new Error('库页不应继续显示导入资料入口');
+      }
 
       await page.locator('.dv-side-nav button:has-text("Agents")').click({ timeout: 15000 });
       await page.waitForSelector('.dv-agents-shell', { timeout: 15000 });
@@ -1753,6 +1915,16 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
         if (!agentsText.includes(expectedText)) {
           throw new Error(`Agents 页缺少“${expectedText}”`);
         }
+      }
+      const beforeAgentCardClickUrl = page.url();
+      await agentCards.first().click({ timeout: 15000 });
+      await page.waitForTimeout(250);
+      if (page.url() !== beforeAgentCardClickUrl) {
+        throw new Error(`Agents 卡片不应继续点击跳转: ${beforeAgentCardClickUrl} -> ${page.url()}`);
+      }
+      const agentsStillVisible = await page.locator('.dv-agents-shell:visible').count();
+      if (agentsStillVisible <= 0) {
+        throw new Error('Agents 卡片点击后不应离开 Agents 页');
       }
       const comingSoonCount = await page.locator('.dv-agent-card-foot:visible', { hasText: '即将上线' }).count();
       if (comingSoonCount !== 2) {
@@ -1792,6 +1964,9 @@ async function scenarioReportListTrim(browser, baseUrl) {
       if (reportSearchInputCount > 0) {
         throw new Error('报告列表页不应继续显示报告搜索框');
       }
+      const activeReportGroupButton = page.getByRole('button', { name: '不分组', exact: true }).first();
+      await activeReportGroupButton.waitFor({ timeout: 15000 });
+      await expectNeutralControl(activeReportGroupButton, '报告列表显示方式选中按钮', { expectDark: true });
       await page.getByRole('button', { name: '批量管理', exact: true }).waitFor({ timeout: 15000 });
       const listSummaryText = await page.locator('.dv-report-surface-shell').innerText();
       if (!listSummaryText.includes('共 1 条')) {
@@ -2223,6 +2398,12 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
       await sessionCard.click({ timeout: 15000 });
       await page.waitForSelector('text=目前最影响售后回访闭环效率的环节是什么？', { timeout: 15000 });
       await page.getByRole('button', { name: '下一题', exact: true }).waitFor({ timeout: 15000 });
+      await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页初始态');
+      await page.getByText('问题归因不统一', { exact: true }).click({ timeout: 15000 });
+      await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页选项选中态');
+      await page.getByRole('button', { name: '下一题', exact: true }).click({ timeout: 15000 });
+      await page.waitForSelector('text=AI 正在思考', { timeout: 15000 });
+      await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页问题生成态');
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForSelector('text=目前最影响售后回访闭环效率的环节是什么？', { timeout: 15000 });
       await page.getByRole('button', { name: '下一题', exact: true }).waitFor({ timeout: 15000 });
@@ -2235,6 +2416,8 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
         throw new Error('访谈进行中刷新后不应退回会话列表');
       }
     },
+    undefined,
+    { nextQuestionDelayMs: 750 },
   );
   return '访谈进行中刷新后仍恢复到同一会话与当前问题';
 }
@@ -2316,6 +2499,285 @@ async function scenarioAdminConfigTab(browser, baseUrl) {
     },
   );
   return '配置中心可加载，并能在 env/config/site 三类来源间切换';
+}
+
+const RESPONSIVE_THEME_VIEWPORTS = [
+  { id: 'desktop', label: '桌面端', width: 1440, height: 1000 },
+  { id: 'tablet', label: '平板端', width: 834, height: 1112 },
+  { id: 'mobile', label: '移动端', width: 390, height: 844 },
+];
+
+const RESPONSIVE_THEME_MODES = [
+  { mode: 'dark', label: '深色', expectDarkSurfaces: true },
+  { mode: 'light', label: '浅色', expectDarkSurfaces: false },
+];
+
+const DARK_SURFACE_SELECTORS = [
+  { selector: 'header', label: '顶部栏' },
+  { selector: '.dv-app-sidebar', label: '桌面侧栏', optional: true },
+  { selector: '.dv-side-nav-item.is-active', label: '侧栏当前导航', optional: true },
+  { selector: '.dv-workbench-command', label: '工作台输入容器', optional: true },
+  { selector: '.dv-library-toolbar', label: '库工具栏', optional: true },
+  { selector: '.dv-library-list', label: '库列表容器', optional: true },
+  { selector: '.dv-library-item', label: '库资源行', optional: true },
+  { selector: '.dv-agent-card', label: 'Agents 卡片', optional: true, minLuminance: 0.014 },
+  { selector: '.report-card-glow', label: '报告卡片', optional: true },
+  { selector: '.dv-report-sidebar-card', label: '报告详情目录', optional: true },
+  { selector: '.dv-report-body-shell', label: '报告详情正文', optional: true },
+  { selector: '.account-menu', label: '账号与外观菜单', optional: true },
+  { selector: '.theme-menu-item', label: '主题菜单项', optional: true },
+];
+
+const DARK_TEXT_SELECTORS = [
+  '.brand-title-cn',
+  '.dv-side-nav-item.is-active',
+  '.dv-workbench-subtitle',
+  '.dv-workbench-task-input',
+  '.dv-workbench-submit',
+  '.dv-library-title',
+  '.dv-library-desc',
+  '.dv-library-segment button.is-active',
+  '.dv-agent-title',
+  '.dv-agent-desc',
+  '.report-card-glow h3',
+  '.report-card-glow p',
+  '.dv-report-sidebar-link',
+  '.dv-report-mobile-pill',
+  '.dv-report-inline-toc-link',
+  '.account-menu',
+  '.theme-menu-item',
+];
+
+const DARK_NEUTRAL_ACCENT_SELECTORS = [
+  { selector: '.dv-report-sidebar-link.is-current', label: '报告详情目录当前项', optional: true },
+  { selector: '.dv-report-sidebar-link.is-active', label: '报告详情目录活动项', optional: true },
+  { selector: '.dv-report-mobile-nav-link.is-current', label: '报告详情移动目录当前项', optional: true },
+  { selector: '.dv-report-mobile-pill.is-active', label: '报告详情移动分段当前项', optional: true },
+  { selector: '.dv-report-inline-toc-link:hover', label: '报告详情内联目录 hover', optional: true },
+  { selector: '.markdown-body blockquote', label: '报告详情引用块', optional: true, properties: ['borderLeftColor'] },
+];
+
+async function collectPageCompatibility(page, label, options = {}) {
+  return await page.evaluate(({ pageLabel, surfaceSelectors, textSelectors, neutralAccentSelectors, expectDarkSurfaces }) => {
+    const issues = [];
+    const html = document.documentElement;
+    const body = document.body;
+    const isVisible = (node) => {
+      if (!(node instanceof HTMLElement)) return false;
+      const style = window.getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return !node.hidden
+        && style.display !== 'none'
+        && style.visibility !== 'hidden'
+        && Number(style.opacity || 1) > 0.01
+        && rect.width > 0
+        && rect.height > 0;
+    };
+    const parseColor = (value) => {
+      const match = String(value || '').match(/rgba?\(([^)]+)\)/);
+      if (!match) return null;
+      const parts = match[1]
+        .split(',')
+        .map((part) => Number.parseFloat(part.trim()))
+        .filter((part) => Number.isFinite(part));
+      if (parts.length < 3) return null;
+      return {
+        r: Math.max(0, Math.min(255, parts[0])),
+        g: Math.max(0, Math.min(255, parts[1])),
+        b: Math.max(0, Math.min(255, parts[2])),
+        a: parts.length >= 4 ? Math.max(0, Math.min(1, parts[3])) : 1,
+      };
+    };
+    const channel = (value) => {
+      const normalized = value / 255;
+      return normalized <= 0.03928
+        ? normalized / 12.92
+        : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    };
+    const luminance = (color) => {
+      if (!color) return 0;
+      return 0.2126 * channel(color.r) + 0.7152 * channel(color.g) + 0.0722 * channel(color.b);
+    };
+    const contrast = (fg, bg) => {
+      const l1 = luminance(fg);
+      const l2 = luminance(bg);
+      const lighter = Math.max(l1, l2);
+      const darker = Math.min(l1, l2);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
+    const colorText = (color) => color
+      ? `rgb(${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)})`
+      : 'unknown';
+    const isBlueAccentColor = (color) => color
+      && color.a > 0.05
+      && color.b > color.r + 35
+      && color.b > color.g + 14;
+    const resolveBackground = (node) => {
+      let current = node;
+      while (current instanceof HTMLElement) {
+        const color = parseColor(window.getComputedStyle(current).backgroundColor);
+        if (color && color.a > 0.08) return color;
+        current = current.parentElement;
+      }
+      return parseColor(window.getComputedStyle(body).backgroundColor)
+        || parseColor(window.getComputedStyle(html).backgroundColor)
+        || { r: 9, g: 9, b: 11, a: 1 };
+    };
+    const describeNode = (node) => {
+      if (!(node instanceof HTMLElement)) return '';
+      if (node.id) return `#${node.id}`;
+      const className = String(node.className || '').trim().split(/\s+/).filter(Boolean).slice(0, 3).join('.');
+      return `${node.tagName.toLowerCase()}${className ? `.${className}` : ''}`;
+    };
+
+    const widthOverflow = Math.max(
+      html.scrollWidth - window.innerWidth,
+      body ? body.scrollWidth - window.innerWidth : 0,
+    );
+    if (widthOverflow > 1) {
+      issues.push(`${pageLabel}: 页面横向溢出 ${Math.round(widthOverflow)}px`);
+    }
+
+    if (Boolean(expectDarkSurfaces)) {
+      for (const item of surfaceSelectors) {
+        const nodes = Array.from(document.querySelectorAll(item.selector)).filter(isVisible);
+        if (!nodes.length) {
+          if (!item.optional) issues.push(`${pageLabel}: 缺少关键区域 ${item.label}`);
+          continue;
+        }
+        for (const node of nodes.slice(0, 4)) {
+          const bg = resolveBackground(node);
+          if (luminance(bg) > 0.58) {
+            issues.push(`${pageLabel}: ${item.label} 在深色模式下背景过亮 (${colorText(bg)})`);
+            break;
+          }
+          if (item.minLuminance && luminance(bg) < item.minLuminance) {
+            issues.push(`${pageLabel}: ${item.label} 在深色模式下背景过深 (${colorText(bg)})`);
+            break;
+          }
+        }
+      }
+
+      for (const item of neutralAccentSelectors) {
+        const nodes = Array.from(document.querySelectorAll(item.selector)).filter(isVisible);
+        if (!nodes.length) {
+          if (!item.optional) issues.push(`${pageLabel}: 缺少中性色检查区域 ${item.label}`);
+          continue;
+        }
+        const properties = item.properties || ['backgroundColor', 'color', 'borderColor', 'borderLeftColor'];
+        for (const node of nodes.slice(0, 4)) {
+          const style = window.getComputedStyle(node);
+          for (const property of properties) {
+            const accentColor = parseColor(style[property]);
+            if (isBlueAccentColor(accentColor)) {
+              issues.push(`${pageLabel}: ${item.label} 不应继续使用蓝色强调 (${property}: ${style[property]})`);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    const textNodes = new Set();
+    for (const selector of textSelectors) {
+      for (const node of Array.from(document.querySelectorAll(selector)).filter(isVisible)) {
+        const text = String(node.textContent || node.getAttribute('aria-label') || '').trim();
+        const hasDirectText = Array.from(node.childNodes || []).some(
+          (child) => child.nodeType === Node.TEXT_NODE && String(child.textContent || '').trim(),
+        );
+        if (text && (hasDirectText || node.children.length === 0)) textNodes.add(node);
+      }
+    }
+    for (const node of Array.from(textNodes).slice(0, 80)) {
+      const style = window.getComputedStyle(node);
+      if (node.matches(':disabled') || node.closest(':disabled')) continue;
+      const fg = parseColor(style.color);
+      const bg = resolveBackground(node);
+      if (!fg || !bg) continue;
+      const ratio = contrast(fg, bg);
+      const fontSize = Number.parseFloat(style.fontSize || '16');
+      const minRatio = fontSize >= 18 ? 3 : 4.5;
+      if (ratio < minRatio) {
+        issues.push(`${pageLabel}: ${describeNode(node)} 文本对比度不足 (${ratio.toFixed(2)}:1, ${colorText(fg)} on ${colorText(bg)})`);
+      }
+    }
+
+    const accountButton = document.querySelector('button[aria-label="账号与外观设置"]');
+    if (isVisible(accountButton)) {
+      const rect = accountButton.getBoundingClientRect();
+      if (rect.right > window.innerWidth + 1 || rect.left < -1) {
+        issues.push(`${pageLabel}: 设置入口超出视口`);
+      }
+      if (rect.width < 36 || rect.height < 36) {
+        issues.push(`${pageLabel}: 设置入口触控尺寸不足 (${Math.round(rect.width)}x${Math.round(rect.height)})`);
+      }
+    }
+
+    return issues;
+  }, {
+    pageLabel: label,
+    surfaceSelectors: DARK_SURFACE_SELECTORS,
+    textSelectors: DARK_TEXT_SELECTORS,
+    neutralAccentSelectors: DARK_NEUTRAL_ACCENT_SELECTORS,
+    expectDarkSurfaces: Boolean(options.expectDarkSurfaces),
+  });
+}
+
+async function clickVisibleNav(page, name) {
+  const button = page.getByRole('button', { name, exact: true }).first();
+  await button.click({ timeout: 15000 });
+}
+
+async function scenarioResponsiveThemeCompatibility(browser, baseUrl) {
+  const findings = [];
+  for (const theme of RESPONSIVE_THEME_MODES) {
+    for (const viewport of RESPONSIVE_THEME_VIEWPORTS) {
+      await runWithPage(
+        browser,
+        baseUrl,
+        (mode) => {
+          localStorage.setItem('intus_theme_mode', mode);
+          localStorage.setItem('intus_intro_seen', 'true');
+          localStorage.setItem('intus_guide_seen', 'true');
+        },
+        async (page) => {
+          const prefix = `${theme.label}/${viewport.label}`;
+          const checkOptions = { expectDarkSurfaces: theme.expectDarkSurfaces };
+          await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
+          await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/工作台`, checkOptions));
+
+          await clickVisibleNav(page, '库');
+          await page.waitForSelector('.dv-library-shell', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/库`, checkOptions));
+
+          await clickVisibleNav(page, 'Agents');
+          await page.waitForSelector('.dv-agents-shell', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/Agents`, checkOptions));
+
+          await clickVisibleNav(page, '报告');
+          await page.waitForSelector('.dv-report-surface-shell', { timeout: 15000 });
+          await page.waitForSelector('[data-report-key="demo-report"]', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/报告`, checkOptions));
+          await page.locator('[data-report-key="demo-report"]:visible').first().click({ timeout: 15000 });
+          await page.waitForSelector('.dv-report-title', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/报告详情`, checkOptions));
+
+          await page.locator('button[aria-label="账号与外观设置"]:visible').first().click({ timeout: 15000 });
+          await page.waitForSelector('.account-menu:visible', { timeout: 15000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/设置菜单`, checkOptions));
+        },
+        theme.mode,
+        undefined,
+        'mock',
+        { viewport: { width: viewport.width, height: viewport.height } },
+      );
+    }
+  }
+  if (findings.length > 0) {
+    throw new Error(findings.slice(0, 20).join('\n'));
+  }
+  return '深色和浅色模式下桌面、平板和移动端关键页面无横向溢出，关键 surface 和文本对比度达标';
 }
 
 async function scenarioLiveLoginLicenseFlow(browser, baseUrl, liveContext) {
@@ -2549,6 +3011,8 @@ async function executeScenario(browser, baseUrl, scenario, runtimeContext = {}) 
       detail = await scenarioReportGenerationRefresh(browser, baseUrl);
     } else if (scenario.id === 'admin-config-tab') {
       detail = await scenarioAdminConfigTab(browser, baseUrl);
+    } else if (scenario.id === 'responsive-theme-compat') {
+      detail = await scenarioResponsiveThemeCompatibility(browser, baseUrl);
     } else if (scenario.id === 'live-login-license-flow') {
       detail = await scenarioLiveLoginLicenseFlow(browser, baseUrl, runtimeContext);
     } else if (scenario.id === 'live-report-solution-flow') {
@@ -2620,6 +3084,16 @@ function resolveSuite(name) {
         { id: 'interview-refresh', label: '访谈进行中刷新后保持当前会话' },
         { id: 'report-generation-refresh', label: '报告生成中刷新后保持进度' },
         { id: 'admin-config-tab', label: '管理员配置中心页签' },
+      ],
+    };
+  }
+  if (name === 'compat') {
+    return {
+      name: 'compat',
+      mode: 'mock',
+      description: '深色与浅色模式、桌面/平板/移动端响应式兼容性检查',
+      scenarios: [
+        { id: 'responsive-theme-compat', label: '深色与响应式兼容性' },
       ],
     };
   }

@@ -55,7 +55,7 @@ const SITE_CONFIG = {
   "colors": {
     "primary": "#18181B",
     "success": "#22C55E",
-    "progressComplete": "#2563EB"
+    "progressComplete": "#18181B"
   },
   "designTokens": {
     "light": {

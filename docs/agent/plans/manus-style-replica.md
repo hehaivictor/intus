@@ -236,11 +236,11 @@ python3 scripts/agent_ops.py task-gap
 
 **步骤：**
 
-- [ ] 运行 `python3 scripts/agent_static_guardrails.py`。
-- [ ] 运行 `python3 scripts/agent_browser_smoke.py --suite extended`。
-- [ ] 运行 `python3 scripts/agent_harness.py --profile auto --browser-smoke --artifact-dir artifacts/harness-runs`。
-- [ ] 用浏览器检查桌面和移动端关键页面截图。
-- [ ] 更新最终 checkpoint。
+- [x] 运行 `python3 scripts/agent_static_guardrails.py`。
+- [x] 运行 `python3 scripts/agent_browser_smoke.py --suite extended`。
+- [x] 运行 `python3 scripts/agent_harness.py --profile auto --browser-smoke --artifact-dir artifacts/harness-runs`。
+- [x] 用浏览器检查桌面和移动端关键页面截图。
+- [x] 更新最终 checkpoint。
 - [ ] 提交或整理最终 diff。
 
 ## 阶段 checkpoint
@@ -255,8 +255,8 @@ python3 scripts/agent_ops.py task-gap
 | Phase 5 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、全局搜索 Playwright 验证 `global-search=PASS`、截图：`artifacts/manus-style-phase5/global-search-desktop.png` / `artifacts/manus-style-phase5/global-search-mobile.png` | `dd7b8f0` |
 | Phase 6 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`/Users/hehai/.local/bin/uv run --with ... python3 -m unittest tests.test_solution_payload`（32 tests OK）、`git diff --check`、库页 Playwright 验证 `library=PASS`、截图：`artifacts/manus-style-phase6/library-desktop.png` / `artifacts/manus-style-phase6/library-mobile.png` | `60cb131` |
 | Phase 7 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、Agents 专项 Playwright 验证 `interview-focus/report-view/admin-config=PASS`、截图：`artifacts/manus-style-phase7/agents-desktop.png` / `artifacts/manus-style-phase7/agents-mobile.png` | `ed508cb` |
-| Phase 8 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`/Users/hehai/.local/bin/uv run --with ... python3 -m unittest tests.test_security_regression tests.test_solution_payload`（163 tests OK）、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、截图：`artifacts/manus-style-phase8/report-detail-desktop.png` / `report-detail-mobile.png` / `admin-config-desktop.png` / `admin-config-mobile.png` / `solution-desktop.png` / `solution-mobile.png` | 本阶段提交 |
-| Phase 9 | 未开始 | harness auto + browser smoke artifact | 待提交 |
+| Phase 8 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`/Users/hehai/.local/bin/uv run --with ... python3 -m unittest tests.test_security_regression tests.test_solution_payload`（163 tests OK）、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、截图：`artifacts/manus-style-phase8/report-detail-desktop.png` / `report-detail-mobile.png` / `admin-config-desktop.png` / `admin-config-mobile.png` / `solution-desktop.png` / `solution-mobile.png` | `e7168f6` |
+| Phase 9 | 已完成 | `python3 scripts/agent_static_guardrails.py`（PASS=13）、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 scripts/agent_harness.py --profile auto --browser-smoke --artifact-dir artifacts/harness-runs`（READY_WITH_WARNINGS：仅 `SMS_PROVIDER=mock` 本地环境提示，PASS=4 WARN=1 FAIL=0）、截图：`artifacts/manus-style-phase9/workbench-desktop.png` / `artifacts/manus-style-phase9/workbench-mobile.png` | 本阶段提交 |
 
 ## 验证矩阵
 

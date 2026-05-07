@@ -124,6 +124,53 @@
             this.sessionsAutoRefreshInFlight = false;
         },
 
+        focusWorkbenchTaskInput() {
+            this.$nextTick(() => {
+                const input = document.querySelector('[data-workbench-task-input]');
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                }
+            });
+        },
+
+        openWorkbenchSessionComposer(_intent = '') {
+            this.resetScenarioSelection();
+            this.showNewSessionModal = true;
+            this.$nextTick(() => {
+                const input = document.querySelector('[data-guide="guide-topic"]');
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                }
+            });
+        },
+
+        openWorkbenchReportsForSolution() {
+            this.switchView('reports');
+            this.showToast('请选择一份报告后查看方案页', 'info');
+        },
+
+        openWorkbenchAdminConfig() {
+            if (!this.canViewAdminCenter()) return;
+            this.openAdminCenter('config');
+        },
+
+        getWorkbenchRecentSessions(limit = 3) {
+            if (!Array.isArray(this.sessions)) return [];
+            const max = Math.max(1, Number(limit) || 3);
+            return [...this.sessions]
+                .filter(session => !this.getSessionReportGeneration(session))
+                .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0))
+                .slice(0, max);
+        },
+
+        getWorkbenchActiveReportSessions(limit = 2) {
+            if (!Array.isArray(this.sessions)) return [];
+            const max = Math.max(1, Number(limit) || 2);
+            return this.sessions
+                .filter(session => Boolean(this.getSessionReportGeneration(session)))
+                .slice(0, max);
+        },
+
         refreshSessionsView(options = {}) {
             const hasCachedSessions = this.sessionsLoaded;
             return this.loadSessions({

@@ -77,3 +77,8 @@ read_ppt_size.py
 # Local harness evaluator artifacts
 artifacts/harness-eval-local/
 artifacts/planner/
+
+# Local generated visual artifacts
+artifacts/logo-smoke/
+artifacts/manus-style-phase*/
+output/

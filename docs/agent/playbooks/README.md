@@ -14,6 +14,7 @@
 - License 管理与批量操作核对：[license-admin.md](../../../docs/agent/playbooks/license-admin.md)
 - 配置中心变更前核对：[config-center-verify.md](../../../docs/agent/playbooks/config-center-verify.md)
 - 云端导入预演与回滚准备：[cloud-import-verify.md](../../../docs/agent/playbooks/cloud-import-verify.md)
+- 产品 UI 壳层改造核对：[product-ui-flow.md](../../../docs/agent/playbooks/product-ui-flow.md)
 
 ## 使用原则
 

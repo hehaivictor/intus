@@ -44,24 +44,21 @@
     <link rel="stylesheet" href="vendor/css/fonts.css">
     <style>
         .fangsong-quote {
-            font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-            font-weight: bold;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
+            font-weight: 500;
         }
         /* Logo 品牌样式 */
         .brand-title {
-            font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #171717 0%, #404040 50%, #525252 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-            letter-spacing: -0.03em;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #09090B;
+            font-weight: 650;
+            letter-spacing: 0;
         }
         .brand-title-cn {
-            color: #000000;
-            font-family: 'ZCOOL XiaoWei', serif;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            color: #09090B;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+            font-weight: 500;
+            letter-spacing: 0;
         }
         .logo-icon {
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
@@ -74,7 +71,7 @@
             }
             50% {
                 transform: scale(1.04);
-                filter: drop-shadow(0 4px 14px rgba(29, 78, 216, 0.28));
+                filter: drop-shadow(0 4px 14px rgba(9, 9, 11, 0.18));
             }
         }
         html[data-theme="light"] .logo-icon:not(.logo-searching) {
@@ -127,7 +124,7 @@
             content: "";
             position: absolute;
             inset: 0;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2750%27%20height%3D%2714%27%20viewBox%3D%270%200%2050%2014%27%3E%3Ctext%20x%3D%270%27%20y%3D%2710%27%20font-family%3D%27Fira%20Code%2C%20SFMono-Regular%2C%20ui-monospace%2C%20monospace%27%20font-size%3D%279%27%20fill%3D%27rgba(53%2C123%2C226%2C0.22)%27%20letter-spacing%3D%272%27%3E010101%3C/text%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2750%27%20height%3D%2714%27%20viewBox%3D%270%200%2050%2014%27%3E%3Ctext%20x%3D%270%27%20y%3D%2710%27%20font-family%3D%27SFMono-Regular%2C%20ui-monospace%2C%20monospace%27%20font-size%3D%279%27%20fill%3D%27rgba(63%2C63%2C70%2C0.18)%27%20letter-spacing%3D%272%27%3E010101%3C/text%3E%3C/svg%3E");
             background-repeat: repeat-x;
             background-size: 50px 14px;
             animation: binary-flow-wave 4.6s linear infinite;
@@ -149,12 +146,12 @@
             }
         }
         .btn-sage-blue {
-            background-color: #1D4ED8 !important;
-            border: 1px solid #1D4ED8;
+            background-color: #18181B !important;
+            border: 1px solid #18181B;
         }
         .btn-sage-blue:hover {
-            background-color: #1E40AF !important;
-            border-color: #1E40AF;
+            background-color: #27272A !important;
+            border-color: #27272A;
         }
         /* 呼吸灯动画 */
         @keyframes breathing {
@@ -328,21 +325,22 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#000000',
-                        secondary: '#525252',
-                        cta: '#000000',
-                        'cta-hover': '#262626',
+                        primary: '#09090B',
+                        secondary: '#3F3F46',
+                        cta: '#18181B',
+                        'cta-hover': '#27272A',
                         surface: '#FFFFFF',
                         'surface-secondary': '#FAFAFA',
-                        text: '#000000',
-                        muted: '#6B7280',  // gray-500, 对比度 7.0:1
-                        border: '#E5E5E5',
+                        text: '#09090B',
+                        muted: '#71717A',
+                        border: '#E4E4E7',
                         success: '#22C55E',
                         warning: '#737373',
-                        danger: '#000000'
+                        danger: '#18181B'
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        display: ['Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'serif']
                     },
                     borderRadius: {
                         'xl': '0.75rem',
@@ -688,7 +686,7 @@
     <script defer src="vendor/js/alpine.min.js"></script>
 </head>
 <body class="bg-surface-secondary min-h-screen font-sans text-text antialiased pb-safe">
-    <div x-data="intusApp()" x-cloak class="min-h-screen flex flex-col">
+    <div x-data="intusApp()" x-cloak class="min-h-screen flex flex-col" @keydown.window="handleGlobalSearchShortcut($event)">
         <!-- Header -->
         <header class="bg-surface border-b border-border">
             <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-5 flex items-center justify-between">
@@ -718,24 +716,51 @@
                     </p>
                 </div>
                 <nav class="flex items-center gap-2 md:gap-3" x-show="authReady && !licenseChecking && !licenseGateActive" x-cloak>
-                    <button @click="switchView('sessions')"
-                            :class="getHeaderNavClass(isSessionViewActive())"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">会话</span>
-                        <span class="sm:hidden">会话</span>
+                    <button type="button"
+                            @click="openGlobalSearch()"
+                            class="dv-global-search-trigger"
+                            aria-label="打开全局搜索">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
+                        </svg>
+                        <span class="hidden sm:inline">搜索</span>
                     </button>
-                    <button @click="switchView('reports')"
-                            :class="getHeaderNavClass(currentView === 'reports')"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">报告</span>
-                        <span class="sm:hidden">报告</span>
-                    </button>
-                    <button @click="window.location.href='help.html'"
-                            :class="getHeaderNavClass(false)"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">帮助</span>
-                        <span class="sm:hidden">帮助</span>
-                    </button>
+                    <div class="dv-header-nav-links flex items-center gap-2 md:gap-3">
+                        <button @click="switchView('sessions')"
+                                aria-label="会话"
+                                :class="getHeaderNavClass(isSessionViewActive())"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span class="hidden sm:inline">会话</span>
+                            <span class="sm:hidden">会</span>
+                        </button>
+                        <button @click="switchView('library')"
+                                aria-label="库"
+                                :class="getHeaderNavClass(currentView === 'library')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span>库</span>
+                        </button>
+                        <button @click="switchView('agents')"
+                                aria-label="Agents"
+                                :class="getHeaderNavClass(currentView === 'agents')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span class="hidden sm:inline">Agents</span>
+                            <span class="sm:hidden">A</span>
+                        </button>
+                        <button @click="switchView('reports')"
+                                aria-label="报告"
+                                :class="getHeaderNavClass(currentView === 'reports')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span class="hidden sm:inline">报告</span>
+                            <span class="sm:hidden">报</span>
+                        </button>
+                        <button @click="window.location.href='help.html'"
+                                aria-label="帮助"
+                                :class="getHeaderNavClass(false)"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span class="hidden sm:inline">帮助</span>
+                            <span class="sm:hidden">助</span>
+                        </button>
+                    </div>
                     <div class="relative" @keydown.escape.window="showAccountMenu = false">
                         <button @click="showAccountMenu = !showAccountMenu"
                                 :class="getHeaderNavClass(false)"
@@ -799,8 +824,8 @@
         </header>
 
         <template x-if="authChecking">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="bg-surface border border-border rounded-2xl p-8 shadow-sm w-full max-w-md text-center">
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel text-center">
                     <div class="w-10 h-10 mx-auto border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm text-muted">正在检查登录状态...</p>
                 </div>
@@ -808,11 +833,11 @@
         </template>
 
         <template x-if="!authChecking && !authReady">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="w-full max-w-md bg-surface border border-border rounded-2xl shadow-sm px-6 pb-6 pt-7 md:px-8 md:pb-8 md:pt-9 space-y-6">
-                    <div class="text-center space-y-2 pb-1">
-                        <h2 class="text-xl font-semibold text-primary">欢迎回来</h2>
-                        <p class="text-sm text-muted">登录后即可使用访谈与报告功能</p>
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel space-y-6">
+                    <div class="dv-auth-panel-header">
+                        <h2 class="dv-auth-title">欢迎回来</h2>
+                        <p class="dv-auth-subtitle">登录后即可使用访谈与报告功能</p>
                     </div>
 
                     <form class="space-y-4" @submit.prevent="submitAuth()" novalidate>
@@ -831,7 +856,7 @@
                                        inputmode="numeric"
                                        autocomplete="tel"
                                        placeholder="请输入手机号（11位）"
-                                       class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                       class="dv-auth-input"
                                        :aria-invalid="authErrors.account ? 'true' : 'false'"
                                        :aria-expanded="(authAccountSuggestionsOpen && getFilteredAuthAccountHistory().length > 0) ? 'true' : 'false'"
                                        aria-controls="auth-account-history-list"
@@ -879,13 +904,13 @@
                                            autocomplete="one-time-code"
                                            :maxlength="smsCodeLength"
                                            placeholder="请输入验证码"
-                                           class="flex-1 min-w-0 h-10 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                           class="dv-auth-input flex-1 min-w-0"
                                            :aria-invalid="authErrors.code ? 'true' : 'false'"
                                            required>
                                     <button type="button"
                                             @click="sendAuthCode()"
                                             :disabled="!canSendAuthCode()"
-                                            class="h-10 px-3 text-sm whitespace-nowrap rounded-lg border border-gray-200 text-primary hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5">
+                                            class="dv-auth-secondary-button px-3 text-sm whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5">
                                         <svg x-show="authCodeSending" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
                                             <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
@@ -907,7 +932,7 @@
                             </button>
                         </div>
 
-                        <p x-show="!smsLoginEnabled && !wechatLoginEnabled" x-cloak role="alert" class="text-xs text-danger">当前未启用可用登录方式，请联系管理员。</p>
+                        <p x-show="!smsLoginEnabled && !wechatLoginEnabled" x-cloak role="alert" class="dv-auth-alert">当前未启用可用登录方式，请联系管理员。</p>
 
                         <div x-show="wechatLoginEnabled" x-cloak class="space-y-3" :class="smsLoginEnabled ? 'pt-1' : ''">
                             <div x-show="smsLoginEnabled" x-cloak class="flex items-center gap-3">
@@ -918,7 +943,7 @@
                             <button type="button"
                                     @click="startWechatLogin()"
                                     :disabled="authLoading || wechatLoginLoading"
-                                    class="w-full px-5 py-2.5 rounded-lg font-medium border border-gray-200 text-primary hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                    class="dv-auth-secondary-button w-full px-5 py-2.5 font-medium cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 28 28" aria-hidden="true" style="color: #07C160;">
                                     <path fill="currentColor" fill-opacity="0.82" d="M18.9 10.2c4.5 0 8.1 2.9 8.1 6.5 0 2.1-1.2 4-3.1 5.2l.8 2.7c.1.4-.3.8-.7.6l-3.3-1.7c-.6.1-1.2.2-1.8.2-4.5 0-8.1-2.9-8.1-6.5s3.6-7 8.1-7Z"/>
                                     <path fill="currentColor" d="M10.6 4C5.3 4 1 7.6 1 12.1c0 2.5 1.4 4.8 3.8 6.3l-.9 3.2c-.1.4.3.8.7.6l3.8-2c.7.2 1.4.3 2.2.3 5.3 0 9.6-3.6 9.6-8.1S15.9 4 10.6 4Z"/>
@@ -936,8 +961,8 @@
         </template>
 
         <template x-if="!authChecking && authReady && licenseChecking">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="bg-surface border border-border rounded-2xl p-8 shadow-sm w-full max-w-md text-center">
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel text-center">
                     <div class="w-10 h-10 mx-auto border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm text-muted">正在检查 License 状态...</p>
                 </div>
@@ -945,14 +970,14 @@
         </template>
 
         <template x-if="!authChecking && authReady && !licenseChecking && licenseGateActive">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="w-full max-w-xl bg-surface border border-border rounded-2xl shadow-sm px-6 pb-6 pt-7 md:px-8 md:pb-8 md:pt-9 space-y-6">
-                    <div class="text-center space-y-2 pb-1">
-                        <h2 class="text-xl font-semibold text-primary" x-text="getLicenseGateTitle()"></h2>
-                        <p class="text-sm text-muted" x-text="getLicenseGateDescription()"></p>
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel dv-auth-panel--wide space-y-6">
+                    <div class="dv-auth-panel-header">
+                        <h2 class="dv-auth-title" x-text="getLicenseGateTitle()"></h2>
+                        <p class="dv-auth-subtitle" x-text="getLicenseGateDescription()"></p>
                     </div>
 
-                    <div class="rounded-xl border border-border bg-gray-50/80 px-4 py-4 space-y-3">
+                    <div class="dv-auth-status-card space-y-3">
                         <div class="flex items-center justify-between gap-3 text-sm">
                             <span class="text-muted">当前状态</span>
                             <span class="font-medium text-primary" x-text="getLicenseStatusLabel()"></span>
@@ -986,7 +1011,7 @@
                                    type="text"
                                    autocomplete="off"
                                    placeholder="请输入管理员发放的 License"
-                                   class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                   class="dv-auth-input"
                                    :aria-invalid="licenseActivationError ? 'true' : 'false'"
                                    required>
                             <p x-show="licenseActivationError" x-text="licenseActivationError" role="alert" class="mt-1 text-xs text-red-500"></p>
@@ -1003,13 +1028,13 @@
                         </button>
                     </form>
 
-                    <div class="flex items-center justify-between gap-3 text-sm">
+                    <div class="dv-auth-footer">
                         <div class="text-muted">
                             <span>剩余有效期：</span>
                             <span x-text="getLicenseRemainingText()"></span>
                         </div>
                         <button @click="logout()"
-                                class="text-primary hover:text-cta transition-colors font-medium">
+                                class="text-primary hover:text-cta transition-colors font-medium cursor-pointer">
                             退出登录
                         </button>
                     </div>
@@ -1018,7 +1043,63 @@
         </template>
 
         <template x-if="!authChecking && authReady && !licenseChecking && !licenseGateActive">
-            <div>
+            <div class="dv-app-shell">
+                <aside class="dv-app-sidebar" aria-label="主导航">
+                    <button type="button" class="dv-sidebar-search" @click="openGlobalSearch()">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
+                        </svg>
+                        <span>搜索</span>
+                    </button>
+                    <nav class="dv-side-nav">
+                        <button type="button" @click="switchView('sessions')" class="dv-side-nav-item" :class="{ 'is-active': isSessionViewActive() }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">⌘</span>
+                            <span>工作台</span>
+                        </button>
+                        <button type="button" @click="switchView('library')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'library' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">□</span>
+                            <span>库</span>
+                        </button>
+                        <button type="button" @click="switchView('agents')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'agents' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">✦</span>
+                            <span>Agents</span>
+                        </button>
+                        <button type="button" @click="switchView('reports')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'reports' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">▤</span>
+                            <span>报告</span>
+                        </button>
+                        <button type="button" @click="openWorkbenchReportsForSolution()" class="dv-side-nav-item">
+                            <span class="dv-side-nav-icon" aria-hidden="true">↗</span>
+                            <span>方案</span>
+                        </button>
+                        <button type="button" x-show="canViewAdminCenter()" x-cloak @click="openAdminCenter('overview')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'admin' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">⚙</span>
+                            <span>管理员中心</span>
+                        </button>
+                        <button type="button" @click="window.location.href='help.html'" class="dv-side-nav-item">
+                            <span class="dv-side-nav-icon" aria-hidden="true">?</span>
+                            <span>帮助</span>
+                        </button>
+                    </nav>
+                    <div class="dv-sidebar-section">
+                        <div class="dv-sidebar-section-title">账号</div>
+                        <div class="dv-sidebar-account">
+                            <span class="dv-sidebar-account-name" x-text="currentUser?.account || currentUser?.name || currentUser?.phone || '当前用户'"></span>
+                            <span class="dv-sidebar-account-meta" x-text="currentLevelInfo?.name || getLicenseStatusLabel()"></span>
+                        </div>
+                    </div>
+                    <div class="dv-sidebar-section" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
+                        <div class="dv-sidebar-section-title">最近</div>
+                        <div class="dv-sidebar-recent-list">
+                            <template x-for="session in getWorkbenchRecentSessions(3)" :key="`sidebar-recent-${session.session_id}`">
+                                <button type="button" class="dv-sidebar-recent" @click="openSession(session.session_id)">
+                                    <span x-text="session.topic"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </aside>
+                <div class="dv-app-content">
         <!-- 流程步骤指示器（仅在访谈中显示） -->
         <template x-if="currentView === 'interview' && currentSession">
             <div class="bg-white border-b border-gray-200 shadow-sm">
@@ -1060,47 +1141,105 @@
 
             <!-- ========== 会话管理视图 ========== -->
             <template x-if="currentView === 'sessions'">
-                <div class="space-y-4 md:space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-xl md:text-2xl font-semibold text-primary">访谈会话</h2>
-                            <p class="text-muted text-sm mt-1">管理您的访谈会话</p>
-                        </div>
-                        <button data-guide="guide-new-session"
-                                x-show="!sessionBatchMode"
-                                @click="resetScenarioSelection(); showNewSessionModal = true"
-                                class="btn-sage-blue text-white px-5 py-2.5 rounded-lg font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2 w-full sm:w-auto">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            新建访谈
-                        </button>
-                    </div>
-
-                    <!-- 搜索和筛选栏 -->
-                    <div class="bg-surface border border-border rounded-xl p-3 md:p-4" x-show="!selectedReport">
-                        <div class="flex flex-col gap-3">
-                            <!-- 搜索框 -->
-                            <div class="relative flex-1">
-                                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <div class="dv-workbench-shell space-y-5 md:space-y-7">
+                    <section class="dv-workbench-launcher">
+                        <div class="dv-workbench-main">
+                            <div class="dv-workbench-heading">
+                                <h2 class="dv-workbench-title">访谈会话</h2>
+                                <p class="dv-workbench-subtitle">把一个业务问题交给 Intus</p>
+                            </div>
+                            <form class="dv-workbench-command" @submit.prevent="newSessionDescription = ''; resetScenarioSelection(); createNewSession()">
+                                <div class="dv-workbench-command-input">
+                                    <svg class="w-5 h-5 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636"/>
                                     </svg>
                                     <input type="text"
-                                           x-model="sessionSearchQuery"
-                                           @input="onSessionSearchInput()"
-                                           placeholder="搜索访谈主题..."
-                                           class="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                                    <button x-show="sessionSearchQuery"
-                                            @click="sessionSearchQuery = ''; filterSessions()"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
+                                           data-workbench-task-input
+                                           x-model="newSessionTopic"
+                                           @input="onTopicInput()"
+                                           :placeholder="getTopicPlaceholder()"
+                                           class="dv-workbench-task-input"
+                                           autocomplete="off">
+                                </div>
+                                <button type="submit"
+                                        :disabled="!newSessionTopic.trim() || loading"
+                                        :class="newSessionTopic.trim() && !loading ? 'btn-sage-blue text-white cursor-pointer' : 'report-action-disabled cursor-not-allowed'"
+                                        class="dv-workbench-submit">
+                                    <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+                                        <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
+                                    </svg>
+                                    <span x-text="loading ? '创建中...' : '开始访谈'"></span>
+                                </button>
+                            </form>
+                            <div class="dv-workbench-chips" aria-label="快捷入口">
+                                <button type="button" class="dv-workbench-chip" @click="focusWorkbenchTaskInput()">访谈</button>
+                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
+                                <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
+                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchReportsForSolution()">生成方案</button>
+                                <button type="button" class="dv-workbench-chip" x-show="canViewAdminCenter()" x-cloak @click="openWorkbenchAdminConfig()">管理员配置</button>
                             </div>
-
                         </div>
-                    </div>
+                        <aside class="dv-workbench-side" aria-label="最近任务">
+                            <div class="dv-workbench-side-head">
+                                <span>最近任务</span>
+                                <button data-guide="guide-new-session"
+                                        x-show="!sessionBatchMode"
+                                        @click="openWorkbenchSessionComposer()"
+                                        class="dv-workbench-new-btn">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    新建访谈
+                                </button>
+                            </div>
+                            <div class="dv-workbench-active" x-show="getWorkbenchActiveReportSessions().length > 0" x-cloak>
+                                <template x-for="session in getWorkbenchActiveReportSessions(2)" :key="`active-${session.session_id}`">
+                                    <button type="button" class="dv-workbench-recent is-active" @click="openSession(session.session_id)">
+                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
+                                        <span class="dv-workbench-recent-meta" x-text="getSessionReportGenerationBadgeText(session)"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-workbench-recent-list" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
+                                <template x-for="session in getWorkbenchRecentSessions(3)" :key="`recent-${session.session_id}`">
+                                    <button type="button" class="dv-workbench-recent" @click="openSession(session.session_id)">
+                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
+                                        <span class="dv-workbench-recent-meta" x-text="`${getStatusText(getEffectiveSessionStatus(session))} · ${formatDate(session.updated_at || session.created_at)}`"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-workbench-empty" x-show="!loading && getWorkbenchRecentSessions().length === 0" x-cloak>
+                                暂无会话
+                            </div>
+                        </aside>
+                    </section>
+
+                    <!-- 搜索和筛选栏 -->
+                    <section class="dv-workbench-list-head" x-show="!selectedReport">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <h3 class="text-base font-semibold text-primary">会话列表</h3>
+                            </div>
+                            <div class="relative flex-1 sm:max-w-md">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input type="text"
+                                       x-model="sessionSearchQuery"
+                                       @input="onSessionSearchInput()"
+                                       placeholder="搜索访谈主题..."
+                                       class="dv-workbench-search-input">
+                                <button x-show="sessionSearchQuery"
+                                        @click="sessionSearchQuery = ''; filterSessions()"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
 
                     <!-- 加载状态 -->
                     <template x-if="loading">
@@ -1381,6 +1520,133 @@
                             <button class="guide-btn primary" @click="nextGuideStep()" x-text="guideSteps[guideStepIndex].cta"></button>
                         </div>
                     </div>
+                </div>
+            </template>
+
+            <template x-if="currentView === 'library'">
+                <div class="dv-library-shell" x-init="ensureLibraryData()">
+                    <section class="dv-library-hero">
+                        <div class="min-w-0">
+                            <p class="dv-library-kicker">Library</p>
+                            <h2>库</h2>
+                            <p>会话、报告、资料和方案集中在一个低噪声列表里。</p>
+                            <span class="dv-library-summary" x-text="getLibrarySummaryText()"></span>
+                        </div>
+                        <div class="dv-library-actions">
+                            <button type="button" class="btn-sage-blue text-white" @click="openWorkbenchSessionComposer()">新建访谈</button>
+                            <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
+                            <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
+                        </div>
+                    </section>
+
+                    <section class="dv-library-toolbar" aria-label="库筛选">
+                        <div class="dv-library-search">
+                            <svg class="w-4 h-4 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
+                            </svg>
+                            <input type="text"
+                                   x-model="librarySearchQuery"
+                                   placeholder="搜索会话、报告、方案或资料..."
+                                   class="dv-library-search-input">
+                            <button type="button"
+                                    x-show="librarySearchQuery"
+                                    x-cloak
+                                    @click="clearLibrarySearch()"
+                                    aria-label="清空库搜索">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="dv-library-filter-row">
+                            <div class="dv-library-segment" role="tablist" aria-label="资源类型">
+                                <template x-for="option in getLibraryTypeOptions()" :key="`library-filter-${option.key}`">
+                                    <button type="button"
+                                            role="tab"
+                                            @click="libraryTypeFilter = option.key"
+                                            :aria-selected="(libraryTypeFilter === option.key).toString()"
+                                            :class="{ 'is-active': libraryTypeFilter === option.key }">
+                                        <span x-text="option.label"></span>
+                                        <span x-text="getLibraryTypeCount(option.key)"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-library-segment dv-library-segment--sort" role="group" aria-label="排序方式">
+                                <button type="button" @click="librarySortOrder = 'newest'" :class="{ 'is-active': librarySortOrder === 'newest' }">最新</button>
+                                <button type="button" @click="librarySortOrder = 'oldest'" :class="{ 'is-active': librarySortOrder === 'oldest' }">最早</button>
+                                <button type="button" @click="librarySortOrder = 'type'" :class="{ 'is-active': librarySortOrder === 'type' }">类型</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dv-library-list" aria-label="库资源">
+                        <div class="dv-global-search-status" x-show="libraryLoading" x-cloak>
+                            <span class="dv-global-search-dot" aria-hidden="true"></span>
+                            <span>正在同步库内容</span>
+                        </div>
+                        <template x-if="!libraryLoading && getLibraryItems().length === 0">
+                            <div class="dv-library-empty">
+                                <div class="dv-library-empty-mark" aria-hidden="true">□</div>
+                                <div>
+                                    <h3>暂无匹配资源</h3>
+                                    <p>清空搜索或新建访谈后，相关报告、方案和资料会进入库。</p>
+                                </div>
+                                <button type="button" class="btn-sage-blue text-white" @click="librarySearchQuery ? clearLibrarySearch() : openWorkbenchSessionComposer()">
+                                    <span x-text="librarySearchQuery ? '清空搜索' : '新建访谈'"></span>
+                                </button>
+                            </div>
+                        </template>
+                        <template x-if="getLibraryItems().length > 0">
+                            <div class="dv-library-items">
+                                <template x-for="item in getLibraryItems()" :key="item.id">
+                                    <button type="button" class="dv-library-item" @click="activateLibraryItem(item)">
+                                        <span class="dv-library-type" x-text="item.category"></span>
+                                        <span class="dv-library-main">
+                                            <span class="dv-library-title" x-text="item.title"></span>
+                                            <span class="dv-library-desc" x-text="item.description"></span>
+                                        </span>
+                                        <span class="dv-library-meta">
+                                            <span x-text="item.meta"></span>
+                                            <span class="dv-library-action" x-text="item.actionLabel"></span>
+                                        </span>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                    </section>
+                </div>
+            </template>
+
+            <template x-if="currentView === 'agents'">
+                <div class="dv-agents-shell">
+                    <section class="dv-agents-hero">
+                        <div class="dv-agents-mark" aria-hidden="true">✦</div>
+                        <div>
+                            <p class="dv-library-kicker">Agents</p>
+                            <h2>Intus Agents</h2>
+                            <p>把 Intus 的真实能力按任务入口组织起来。</p>
+                        </div>
+                        <div class="dv-library-actions">
+                            <button type="button" class="btn-sage-blue text-white" @click="switchView('sessions'); focusWorkbenchTaskInput()">开始访谈</button>
+                            <button type="button" class="dv-workbench-chip" @click="switchView('library')">打开库</button>
+                        </div>
+                    </section>
+
+                    <section class="dv-agents-grid" aria-label="Agents 能力">
+                        <template x-for="agent in getAgentCapabilityCards()" :key="agent.key">
+                            <button type="button" class="dv-agent-card" @click="activateAgentCapability(agent.key)">
+                                <span class="dv-library-type" x-text="agent.category"></span>
+                                <span class="dv-agent-card-main">
+                                    <span class="dv-agent-title" x-text="agent.title"></span>
+                                    <span class="dv-agent-desc" x-text="agent.description"></span>
+                                </span>
+                                <span class="dv-agent-card-foot">
+                                    <span x-text="agent.meta"></span>
+                                    <strong x-text="agent.actionLabel"></strong>
+                                </span>
+                            </button>
+                        </template>
+                    </section>
                 </div>
             </template>
 
@@ -2441,7 +2707,7 @@
 
             <!-- ========== 报告视图 ========== -->
             <template x-if="currentView === 'reports'">
-                <div class="space-y-4 md:space-y-6">
+                <div class="dv-report-surface-shell space-y-4 md:space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <h2 class="text-xl md:text-2xl font-semibold text-primary">访谈报告</h2>
@@ -2702,6 +2968,15 @@
                                                 </svg>
                                                 <span>生成精审版</span>
                                             </button>
+                                            <button type="button"
+                                                    x-show="canViewSolutionPage()"
+                                                    @click="openSolutionPage()"
+                                                    class="report-action-secondary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h8m0 0l-3-3m3 3l-3 3M5 7h6M5 11h3M5 15h3"/>
+                                                </svg>
+                                                查看方案
+                                            </button>
                                             <div class="flex flex-col gap-1" x-show="isPresentationEnabled() && canGeneratePresentation()">
                                                 <button @click="isPresentationGeneratingCurrentReport() ? stopPresentationGeneration() : generatePresentation()"
                                                         x-show="!presentationPdfUrl"
@@ -2876,47 +3151,47 @@
             </template>
 
             <template x-if="currentView === 'admin'">
-                <div class="space-y-5 md:space-y-6">
+                <div class="dv-admin-shell space-y-5 md:space-y-6">
                     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold tracking-[0.18em] text-primary/70 uppercase">Admin Center</p>
                             <h2 class="text-2xl md:text-3xl font-semibold text-primary mt-1">管理员中心</h2>
                             <p class="text-sm text-muted mt-2">集中管理 License 生命周期、配置中心、运行监控、摘要缓存和账号归属迁移。</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2">
+                        <div class="dv-admin-tabbar flex flex-wrap items-center gap-2">
                             <button @click="switchAdminTab('overview')"
                                     :class="adminTab === 'overview' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 总览
                             </button>
                             <button @click="switchAdminTab('usage')"
                                     :class="adminTab === 'usage' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 用户统计
                             </button>
                             <button @click="switchAdminTab('license')"
                                     :class="adminTab === 'license' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 License
                             </button>
                             <button @click="switchAdminTab('ops')"
                                     :class="adminTab === 'ops' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 运行监控
                             </button>
                             <button @click="switchAdminTab('summaries')"
                                     :class="adminTab === 'summaries' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 摘要缓存
                             </button>
                             <button @click="switchAdminTab('ownership')"
                                     :class="adminTab === 'ownership' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 账号归属迁移
                             </button>
                             <button @click="switchAdminTab('config')"
                                     :class="adminTab === 'config' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 配置中心
                             </button>
                         </div>
@@ -4784,8 +5059,100 @@
                 </div>
             </template>
         </main>
+                </div>
             </div>
         </template>
+
+        <!-- ========== 全局搜索弹层 ========== -->
+        <div x-show="showGlobalSearchModal"
+             data-dialog-key="showGlobalSearchModal"
+             x-bind="getDialogAttrs('showGlobalSearchModal')"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="dv-overlay fixed inset-0 flex items-start justify-center z-[60] p-3 sm:p-4"
+             @click.self="closeGlobalSearchModal()"
+             @keydown.escape.window="closeGlobalSearchModal()">
+            <div x-bind="getDialogPanelAttrs('showGlobalSearchModal')"
+                 class="dv-global-search-modal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-[0.98]"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100">
+                <div class="dv-global-search-head">
+                    <div>
+                        <h3 id="dv-dialog-global-search-title">搜索 Intus</h3>
+                        <p id="dv-dialog-global-search-desc">会话、报告、方案与帮助入口</p>
+                    </div>
+                    <button type="button"
+                            class="dv-global-search-close"
+                            @click="closeGlobalSearchModal()"
+                            aria-label="关闭全局搜索">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="dv-global-search-box">
+                    <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
+                    </svg>
+                    <input id="global-search-input"
+                           data-global-search-input
+                           data-dialog-autofocus
+                           type="text"
+                           x-model="globalSearchQuery"
+                           @input="ensureGlobalSearchData()"
+                           @keydown.enter.prevent="activateGlobalSearchResult(getGlobalSearchResults()[0])"
+                           placeholder="搜索会话、报告、方案或帮助..."
+                           autocomplete="off"
+                           class="dv-global-search-input">
+                    <button type="button"
+                            x-show="globalSearchQuery"
+                            x-cloak
+                            class="dv-global-search-clear"
+                            @click="clearGlobalSearchQuery()"
+                            aria-label="清空搜索">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="dv-global-search-status" x-show="globalSearchLoading" x-cloak>
+                    <span class="dv-global-search-dot" aria-hidden="true"></span>
+                    <span>正在同步本地列表</span>
+                </div>
+
+                <div class="dv-global-search-results" role="listbox" aria-label="全局搜索结果">
+                    <template x-if="!globalSearchLoading && getGlobalSearchResults().length === 0">
+                        <div class="dv-global-search-empty">
+                            <div class="dv-global-search-empty-mark" aria-hidden="true">⌕</div>
+                            <div>
+                                <p>没有匹配结果</p>
+                                <button type="button" @click="clearGlobalSearchQuery()">清空搜索</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-for="result in getGlobalSearchResults()" :key="result.id">
+                        <button type="button"
+                                class="dv-global-search-result"
+                                role="option"
+                                @click="activateGlobalSearchResult(result)">
+                            <span class="dv-global-search-category" x-text="result.category"></span>
+                            <span class="dv-global-search-copy">
+                                <span class="dv-global-search-title" x-text="result.title"></span>
+                                <span class="dv-global-search-desc" x-text="result.description"></span>
+                            </span>
+                            <span class="dv-global-search-meta" x-text="result.meta"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
 
         <!-- ========== 新建会话弹窗 ========== -->
         <div x-show="showNewSessionModal"

@@ -3893,6 +3893,229 @@ body.is-evidence-open {
     }
 }
 
+/* Phase 8: 与 Intus 主工作台保持一致的低噪声方案页视觉 */
+:root {
+    color-scheme: light;
+    --solution-bg: #FAFAFA;
+    --solution-bg-deep: #F4F4F5;
+    --solution-surface: #ffffff;
+    --solution-surface-strong: #ffffff;
+    --solution-surface-soft: #FAFAFA;
+    --solution-surface-warm: #F4F4F5;
+    --solution-border: #E4E4E7;
+    --solution-border-strong: #D4D4D8;
+    --solution-text: #09090B;
+    --solution-text-soft: #3F3F46;
+    --solution-text-dim: #71717A;
+    --solution-accent: #18181B;
+    --solution-accent-strong: #27272A;
+    --solution-accent-soft: #F4F4F5;
+    --solution-cyan: #2563EB;
+    --solution-cyan-soft: rgba(37, 99, 235, 0.1);
+    --solution-shadow: 0 1px 2px rgba(9, 9, 11, 0.06);
+    --solution-shadow-soft: 0 1px 2px rgba(9, 9, 11, 0.05);
+    --solution-shadow-gold: 0 1px 2px rgba(9, 9, 11, 0.05);
+    --solution-radius-xl: 8px;
+    --solution-radius-lg: 8px;
+    --solution-radius-md: 8px;
+    --solution-radius-sm: 8px;
+    --solution-radius-2xl: 8px;
+    --solution-serif: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --solution-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+    background: var(--solution-bg);
+    color: var(--solution-text);
+    letter-spacing: 0;
+}
+
+body::before,
+body::after {
+    display: none;
+}
+
+.solution-state-card,
+.solution-evidence-panel,
+.solution-topbar-inner,
+.solution-quality-strip,
+[data-solution-section],
+.proposal-hero,
+.proposal-metric-card,
+.proposal-track-card,
+.proposal-option-card,
+.proposal-case-card,
+.proposal-capability-card,
+.proposal-value-card,
+.proposal-fit-card,
+.proposal-blueprint-block,
+.proposal-blueprint-card,
+.proposal-tab-panel,
+.solution-share-panel,
+.solution-action-bar,
+.solution-toc-sticky {
+    border: 1px solid var(--solution-border) !important;
+    border-radius: var(--solution-radius-xl) !important;
+    background: #ffffff !important;
+    box-shadow: var(--solution-shadow) !important;
+    color: var(--solution-text) !important;
+}
+
+.solution-state-card::after,
+[data-solution-section]::before,
+.proposal-metric-card::before,
+.proposal-metric-card::after,
+.solution-topbar::before {
+    display: none !important;
+}
+
+.solution-state-badge,
+.proposal-section-label,
+.proposal-eyebrow,
+.proposal-year-tag,
+.proposal-option-tag,
+.proposal-option-chip,
+.proposal-tab-panel-tag,
+.proposal-capability-tag,
+.proposal-fit-tag,
+.proposal-urgency-tag,
+.proposal-track-label,
+.proposal-knowledge-card-label,
+.proposal-analogy-label,
+.proposal-comparison-center-label,
+.proposal-tertiary-label,
+.proposal-value-card-label,
+.proposal-phase-step,
+.solution-evidence-kicker {
+    border-color: var(--solution-border);
+    background: #FAFAFA;
+    color: var(--solution-text-dim);
+    letter-spacing: 0.08em;
+}
+
+.solution-state-title,
+.proposal-hero-title,
+.proposal-section-title,
+.proposal-metric-value,
+.proposal-quality-value,
+.solution-brand-title {
+    color: var(--solution-text) !important;
+    letter-spacing: 0 !important;
+}
+
+.solution-state-text,
+.proposal-hero-subtitle,
+.proposal-section-judgement,
+.proposal-hero-judgement,
+.proposal-section-summary,
+.proposal-text-body,
+.proposal-rich-text,
+.proposal-rich-text p,
+.proposal-metric-label,
+.proposal-quality-detail,
+.solution-brand-kicker,
+.solution-brand-copy,
+.solution-toc-header {
+    color: var(--solution-text-soft) !important;
+}
+
+.proposal-section-judgement,
+.proposal-hero-judgement {
+    border-left-color: var(--solution-border-strong) !important;
+}
+
+.solution-nav-button,
+.solution-topbar-action,
+.solution-primary-action,
+.solution-action-btn,
+.solution-inline-evidence,
+.solution-expand-toggle,
+.solution-evidence-close,
+.solution-share-panel-close {
+    border-color: var(--solution-border);
+    border-radius: var(--solution-radius-sm);
+    background: #ffffff;
+    color: var(--solution-text);
+    box-shadow: none;
+}
+
+.solution-nav-button:hover,
+.solution-nav-button:focus-visible,
+.solution-inline-evidence:hover,
+.solution-inline-evidence:focus-visible,
+.solution-expand-toggle:hover,
+.solution-expand-toggle:focus-visible,
+.solution-evidence-close:hover,
+.solution-evidence-close:focus-visible {
+    border-color: var(--solution-border-strong);
+    background: #F4F4F5;
+    color: var(--solution-text);
+    transform: none;
+}
+
+.solution-nav-button.is-active,
+.solution-nav-button.is-conclusion,
+.solution-topbar-action,
+.solution-primary-action,
+.solution-action-btn.is-primary {
+    border-color: var(--solution-accent);
+    background: var(--solution-accent);
+    color: #ffffff;
+}
+
+.solution-nav-button.is-active:hover,
+.solution-nav-button.is-conclusion:hover,
+.solution-topbar-action:hover,
+.solution-topbar-action:focus-visible,
+.solution-primary-action:hover,
+.solution-primary-action:focus-visible,
+.solution-action-btn.is-primary:hover {
+    background: var(--solution-accent-strong);
+    border-color: var(--solution-accent-strong);
+    color: #ffffff;
+    transform: none;
+}
+
+.solution-loading-bar,
+.solution-loading-progress {
+    background: var(--solution-cyan-soft);
+}
+
+.solution-loading-progress {
+    background: var(--solution-cyan);
+}
+
+.solution-share-input {
+    border-color: var(--solution-border);
+    background: #FAFAFA;
+    color: var(--solution-text);
+}
+
+@media (max-width: 640px) {
+    .solution-mobile-nav {
+        display: none !important;
+    }
+
+    .solution-action-bar {
+        position: static !important;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 12px;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .solution-action-btn {
+        min-height: 42px;
+        padding-inline: 16px;
+    }
+
+    .solution-main {
+        padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
 /* =========================================================================
    PRO MAX+ UX: McKinsey-Style Print Masterpiece
    ========================================================================= */

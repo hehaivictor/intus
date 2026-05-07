@@ -1,0 +1,163 @@
+{
+  "name": "product-ui-flow",
+  "description": "产品 UI 壳层、入口显隐、工作台任务启动、全局搜索、库页和 Agent 能力页改动，优先保留真实状态边界并做浏览器回归。",
+  "risk_level": "medium",
+  "doctor_profile": "local",
+  "guardrails_suite": "minimal",
+  "smoke_suite": "extended",
+  "strict_doctor": false,
+  "docs": [
+    "docs/agent/plans/manus-style-replica.md",
+    "docs/agent/README.md",
+    "web/AGENTS.md",
+    "web/app_modules/AGENTS.md",
+    "docs/agent/auth-identity.md",
+    "docs/agent/report-solution.md",
+    "docs/agent/admin-ops.md"
+  ],
+  "mission": {
+    "summary": "把产品 UI 壳层类需求先收口成“用户从哪里开始任务、如何找回资产、哪些高风险状态必须可见”的使命，再进入浏览器回归与专项实现。",
+    "desired_outcomes": [
+      "先明确本次影响的是工作台入口、导航、搜索、库页、能力页还是登录与 License gate",
+      "先保留账号、License、报告、方案和管理员中心的真实状态边界，再做视觉极简化",
+      "先定义需要留存的截图、browser smoke 和专项测试证据，再进入大面积 UI 改造"
+    ],
+    "acceptance_criteria": [
+      "登录、License gate、报告生成、方案页和管理员中心入口仍然可见且状态语义不被削弱",
+      "工作台首屏能直接启动任务，并能找回最近会话、报告、方案和帮助入口",
+      "浏览器回归覆盖登录前端视图、License 门禁、报告详情、方案入口和管理员配置中心"
+    ],
+    "non_goals": [
+      "不要引入第二套前端框架或平行 harness 控制面",
+      "不要为了复刻视觉而绕开现有鉴权、owner、instance_scope 或 readonly 边界",
+      "不要把产品 UI 壳层改造成营销落地页"
+    ],
+    "risks": [
+      "低噪声视觉容易误删高风险状态提示，必须用专项测试和截图确认",
+      "侧边导航、搜索和库页会触达多个视图入口，局部改动容易破坏已有切换链路",
+      "Manus 风格以简洁为主，但 Intus 的运维与 License 状态不能被隐藏"
+    ],
+    "evidence_expectations": [
+      "docs/agent/plans/manus-style-replica.md",
+      "artifacts/harness-runs/latest.json",
+      "artifacts/harness-runs/latest-progress.md",
+      "artifacts/harness-runs/latest-failure-summary.md",
+      "python3 scripts/agent_browser_smoke.py --suite extended"
+    ]
+  },
+  "planner": {
+    "summary": "先把 UI 壳层变更拆成设计 token、登录与 License gate、工作台启动器、侧边导航、全局搜索、库页、Agent 能力页和高风险页面一致性，再按阶段 checkpoint 执行。",
+    "scope_focus": [
+      "先确认目标页面、状态边界和必须保留的真实入口",
+      "优先复用现有 Alpine.js 状态、视图切换和 Intus harness，不引入新前端框架",
+      "每阶段只处理一个 UI 面，完成后保留验证命令、截图或 artifact"
+    ],
+    "acceptance_focus": [
+      "工作台首屏变为任务输入器优先，同时保留最近任务和运行状态",
+      "导航、搜索、库页和能力页均接入真实 Intus 流程，不展示不可用假入口",
+      "License、管理员、报告和方案页的风险状态在新视觉中仍可直接识别"
+    ],
+    "non_goals": [
+      "不要做像素级抄袭或复刻 Manus 品牌资产",
+      "不要重写后端接口、权限模型或报告生成链路",
+      "不要提交本地截图、运行数据或 ignored artifact"
+    ],
+    "risks": [
+      "浏览器 smoke 依赖 Playwright 环境，首次运行可能需要安装依赖",
+      "大文件 `web/index.html` 和 `web/app.js` 容易产生跨阶段混改，需要按 checkpoint 控制范围",
+      "字体与颜色调整会影响全部页面，需要在登录、工作台、报告和管理员页都做截图核对"
+    ],
+    "recommended_commands": [
+      "python3 scripts/agent_workflow.py --task product-ui-flow --execute plan",
+      "python3 scripts/agent_static_guardrails.py",
+      "python3 scripts/agent_browser_smoke.py --suite extended",
+      "python3 scripts/agent_harness.py --task product-ui-flow --observe --profile auto --artifact-dir artifacts/harness-runs"
+    ]
+  },
+  "playbook": {
+    "output": "docs/agent/playbooks/product-ui-flow.md",
+    "title": "产品 UI 壳层改造核对",
+    "summary": "把工作台、导航、搜索、库页和能力页改动收口到固定顺序：先保留状态边界，再改视觉结构，最后用 browser smoke 和专项测试验证。",
+    "when_to_use": [
+      "准备调整登录后工作台、顶部导航、侧边导航或任务启动入口",
+      "准备新增全局搜索、库页、Agents 能力页等产品壳层能力",
+      "需要判断 UI 极简化是否影响 License、报告、方案页或管理员中心状态可见性"
+    ],
+    "command_blocks": [
+      {
+        "commands": [
+          "python3 scripts/agent_workflow.py --task product-ui-flow --execute plan",
+          "python3 scripts/agent_static_guardrails.py",
+          "python3 scripts/agent_browser_smoke.py --suite extended"
+        ]
+      },
+      {
+        "intro": "如改动触达报告、方案页、分享或管理员中心，再补：",
+        "commands": [
+          "python3 -m unittest tests.test_solution_payload",
+          "python3 -m unittest tests.test_security_regression"
+        ]
+      },
+      {
+        "intro": "阶段收口时落盘 harness 证据：",
+        "commands": [
+          "python3 scripts/agent_harness.py --task product-ui-flow --observe --profile auto --artifact-dir artifacts/harness-runs"
+        ]
+      }
+    ],
+    "artifact_files": [
+      "docs/agent/plans/manus-style-replica.md",
+      "artifacts/harness-runs/latest.json",
+      "artifacts/harness-runs/latest-progress.md",
+      "artifacts/harness-runs/latest-failure-summary.md",
+      "浏览器截图或 browser smoke 输出"
+    ],
+    "focus_points": [
+      "登录、License gate、报告、方案页和管理员中心是否仍能直接识别状态",
+      "工作台任务输入器、侧边导航、搜索、库页和 Agents 页是否接入真实流程",
+      "移动端断点下侧栏、按钮、chip 和弹层文本是否溢出或遮挡",
+      "蓝色是否只用于链接、进度或状态，不再主导品牌视觉"
+    ],
+    "manual_confirmations": [
+      "移除或隐藏 License、管理员中心、报告生成状态、分享只读提示等高风险 UI",
+      "引入新的前端框架、构建链路或外部设计系统依赖",
+      "修改鉴权、owner、instance_scope、readonly 或 License enforcement 逻辑"
+    ]
+  },
+  "workflow": {
+    "mode": "verify_first",
+    "steps": [
+      {
+        "id": "read-plan",
+        "title": "先读 Manus 风格复刻阶段计划",
+        "detail": "阅读 docs/agent/plans/manus-style-replica.md，确认当前阶段、checkpoint、恢复规则和需要验证的页面范围。"
+      },
+      {
+        "id": "static-guardrails",
+        "title": "跑源码级静态 guardrail",
+        "command": "python3 scripts/agent_static_guardrails.py"
+      },
+      {
+        "id": "browser-smoke",
+        "title": "跑扩展浏览器 UI smoke",
+        "command": "python3 scripts/agent_browser_smoke.py --suite extended"
+      },
+      {
+        "id": "sensitive-ui-tests",
+        "title": "触达高风险页面时补专项回归",
+        "executor": "unittest",
+        "quiet": true,
+        "cases": [
+          {
+            "test_id": "tests.test_solution_payload",
+            "label": "方案页载荷专项回归"
+          },
+          {
+            "test_id": "tests.test_security_regression",
+            "label": "安全与权限回归"
+          }
+        ]
+      }
+    ]
+  }
+}

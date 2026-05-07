@@ -1084,6 +1084,19 @@ function buildApiHandler(baseUrl, options = {}) {
       });
       return;
     }
+    if (method === 'POST' && pathname === '/api/sessions/session-report-001/report-readiness') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: json({
+          ready: true,
+          can_generate: true,
+          message: '',
+          report_profile: 'balanced',
+        }),
+      });
+      return;
+    }
     if (method === 'POST' && pathname === '/api/sessions/session-report-001/generate-report') {
       const now = nowIso();
       reportGenerationStatusBySession['session-report-001'] = {
@@ -1299,6 +1312,10 @@ async function runWithPage(browser, baseUrl, initScript, callback, initArg = und
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1080 },
     ...(contextOptions || {}),
+  });
+  await context.addInitScript(() => {
+    localStorage.setItem('intus_intro_seen', 'true');
+    localStorage.setItem('intus_guide_seen', 'true');
   });
   if (initScript) {
     await context.addInitScript(initScript, initArg);
@@ -1642,6 +1659,11 @@ async function scenarioSolutionShare(browser, baseUrl) {
   return '方案页成功渲染，分享面板可打开并写入匿名只读链接';
 }
 
+async function openAdminCenterFromAccountMenu(page) {
+  await page.getByLabel('账号与外观设置').click({ timeout: 15000 });
+  await page.locator('.account-menu button:has-text("管理员中心")').first().click({ timeout: 15000 });
+}
+
 async function scenarioAdminConfigEntry(browser, baseUrl) {
   await runWithPage(
     browser,
@@ -1651,7 +1673,7 @@ async function scenarioAdminConfigEntry(browser, baseUrl) {
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('button:has-text("管理员中心")').first().click({ timeout: 15000 });
+      await openAdminCenterFromAccountMenu(page);
       await page.waitForSelector('h2:has-text("管理员中心")', { timeout: 15000 });
     },
   );
@@ -2137,7 +2159,7 @@ async function scenarioAdminConfigTab(browser, baseUrl) {
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('button:has-text("管理员中心")').first().click({ timeout: 15000 });
+      await openAdminCenterFromAccountMenu(page);
       await page.locator('button:has-text("配置中心")').first().click({ timeout: 15000 });
       await page.waitForSelector('h3:has-text("配置中心")', { timeout: 15000 });
       await page.waitForSelector('text=AI 配置', { timeout: 15000 });

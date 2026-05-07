@@ -115,7 +115,7 @@
 - 高风险 workflow 步骤现在会额外校验 `confirmation_token`、`backup_dir` 和 `produces_artifact`；不要只看命令返回码
 - 高风险 workflow 的 apply/rollback 现在还会强制校验治理字段；执行前补齐 `change_reason / operator / approver / ticket`
 - task workflow 现在支持前置条件检查；已内置 `account_exists`、`user_exists`、`active_license_exists`、`path_exists`、`requires_admin_session`、`requires_browser_env`、`requires_live_backend`
-- 8 个内置 task 现在都带 planner / mission 元数据；一句话需求会先落成 `artifacts/planner/missions/by-task/<task>/latest.json`，再进入 Planner Artifact
+- 9 个内置 task 现在都带 planner / mission 元数据；一句话需求会先落成 `artifacts/planner/missions/by-task/<task>/latest.json`，再进入 Planner Artifact
 - 高风险 task 现在已全部接入 Sprint Contract，workflow、evaluator 和 handoff 会共享完成标准、硬失败条件与证据要求
 - `agent_planner.py` 现在会同步维护 `artifacts/planner/missions/by-task/<task>/latest.json` 与 `artifacts/planner/by-task/<task>/latest.json`；workflow、harness、evaluator、failure-summary 与 handoff 会共同引用 mission + plan 指针
 - evaluator 现在已接入 `tests/harness_calibration/*.json` 校准样本；命中样本后，progress / failure-summary / handoff 会直接带出评分依据与 source refs
@@ -160,8 +160,8 @@
 - 现有测试大多会把 `DATA_DIR`、鉴权库和索引库切到临时目录；新增测试时优先沿用这种隔离方式，避免污染仓库下的 `data/`。
 - `--artifact-dir` 会把 `summary.json`、分阶段 JSON、stdout/stderr 和 `latest.json` 指针写到指定目录，适合交接和失败排查。
 - 开启 `--artifact-dir` 后，还会写出 `progress.md`、`failure-summary.md`、`handoff.json`、`latest-progress.md`、`latest-failure-summary.md` 和 `latest-handoff.json`。
-- 当前内置 task 画像包括 `report-solution`、`presentation-export`、`account-merge`、`license-audit`、`license-admin`、`ownership-migration`、`config-center`、`cloud-import`，配置文件位于 `resources/harness/tasks/*.json`。
-- 当前 8 个内置 task 都已具备 planner / mission 入口；高风险 task 的 Sprint Contract 覆盖率保持 100%。
+- 当前内置 task 画像包括 `report-solution`、`presentation-export`、`account-merge`、`license-audit`、`license-admin`、`ownership-migration`、`config-center`、`cloud-import`、`product-ui-flow`，配置文件位于 `resources/harness/tasks/*.json`。
+- 当前 9 个内置 task 都已具备 planner / mission 入口；高风险 task 的 Sprint Contract 覆盖率保持 100%。
 - task-backed playbook 默认由 `resources/harness/tasks/*.json` 生成，修改任务画像后优先运行 `python3 scripts/agent_playbook_sync.py` 或 `--check`。
 - 场景语料文件位于 `tests/harness_scenarios/**/*.json`，新增线上事故回归时优先补对应 `unittest`，再挂入场景文件。
 - 高频操作 playbook 位于 `docs/agent/playbooks/*.md`，默认先按 playbook 收集证据，再决定是否进入高风险步骤。

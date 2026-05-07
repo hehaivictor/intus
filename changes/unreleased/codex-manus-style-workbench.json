@@ -2,11 +2,16 @@
   "schemaVersion": 1,
   "branch": "codex/manus-style-workbench",
   "baseRef": "origin/main",
-  "sourceCommit": "4847024",
-  "committedAt": "2026-05-07T21:22:35+08:00",
+  "sourceCommit": "e8a6dfb",
+  "committedAt": "2026-05-07T21:45:27+08:00",
   "versionType": "minor",
-  "title": "Phase 7：落地 Intus Agents 能力页",
+  "title": "Phase 8：统一报告方案与管理员视觉",
   "changes": [
+    "样式：将报告详情和管理员中心收敛到黑白灰低噪声组件体系。",
+    "方案页：把方案视图从深色舞台调整为 Intus 工作台一致的浅色风格。",
+    "交互：保留报告方案入口、公开分享只读和管理员配置中心原有链路。",
+    "文档：更新 Phase 8 checkpoint 并回填 Phase 7 提交号。",
+    "Phase 7：落地 Intus Agents 能力页",
     "功能：新增 Agents 能力卡片，覆盖访谈、报告、方案、导出、License 和配置中心。",
     "交互：能力卡片复用现有工作台、报告页、账号设置和管理员中心入口。",
     "样式：补充低噪声 Agents 页面布局、卡片和移动端适配。",
@@ -66,6 +71,8 @@
     "web/app_modules/session_list_state.js",
     "web/index.html",
     "web/site-config.js",
+    "web/solution.css",
+    "web/solution.html",
     "web/styles.css"
   ]
 }

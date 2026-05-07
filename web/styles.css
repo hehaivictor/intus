@@ -3258,6 +3258,129 @@ html[data-theme="dark"] .dv-report-markdown-body :is(h2, h3).is-highlighted {
     }
 }
 
+/* Phase 8: 报告与管理员中心收敛到当前 Manus 风格壳层 */
+.dv-report-surface-shell > .flex:first-child,
+.dv-admin-shell > .flex:first-child {
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    box-shadow: var(--dv-shadow-card);
+}
+
+.dv-report-surface-shell h2,
+.dv-admin-shell h2,
+.dv-report-title {
+    font-family: var(--dv-font-display);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-report-surface-shell :is(.rounded-xl, .rounded-2xl),
+.dv-admin-shell :is(.rounded-xl, .rounded-2xl) {
+    border-radius: var(--dv-radius-sm);
+}
+
+.dv-report-sidebar-card,
+.dv-report-header,
+.dv-report-overview-card,
+.dv-report-body-shell,
+.dv-report-mobile-nav-card {
+    border-color: var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    box-shadow: var(--dv-shadow-card);
+}
+
+.dv-report-sidebar-label,
+.dv-report-kicker,
+.dv-report-overview-label,
+.dv-report-inline-toc-label,
+.dv-report-sidebar-card h4 {
+    color: var(--dv-color-text-muted);
+    letter-spacing: 0.08em;
+}
+
+.dv-report-sidebar-link:hover,
+.dv-report-mobile-nav-link:hover,
+.dv-report-sidebar-link.is-current,
+.dv-report-mobile-nav-link.is-current {
+    background: #F4F4F5;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-report-sidebar-link.is-active,
+.dv-report-mobile-nav-link.is-active {
+    border-color: #D4D4D8;
+}
+
+.dv-report-sidebar-link.is-active:not(.is-current),
+.dv-report-mobile-nav-link.is-active:not(.is-current) {
+    background: #FAFAFA;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-report-sidebar-index {
+    background: #F4F4F5;
+    color: var(--dv-color-text-secondary);
+}
+
+.dv-report-sidebar-progress span {
+    background: var(--dv-color-progress);
+}
+
+.dv-report-meta-pill,
+.dv-report-mobile-pill {
+    border-color: var(--dv-color-border);
+    background: #FAFAFA;
+    color: var(--dv-color-text-secondary);
+}
+
+.dv-report-mobile-pill.is-active,
+.dv-report-mobile-pill:hover {
+    border-color: #D4D4D8;
+    background: #F4F4F5;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-admin-tabbar {
+    align-items: center;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #FAFAFA;
+    padding: 0.25rem;
+}
+
+.dv-admin-tab {
+    min-height: 2.25rem;
+    border-radius: calc(var(--dv-radius-sm) - 2px);
+    box-shadow: none;
+}
+
+.dv-admin-tab.bg-blue-700 {
+    border-color: var(--dv-color-brand) !important;
+    background: var(--dv-color-brand) !important;
+    color: #ffffff !important;
+}
+
+.dv-admin-tab.bg-white {
+    color: var(--dv-color-text-secondary) !important;
+}
+
+.dv-admin-shell .hover\:bg-blue-800:hover,
+.dv-admin-shell .hover\:bg-blue-700:hover,
+.dv-report-surface-shell .hover\:bg-blue-800:hover,
+.dv-report-surface-shell .hover\:bg-blue-700:hover {
+    background-color: var(--dv-color-brand-hover) !important;
+}
+
+.dv-admin-shell .text-blue-600,
+.dv-admin-shell .text-blue-700,
+.dv-report-surface-shell .text-blue-600,
+.dv-report-surface-shell .text-blue-700 {
+    color: var(--dv-color-text-secondary) !important;
+}
+
 /* 输入框样式 */
 input[type="text"],
 input[type="email"],

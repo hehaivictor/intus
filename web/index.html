@@ -2707,7 +2707,7 @@
 
             <!-- ========== 报告视图 ========== -->
             <template x-if="currentView === 'reports'">
-                <div class="space-y-4 md:space-y-6">
+                <div class="dv-report-surface-shell space-y-4 md:space-y-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <h2 class="text-xl md:text-2xl font-semibold text-primary">访谈报告</h2>
@@ -3151,47 +3151,47 @@
             </template>
 
             <template x-if="currentView === 'admin'">
-                <div class="space-y-5 md:space-y-6">
+                <div class="dv-admin-shell space-y-5 md:space-y-6">
                     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
                         <div>
                             <p class="text-xs font-semibold tracking-[0.18em] text-primary/70 uppercase">Admin Center</p>
                             <h2 class="text-2xl md:text-3xl font-semibold text-primary mt-1">管理员中心</h2>
                             <p class="text-sm text-muted mt-2">集中管理 License 生命周期、配置中心、运行监控、摘要缓存和账号归属迁移。</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2">
+                        <div class="dv-admin-tabbar flex flex-wrap items-center gap-2">
                             <button @click="switchAdminTab('overview')"
                                     :class="adminTab === 'overview' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 总览
                             </button>
                             <button @click="switchAdminTab('usage')"
                                     :class="adminTab === 'usage' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 用户统计
                             </button>
                             <button @click="switchAdminTab('license')"
                                     :class="adminTab === 'license' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 License
                             </button>
                             <button @click="switchAdminTab('ops')"
                                     :class="adminTab === 'ops' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 运行监控
                             </button>
                             <button @click="switchAdminTab('summaries')"
                                     :class="adminTab === 'summaries' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 摘要缓存
                             </button>
                             <button @click="switchAdminTab('ownership')"
                                     :class="adminTab === 'ownership' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 账号归属迁移
                             </button>
                             <button @click="switchAdminTab('config')"
                                     :class="adminTab === 'config' ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-secondary border-gray-200 hover:bg-gray-50'"
-                                    class="px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
+                                    class="dv-admin-tab px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
                                 配置中心
                             </button>
                         </div>

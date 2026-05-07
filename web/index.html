@@ -44,24 +44,21 @@
     <link rel="stylesheet" href="vendor/css/fonts.css">
     <style>
         .fangsong-quote {
-            font-family: "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
-            font-weight: bold;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", "FangSong", "仿宋", "STFangsong", "华文仿宋", serif;
+            font-weight: 500;
         }
         /* Logo 品牌样式 */
         .brand-title {
-            font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #171717 0%, #404040 50%, #525252 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-            letter-spacing: -0.03em;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #09090B;
+            font-weight: 650;
+            letter-spacing: 0;
         }
         .brand-title-cn {
-            color: #000000;
-            font-family: 'ZCOOL XiaoWei', serif;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            color: #09090B;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+            font-weight: 500;
+            letter-spacing: 0;
         }
         .logo-icon {
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
@@ -74,7 +71,7 @@
             }
             50% {
                 transform: scale(1.04);
-                filter: drop-shadow(0 4px 14px rgba(29, 78, 216, 0.28));
+                filter: drop-shadow(0 4px 14px rgba(9, 9, 11, 0.18));
             }
         }
         html[data-theme="light"] .logo-icon:not(.logo-searching) {
@@ -127,7 +124,7 @@
             content: "";
             position: absolute;
             inset: 0;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2750%27%20height%3D%2714%27%20viewBox%3D%270%200%2050%2014%27%3E%3Ctext%20x%3D%270%27%20y%3D%2710%27%20font-family%3D%27Fira%20Code%2C%20SFMono-Regular%2C%20ui-monospace%2C%20monospace%27%20font-size%3D%279%27%20fill%3D%27rgba(53%2C123%2C226%2C0.22)%27%20letter-spacing%3D%272%27%3E010101%3C/text%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2750%27%20height%3D%2714%27%20viewBox%3D%270%200%2050%2014%27%3E%3Ctext%20x%3D%270%27%20y%3D%2710%27%20font-family%3D%27SFMono-Regular%2C%20ui-monospace%2C%20monospace%27%20font-size%3D%279%27%20fill%3D%27rgba(63%2C63%2C70%2C0.18)%27%20letter-spacing%3D%272%27%3E010101%3C/text%3E%3C/svg%3E");
             background-repeat: repeat-x;
             background-size: 50px 14px;
             animation: binary-flow-wave 4.6s linear infinite;
@@ -149,12 +146,12 @@
             }
         }
         .btn-sage-blue {
-            background-color: #1D4ED8 !important;
-            border: 1px solid #1D4ED8;
+            background-color: #18181B !important;
+            border: 1px solid #18181B;
         }
         .btn-sage-blue:hover {
-            background-color: #1E40AF !important;
-            border-color: #1E40AF;
+            background-color: #27272A !important;
+            border-color: #27272A;
         }
         /* 呼吸灯动画 */
         @keyframes breathing {
@@ -328,21 +325,22 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#000000',
-                        secondary: '#525252',
-                        cta: '#000000',
-                        'cta-hover': '#262626',
+                        primary: '#09090B',
+                        secondary: '#3F3F46',
+                        cta: '#18181B',
+                        'cta-hover': '#27272A',
                         surface: '#FFFFFF',
                         'surface-secondary': '#FAFAFA',
-                        text: '#000000',
-                        muted: '#6B7280',  // gray-500, 对比度 7.0:1
-                        border: '#E5E5E5',
+                        text: '#09090B',
+                        muted: '#71717A',
+                        border: '#E4E4E7',
                         success: '#22C55E',
                         warning: '#737373',
-                        danger: '#000000'
+                        danger: '#18181B'
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        display: ['Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'serif']
                     },
                     borderRadius: {
                         'xl': '0.75rem',
@@ -2701,6 +2699,15 @@
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                                 </svg>
                                                 <span>生成精审版</span>
+                                            </button>
+                                            <button type="button"
+                                                    x-show="canViewSolutionPage()"
+                                                    @click="openSolutionPage()"
+                                                    class="report-action-secondary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h8m0 0l-3-3m3 3l-3 3M5 7h6M5 11h3M5 15h3"/>
+                                                </svg>
+                                                查看方案
                                             </button>
                                             <div class="flex flex-col gap-1" x-show="isPresentationEnabled() && canGeneratePresentation()">
                                                 <button @click="isPresentationGeneratingCurrentReport() ? stopPresentationGeneration() : generatePresentation()"

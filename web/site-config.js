@@ -73,41 +73,41 @@ const SITE_CONFIG = {
     ]
   },
   "colors": {
-    "primary": "#1D4ED8",
+    "primary": "#18181B",
     "success": "#22C55E",
-    "progressComplete": "#1D4ED8"
+    "progressComplete": "#2563EB"
   },
   "designTokens": {
     "light": {
       "colors": {
-        "brand": "#1D4ED8",
-        "brandHover": "#1E40AF",
-        "textPrimary": "#0F172A",
-        "textSecondary": "#475569",
-        "textMuted": "#64748B",
+        "brand": "#18181B",
+        "brandHover": "#27272A",
+        "textPrimary": "#09090B",
+        "textSecondary": "#3F3F46",
+        "textMuted": "#71717A",
         "surface": "#FFFFFF",
-        "surfaceSecondary": "#F8FAFC",
-        "border": "#E2E8F0",
+        "surfaceSecondary": "#FAFAFA",
+        "border": "#E4E4E7",
         "success": "#22C55E",
         "warning": "#F59E0B",
         "danger": "#EF4444",
-        "overlay": "rgba(15, 23, 42, 0.5)"
+        "overlay": "rgba(9, 9, 11, 0.46)"
       }
     },
     "dark": {
       "colors": {
-        "brand": "#60A5FA",
-        "brandHover": "#93C5FD",
-        "textPrimary": "#E6EDF5",
-        "textSecondary": "#B7C4D4",
-        "textMuted": "#95A3B6",
-        "surface": "#1F242C",
-        "surfaceSecondary": "#151A21",
-        "border": "#3A4655",
+        "brand": "#F4F4F5",
+        "brandHover": "#FFFFFF",
+        "textPrimary": "#F4F4F5",
+        "textSecondary": "#D4D4D8",
+        "textMuted": "#A1A1AA",
+        "surface": "#18181B",
+        "surfaceSecondary": "#09090B",
+        "border": "#3F3F46",
         "success": "#4ADE80",
         "warning": "#FACC15",
         "danger": "#FB7185",
-        "overlay": "rgba(3, 8, 18, 0.66)"
+        "overlay": "rgba(3, 3, 4, 0.66)"
       }
     },
     "radius": {
@@ -123,9 +123,9 @@ const SITE_CONFIG = {
       "spacious": "1.5rem"
     },
     "shadow": {
-      "card": "0 8px 24px rgba(15, 23, 42, 0.08)",
-      "modal": "0 26px 64px rgba(15, 23, 42, 0.28)",
-      "focus": "0 0 0 3px rgba(29, 78, 216, 0.2)"
+      "card": "0 1px 2px rgba(9, 9, 11, 0.06)",
+      "modal": "0 24px 56px rgba(9, 9, 11, 0.24)",
+      "focus": "0 0 0 3px rgba(24, 24, 27, 0.14)"
     },
     "zIndex": {
       "dropdown": 40,
@@ -139,27 +139,27 @@ const SITE_CONFIG = {
     "locked": true,
     "options": {
       "rational": {
-        "label": "科技理性",
+        "label": "黑白工作台",
         "light": {
           "colors": {
-            "brand": "#1D4ED8",
-            "brandHover": "#1E40AF",
-            "overlay": "rgba(15, 23, 42, 0.5)"
+            "brand": "#18181B",
+            "brandHover": "#27272A",
+            "overlay": "rgba(9, 9, 11, 0.46)"
           },
           "shadow": {
-            "card": "0 8px 24px rgba(15, 23, 42, 0.08)",
-            "modal": "0 26px 64px rgba(15, 23, 42, 0.28)"
+            "card": "0 1px 2px rgba(9, 9, 11, 0.06)",
+            "modal": "0 24px 56px rgba(9, 9, 11, 0.24)"
           }
         },
         "dark": {
           "colors": {
-            "brand": "#60A5FA",
-            "brandHover": "#93C5FD",
-            "overlay": "rgba(3, 8, 18, 0.66)"
+            "brand": "#F4F4F5",
+            "brandHover": "#FFFFFF",
+            "overlay": "rgba(3, 3, 4, 0.66)"
           },
           "shadow": {
-            "card": "0 10px 30px rgba(1, 7, 17, 0.34)",
-            "modal": "0 30px 66px rgba(1, 4, 10, 0.62)"
+            "card": "0 1px 2px rgba(0, 0, 0, 0.28)",
+            "modal": "0 30px 66px rgba(0, 0, 0, 0.58)"
           }
         }
       }
@@ -184,14 +184,14 @@ const SITE_CONFIG = {
   "a11y": {
     "minContrastAA": 4.5,
     "focusRing": {
-      "borderColorLight": "#1D4ED8",
-      "borderColorDark": "#60A5FA",
-      "ringColorLight": "rgba(29, 78, 216, 0.2)",
-      "ringColorDark": "rgba(96, 165, 250, 0.22)",
-      "ringStrongLight": "rgba(29, 78, 216, 0.42)",
-      "ringStrongDark": "rgba(96, 165, 250, 0.48)",
+      "borderColorLight": "#18181B",
+      "borderColorDark": "#F4F4F5",
+      "ringColorLight": "rgba(24, 24, 27, 0.14)",
+      "ringColorDark": "rgba(244, 244, 245, 0.18)",
+      "ringStrongLight": "rgba(24, 24, 27, 0.28)",
+      "ringStrongDark": "rgba(244, 244, 245, 0.36)",
       "underlayLight": "rgba(255, 255, 255, 0.92)",
-      "underlayDark": "rgba(21, 27, 36, 0.96)"
+      "underlayDark": "rgba(24, 24, 27, 0.96)"
     },
     "toast": {
       "atomic": true,

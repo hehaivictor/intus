@@ -2,11 +2,16 @@
   "schemaVersion": 1,
   "branch": "codex/manus-style-workbench",
   "baseRef": "origin/main",
-  "sourceCommit": "fe1d3c8",
-  "committedAt": "2026-05-07T18:44:37+08:00",
+  "sourceCommit": "87c59ba",
+  "committedAt": "2026-05-07T19:08:58+08:00",
   "versionType": "minor",
-  "title": "建立 Manus 工作台复刻执行台账",
+  "title": "Phase 1：统一 Manus 风格基础视觉系统",
   "changes": [
+    "前端：统一黑白灰设计 token、品牌按钮与焦点状态",
+    "字体：接入中文衬线展示字体回退并降低标题字重",
+    "测试：修复 browser smoke 管理员入口、方案入口和报告预检 mock",
+    "文档：更新 Manus 复刻计划 checkpoint 与本地截图忽略规则",
+    "建立 Manus 工作台复刻执行台账",
     "文档：新增 Manus 风格工作台复刻阶段计划和恢复规则",
     "Harness：新增 product-ui-flow 任务画像并同步 playbook 与索引",
     "测试：按任务画像动态数量校验 agent ops 覆盖率",
@@ -23,6 +28,10 @@
     "docs/agent/playbooks/README.md",
     "docs/agent/playbooks/product-ui-flow.md",
     "resources/harness/tasks/product-ui-flow.json",
-    "tests/test_scripts_comprehensive.py"
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/index.html",
+    "web/site-config.js",
+    "web/styles.css"
   ]
 }

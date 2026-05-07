@@ -80,4 +80,5 @@ artifacts/planner/
 
 # Local generated visual artifacts
 artifacts/logo-smoke/
+artifacts/manus-style-phase*/
 output/

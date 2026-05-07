@@ -98,11 +98,11 @@ python3 scripts/agent_ops.py task-gap
 
 **步骤：**
 
-- [ ] 审查 `web/index.html` Tailwind token、`web/styles.css` 和 `web/site-config.js` 的颜色与字体残留。
-- [ ] 在 `web/styles.css` 增加 `:root` 级 Manus 风格 token 和字体类。
-- [ ] 调整 Tailwind `brand` token 与 `site-config.js` 展示色。
-- [ ] 运行静态 guardrail。
-- [ ] 用浏览器截图核对登录前页面和当前会话页的基础色调。
+- [x] 审查 `web/index.html` Tailwind token、`web/styles.css` 和 `web/site-config.js` 的颜色与字体残留。
+- [x] 在 `web/styles.css` 增加 `:root` 级 Manus 风格 token 和字体类。
+- [x] 调整 Tailwind `brand` token 与 `site-config.js` 展示色。
+- [x] 运行静态 guardrail。
+- [x] 用浏览器截图核对登录前页面和当前会话页的基础色调。
 - [ ] 提交 Phase 1。
 
 ### Phase 2：登录与 License gate 视觉统一
@@ -247,8 +247,8 @@ python3 scripts/agent_ops.py task-gap
 
 | 阶段 | 状态 | 证据 | 提交 |
 | --- | --- | --- | --- |
-| Phase 0 | 已完成 | `agent_playbook_sync --check`、`agent_workflow --task product-ui-flow --execute plan`、`agent_ops.py task-gap`、`agent_doc_gardener.py`、`agent_static_guardrails.py`、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`、`git diff --check`、`agent_heartbeat.py` | 待提交 |
-| Phase 1 | 未开始 | 设计 token、字体与基础截图 | 待提交 |
+| Phase 0 | 已完成 | `agent_playbook_sync --check`、`agent_workflow --task product-ui-flow --execute plan`、`agent_ops.py task-gap`、`agent_doc_gardener.py`、`agent_static_guardrails.py`、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`、`git diff --check`、`agent_heartbeat.py` | `38fa54c` |
+| Phase 1 | 已完成 | `node --check scripts/agent_browser_smoke_runner.mjs`、`node --check web/site-config.js`、`node --check web/app.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_workflow.py --task product-ui-flow --execute plan`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`（94 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase1/login.png` / `artifacts/manus-style-phase1/home.png` | 本阶段提交 |
 | Phase 2 | 未开始 | 登录与 License gate 截图、security regression | 待提交 |
 | Phase 3 | 未开始 | 工作台输入器截图、browser smoke | 待提交 |
 | Phase 4 | 未开始 | 侧边导航桌面/移动截图、browser smoke | 待提交 |

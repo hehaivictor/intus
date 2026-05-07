@@ -229,6 +229,34 @@ class ComprehensiveApiTests(unittest.TestCase):
             sess["user_id"] = int(user["id"])
             sess["auth_instance_id"] = str(self.server.get_auth_instance_id() or "")
 
+    def test_default_site_config_quotes_match_intus_rotation_copy(self):
+        values = self.server._read_admin_site_config_values(
+            self.server.get_admin_site_config_file_path(),
+            strict=True,
+        )
+        quotes = values.get("quotes") or {}
+        expected_items = [
+            {"text": "知人者智，自知者明", "source": "——老子《道德经》"},
+            {"text": "凡事预则立，不预则废", "source": "——《礼记·中庸》"},
+            {"text": "见微以知萌，见端以知末", "source": "——韩非《韩非子·说林上》"},
+            {"text": "致广大而尽精微", "source": "——《礼记·中庸》"},
+            {"text": "兼听则明，偏信则暗", "source": "——司马光《资治通鉴》"},
+            {"text": "君子生非异也，善假于物也", "source": "——荀子《劝学》"},
+            {"text": "求木之长者，必固其根本", "source": "——魏征《谏太宗十思疏》"},
+            {"text": "尽信书，则不如无书", "source": "——孟子《孟子·尽心下》"},
+            {"text": "操千曲而后晓声，观千剑而后识器", "source": "——刘勰《文心雕龙·知音》"},
+            {"text": "不畏浮云遮望眼，自缘身在最高层", "source": "——王安石《登飞来峰》"},
+        ]
+
+        self.assertTrue(quotes.get("enabled"))
+        self.assertEqual(10000, quotes.get("interval"))
+        self.assertEqual(expected_items, quotes.get("items"))
+        self.assertEqual(10, len(quotes.get("items") or []))
+
+        texts = {item.get("text") for item in quotes.get("items", [])}
+        self.assertNotIn("千里之行始于足下，万象之理源于细微", texts)
+        self.assertNotIn("水下80%，才是真相", texts)
+
     def _generate_license_batch(
         self,
         *,

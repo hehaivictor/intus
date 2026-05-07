@@ -1562,14 +1562,12 @@
                     <section class="dv-agents-grid" aria-label="Agents 能力">
                         <template x-for="agent in getAgentCapabilityCards()" :key="agent.key">
                             <button type="button" class="dv-agent-card" @click="activateAgentCapability(agent.key)">
-                                <span class="dv-library-type" x-text="agent.category"></span>
                                 <span class="dv-agent-card-main">
                                     <span class="dv-agent-title" x-text="agent.title"></span>
                                     <span class="dv-agent-desc" x-text="agent.description"></span>
                                 </span>
                                 <span class="dv-agent-card-foot">
                                     <span x-text="agent.meta"></span>
-                                    <strong x-text="agent.actionLabel"></strong>
                                 </span>
                             </button>
                         </template>
@@ -2635,38 +2633,6 @@
             <!-- ========== 报告视图 ========== -->
             <template x-if="currentView === 'reports'">
                 <div class="dv-report-surface-shell space-y-4 md:space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-xl md:text-2xl font-semibold text-primary">访谈报告</h2>
-                            <p class="text-muted text-sm mt-1">查看和管理已生成的访谈报告</p>
-                        </div>
-                    </div>
-
-                    <!-- 搜索和筛选栏 -->
-                    <div class="bg-surface border border-border rounded-xl p-3 md:p-4" x-show="!selectedReport">
-                        <div class="flex flex-col gap-3">
-                            <!-- 搜索框 -->
-                            <div class="relative flex-1">
-                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                                <input type="text"
-                                       x-model="reportSearchQuery"
-                                       @input="onReportSearchInput()"
-                                       placeholder="搜索报告名称或场景..."
-                                       class="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                                <button x-show="reportSearchQuery"
-                                        @click="reportSearchQuery = ''; filterReports()"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-
                     <div x-show="!selectedReport" x-cloak class="space-y-4">
                             <div class="flex items-center gap-2 text-sm text-muted" x-show="filteredReports.length > 0 || reportBatchMode">
                                 <span>共 <span x-text="filteredReports.length"></span> 条</span>
@@ -2815,8 +2781,8 @@
                                 <template x-if="reports.length > 0">
                                     <div>
                                         <h3 class="text-lg font-medium text-gray-600 mb-2">未找到匹配的报告</h3>
-                                        <p class="text-muted mb-4">尝试调整搜索关键词或筛选条件</p>
-                                        <button @click="reportSearchQuery = ''; reportSortOrder = 'newest'; reportGroupBy = 'none'; filterReports()"
+                                        <p class="text-muted mb-4">尝试恢复默认显示方式</p>
+                                        <button @click="reportSortOrder = 'newest'; reportGroupBy = 'none'; filterReports()"
                                                 class="text-primary hover:text-primary/80 text-sm font-medium cursor-pointer">
                                             清除筛选条件
                                         </button>

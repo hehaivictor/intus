@@ -51,7 +51,7 @@ quotes: {
   enabled: true,
   interval: 10000,
   items: [
-    { text: '路漫漫其修远兮，吾将上下而求索', source: '——屈原《离骚》' }
+    { text: '知人者智，自知者明', source: '——老子《道德经》' }
   ]
 }
 ```
@@ -107,9 +107,9 @@ api: {
 ```javascript
 quotes: {
   enabled: true,
-  interval: 15000,
+  interval: 10000,
   items: [
-    { text: '路漫漫其修远兮，吾将上下而求索', source: '——屈原《离骚》' }
+    { text: '知人者智，自知者明', source: '——老子《道德经》' }
   ]
 }
 ```
@@ -150,7 +150,7 @@ const SITE_CONFIG = {
     enabled: true,
     interval: 10000,
     items: [
-      { text: '路漫漫其修远兮，吾将上下而求索', source: '——屈原《离骚》' }
+      { text: '知人者智，自知者明', source: '——老子《道德经》' }
     ]
   },
   colors: {

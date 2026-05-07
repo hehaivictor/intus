@@ -385,9 +385,16 @@ function intusApp() {
         quotes: (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.quotes?.items)
             ? SITE_CONFIG.quotes.items
             : [
-                { text: '路漫漫其修远兮，吾将上下而求索', source: '——屈原《离骚》' },
-                { text: '问渠那得清如许，为有源头活水来', source: '——朱熹《观书有感》' },
-                { text: '千里之行始于足下，万象之理源于细微', source: '——老子《道德经》' }
+                { text: '知人者智，自知者明', source: '——老子《道德经》' },
+                { text: '凡事预则立，不预则废', source: '——《礼记·中庸》' },
+                { text: '见微以知萌，见端以知末', source: '——韩非《韩非子·说林上》' },
+                { text: '致广大而尽精微', source: '——《礼记·中庸》' },
+                { text: '兼听则明，偏信则暗', source: '——司马光《资治通鉴》' },
+                { text: '君子生非异也，善假于物也', source: '——荀子《劝学》' },
+                { text: '求木之长者，必固其根本', source: '——魏征《谏太宗十思疏》' },
+                { text: '尽信书，则不如无书', source: '——孟子《孟子·尽心下》' },
+                { text: '操千曲而后晓声，观千剑而后识器', source: '——刘勰《文心雕龙·知音》' },
+                { text: '不畏浮云遮望眼，自缘身在最高层', source: '——王安石《登飞来峰》' }
             ],
         currentQuoteIndex: 0,
         currentQuote: '',  // 初始化时动态设置
@@ -530,7 +537,6 @@ function intusApp() {
                 sessionSortOrder: String(this.sessionSortOrder || 'newest'),
                 sessionGroupBy: String(this.sessionGroupBy || 'none'),
                 currentPage: Number.isFinite(Number(this.currentPage)) ? Math.max(1, Math.floor(Number(this.currentPage))) : 1,
-                reportSearchQuery: String(this.reportSearchQuery || ''),
                 reportSortOrder: String(this.reportSortOrder || 'newest'),
                 reportGroupBy: String(this.reportGroupBy || 'none'),
                 sessionsLoaded: Boolean(this.sessionsLoaded),
@@ -590,7 +596,6 @@ function intusApp() {
             this.sessionStatusFilter = String(payload.sessionStatusFilter || 'all') || 'all';
             this.sessionSortOrder = String(payload.sessionSortOrder || 'newest') || 'newest';
             this.sessionGroupBy = String(payload.sessionGroupBy || 'none') || 'none';
-            this.reportSearchQuery = String(payload.reportSearchQuery || '');
             this.reportSortOrder = String(payload.reportSortOrder || 'newest') || 'newest';
             this.reportGroupBy = String(payload.reportGroupBy || 'none') || 'none';
             this.currentPage = Number.isFinite(Number(payload.currentPage))
@@ -1471,50 +1476,24 @@ function intusApp() {
             return [
                 {
                     key: 'interview',
-                    category: '访谈',
-                    title: '访谈助手',
-                    description: '从一句业务问题进入访谈，自动生成选择题与追问。',
-                    meta: '工作台',
-                    actionLabel: '开始访谈',
-                    keywords: ['访谈', '会话', '追问']
+                    title: '🌱报告发芽',
+                    description: '另一个角度去审视访谈报告',
+                    meta: '即将上线',
+                    keywords: ['报告发芽', '访谈报告', '审视']
                 },
                 {
                     key: 'report',
-                    category: '报告',
-                    title: '报告生成',
-                    description: '基于访谈记录查看报告、生成报告并跟踪生成状态。',
-                    meta: '报告列表',
-                    actionLabel: '查看报告',
-                    keywords: ['报告', '生成', '详情']
+                    title: '⭕️圆桌会议',
+                    description: '让全球顶级大佬为你的访谈报告建言献策',
+                    meta: '即将上线',
+                    keywords: ['圆桌会议', '建言献策', '报告']
                 },
                 {
                     key: 'export',
-                    category: '导出',
-                    title: '导出与归档',
-                    description: '在报告详情中导出 Markdown、PDF、DOCX 或附录。',
+                    title: '📄方案生成',
+                    description: '将访谈报告一键生成可演示的方案 PPT',
                     meta: this.hasAnyReportDownloadOption() ? '已开放' : '按级别开放',
-                    actionLabel: '选择报告',
-                    keywords: ['导出', '下载', '归档']
-                },
-                {
-                    key: 'license',
-                    category: 'License',
-                    title: 'License 管理',
-                    description: this.canViewAdminCenter()
-                        ? '进入管理员中心查看授权、批次、绑定和有效期。'
-                        : '查看当前账号授权状态和绑定信息。',
-                    meta: this.canViewAdminCenter() ? '管理员' : '账号设置',
-                    actionLabel: this.canViewAdminCenter() ? '进入管理' : '查看账号',
-                    keywords: ['license', '授权', '账号']
-                },
-                {
-                    key: 'config',
-                    category: '配置',
-                    title: '配置中心',
-                    description: '集中查看 env、config.py 与 site-config 的运行配置。',
-                    meta: this.canViewAdminCenter() ? '管理员' : '需管理员',
-                    actionLabel: this.canViewAdminCenter() ? '打开配置' : '查看说明',
-                    keywords: ['配置', 'config', '运维', '管理员']
+                    keywords: ['方案生成', 'PPT', '演示']
                 }
             ];
         },

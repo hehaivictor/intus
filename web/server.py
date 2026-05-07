@@ -3093,7 +3093,7 @@ ADMIN_SITE_SETTINGS_GROUPS: list[dict[str, Any]] = [
                 "quotes.items",
                 "诗句列表（JSON）",
                 description="使用 JSON 数组，每项包含 text 和 source 字段。",
-                placeholder='[\n  {\n    "text": "浮冰之上是表象，深渊之下是答案",\n    "source": ""\n  }\n]',
+                placeholder='[\n  {\n    "text": "知人者智，自知者明",\n    "source": "——老子《道德经》"\n  }\n]',
                 requires_restart=False,
                 value_codec="json",
             ),

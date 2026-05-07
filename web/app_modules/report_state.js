@@ -34,10 +34,8 @@
         reportToDelete: null,
         reportBatchMode: false,
         selectedReportNames: [],
-        reportSearchQuery: '',
         reportSortOrder: 'newest',
         reportGroupBy: 'none',
-        reportSearchDebounceTimer: null,
         appendixExportOutsideHandler: null,
         selectedReportMeta: {
             name: '',
@@ -517,15 +515,6 @@
             }
         },
 
-        onReportSearchInput() {
-            if (this.reportSearchDebounceTimer) {
-                clearTimeout(this.reportSearchDebounceTimer);
-            }
-            this.reportSearchDebounceTimer = setTimeout(() => {
-                this.filterReports();
-            }, 300);
-        },
-
         filterReports() {
             let result = Array.isArray(this.reports)
                 ? this.reports.map(report => {
@@ -537,16 +526,6 @@
                     };
                 })
                 : [];
-
-            if (this.reportSearchQuery.trim()) {
-                const query = this.reportSearchQuery.toLowerCase();
-                result = result.filter(r => {
-                    const reportName = r.name?.toLowerCase() || '';
-                    const displayTitle = (r.display_title || '').toLowerCase();
-                    const scenarioName = (r.scenario_name || '').toLowerCase();
-                    return reportName.includes(query) || displayTitle.includes(query) || scenarioName.includes(query);
-                });
-            }
 
             switch (this.reportSortOrder) {
                 case 'oldest':

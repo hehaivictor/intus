@@ -1738,9 +1738,68 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
       if (agentsHeroCount > 0) {
         throw new Error('Agents 页不应继续显示顶部 hero 区');
       }
+      const agentCards = page.locator('.dv-agent-card:visible');
+      const agentCardCount = await agentCards.count();
+      if (agentCardCount !== 3) {
+        throw new Error(`Agents 页应只显示 3 张业务能力卡片，当前为 ${agentCardCount}`);
+      }
+      const agentsText = await page.locator('.dv-agents-shell').innerText();
+      for (const hiddenText of ['License 管理', '配置中心', 'License', '配置', '访谈助手', '报告生成', '导出与归档', '开始访谈', '查看报告', '选择报告']) {
+        if (agentsText.includes(hiddenText)) {
+          throw new Error(`Agents 页不应继续显示“${hiddenText}”`);
+        }
+      }
+      for (const expectedText of ['🌱报告发芽', '另一个角度去审视访谈报告', '⭕️圆桌会议', '让全球顶级大佬为你的访谈报告建言献策', '📄方案生成', '将访谈报告一键生成可演示的方案 PPT']) {
+        if (!agentsText.includes(expectedText)) {
+          throw new Error(`Agents 页缺少“${expectedText}”`);
+        }
+      }
+      const comingSoonCount = await page.locator('.dv-agent-card-foot:visible', { hasText: '即将上线' }).count();
+      if (comingSoonCount !== 2) {
+        throw new Error(`Agents 页应显示 2 个“即将上线”状态，当前为 ${comingSoonCount}`);
+      }
+      const categoryBadgeCount = await page.locator('.dv-agents-shell .dv-library-type:visible').count();
+      if (categoryBadgeCount > 0) {
+        throw new Error('Agents 卡片不应继续显示顶部类型标签');
+      }
+      const footActionCount = await page.locator('.dv-agent-card-foot strong:visible').count();
+      if (footActionCount > 0) {
+        throw new Error('Agents 卡片脚部不应继续显示右侧动作文案');
+      }
     },
   );
   return '侧栏、库页和 Agents 页冗余展示已收敛';
+}
+
+async function scenarioReportListTrim(browser, baseUrl) {
+  await runWithPage(
+    browser,
+    baseUrl,
+    () => {
+      localStorage.setItem('intus_intro_seen', 'true');
+    },
+    async (page) => {
+      await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
+      await page.getByRole('button', { name: '报告', exact: true }).click({ timeout: 15000 });
+      await page.waitForSelector('.dv-report-surface-shell', { timeout: 15000 });
+      await page.waitForSelector('[data-report-key="demo-report"]', { timeout: 15000 });
+
+      const reportIntroTitleCount = await page.locator('.dv-report-surface-shell h2:has-text("访谈报告"):visible').count();
+      if (reportIntroTitleCount > 0) {
+        throw new Error('报告列表页不应继续显示顶部“访谈报告”介绍标题');
+      }
+      const reportSearchInputCount = await page.locator('input[placeholder*="搜索报告"]:visible').count();
+      if (reportSearchInputCount > 0) {
+        throw new Error('报告列表页不应继续显示报告搜索框');
+      }
+      await page.getByRole('button', { name: '批量管理', exact: true }).waitFor({ timeout: 15000 });
+      const listSummaryText = await page.locator('.dv-report-surface-shell').innerText();
+      if (!listSummaryText.includes('共 1 条')) {
+        throw new Error(`报告列表页应保留统计信息，当前文本: ${safeText(listSummaryText)}`);
+      }
+    },
+  );
+  return '报告列表页顶部说明与搜索入口已移除，列表工具区保留';
 }
 
 async function openAdminCenterFromAccountMenu(page) {
@@ -2460,6 +2519,8 @@ async function executeScenario(browser, baseUrl, scenario, runtimeContext = {}) 
       detail = await scenarioWorkbenchComposerEntry(browser, baseUrl);
     } else if (scenario.id === 'sidebar-library-agents-trim') {
       detail = await scenarioSidebarLibraryAgentsTrim(browser, baseUrl);
+    } else if (scenario.id === 'report-list-trim') {
+      detail = await scenarioReportListTrim(browser, baseUrl);
     } else if (scenario.id === 'admin-config-entry') {
       detail = await scenarioAdminConfigEntry(browser, baseUrl);
     } else if (scenario.id === 'solution-public-readonly') {
@@ -2524,12 +2585,13 @@ function resolveSuite(name) {
     return {
       name: 'minimal',
       mode: 'mock',
-      description: '帮助页 + 方案页分享 + 工作台新建访谈入口 + 侧栏与库页精简 + 管理后台配置入口',
+      description: '帮助页 + 方案页分享 + 工作台新建访谈入口 + 侧栏、库页、报告页精简 + 管理后台配置入口',
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
         { id: 'workbench-composer-entry', label: '工作台新建访谈弹框入口' },
         { id: 'sidebar-library-agents-trim', label: '侧栏与库页 Agents 精简' },
+        { id: 'report-list-trim', label: '报告列表页精简' },
         { id: 'admin-config-entry', label: '设置菜单管理员入口' },
       ],
     };

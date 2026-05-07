@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "c2eb2f3",
+  "committedAt": "2026-05-08T00:52:20+08:00",
+  "versionType": "patch",
+  "title": "优化 Intus 工作台界面与名言配置",
+  "changes": [
+    "前端：精简库、Agents 和报告页冗余入口，补齐能力卡片图标。",
+    "配置：替换顶部名言文案并将轮播间隔统一为 10 秒。",
+    "测试：补充站点配置断言与浏览器 smoke 覆盖。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_api_comprehensive.py",
+    "web/CONFIG.md",
+    "web/app.js",
+    "web/app_modules/report_state.js",
+    "web/index.html",
+    "web/server.py",
+    "web/site-config.js"
+  ]
+}

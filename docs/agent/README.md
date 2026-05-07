@@ -107,7 +107,7 @@
 - 高风险 workflow 的 apply/rollback 现在还会强制校验治理字段；执行前补齐 `change_reason / operator / approver / ticket`
 - 内置高风险 task 还会先执行前置条件检查，例如目标账号存在、源目录存在、活跃 License 存在、管理员白名单是否就绪
 - workflow DSL 现已支持 `requires_admin_session`、`requires_browser_env`、`requires_live_backend` 三类环境语义，可用于把管理员会话、浏览器依赖和 live backend 条件机器化
-- 8 个内置 task 现在都已接入 planner / mission 元数据；一句话需求会先落成 `artifacts/planner/missions/by-task/<task>/latest.json`，再进入 Planner Artifact
+- 9 个内置 task 现在都已接入 planner / mission 元数据；一句话需求会先落成 `artifacts/planner/missions/by-task/<task>/latest.json`，再进入 Planner Artifact
 - 高风险 task 已全部接入 Sprint Contract；workflow、evaluator 和 handoff 工件会带上共享的完成标准与证据要求
 - `agent_planner.py` 现在会额外写 `artifacts/planner/missions/by-task/<task>/latest.json` 和 `artifacts/planner/by-task/<task>/latest.json`；workflow、harness、evaluator 和 handoff 会共同引用 mission + plan 指针，而不是只给一条命令入口
 - evaluator 现在已支持 `tests/harness_calibration/*.json` 校准样本；命中样本时，progress / failure-summary / handoff 会直接带出评分依据
@@ -149,10 +149,11 @@
 - `ownership-migration`：管理员归属迁移，默认先 audit / preview
 - `config-center`：配置中心修改，默认先读当前值和专项回归
 - `cloud-import`：外部本地 data 导入云端，默认先 dry-run
+- `product-ui-flow`：产品 UI 壳层、工作台、导航、搜索、库页和 Agent 能力页改造
 
 补充说明：
 
-- 当前 8 个 task 都已具备 planner / mission 入口。
+- 当前 9 个 task 都已具备 planner / mission 入口。
 - 高风险 task 的 Sprint Contract 覆盖率保持 `100%`。
 
 当前场景 evaluator 分类：
@@ -181,6 +182,7 @@
 - `license-audit`：License 状态、运行时开关和账号绑定审计
 - `license-admin`：License 生成、延期、撤销和运行时 enforcement 写入前核对
 - `config-center-verify`：配置中心写入前的运行态核对
+- `product-ui-flow`：产品 UI 壳层、工作台、导航、搜索、库页和能力页改造核对
 - 上述 playbook 均由 `resources/harness/tasks/*.json` 自动生成
 
 ## 共享原则

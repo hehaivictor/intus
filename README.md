@@ -35,7 +35,7 @@ Intus 是一个面向需求访谈、方案沉淀与交付输出的 AI Web 应用
 
 面向 Codex / agent 的最小仓库入口见 [AGENTS.md](AGENTS.md)，当前阶段与稳定入口见 [docs/agent/heartbeat.md](docs/agent/heartbeat.md)，仓库级物理地图见 [ARCHITECTURE.md](ARCHITECTURE.md)，领域分层说明见 [docs/agent/README.md](docs/agent/README.md)。
 高频任务标准流程、harness/evaluator、workflow、playbook、Mission Contract、Sprint Contract 与 Planner artifact 的详细入口，统一见 [docs/agent/README.md](docs/agent/README.md)。
-当前 8 个内置 task 都已具备 planner / mission 入口，高风险 task 的 Sprint Contract 覆盖率保持 `100%`。
+当前 9 个内置 task 都已具备 planner / mission 入口，高风险 task 的 Sprint Contract 覆盖率保持 `100%`。
 最近稳定经验摘要见 [docs/agent/memory-notes.md](docs/agent/memory-notes.md)，保守版后台巡检入口是 `python3 scripts/agent_autodream.py`。
 当前还提供了薄运营面入口 `python3 scripts/agent_ops.py status`，用于统一查看 phase、覆盖率、latest 指针和 blocker 摘要。
 下一阶段优化排期与执行台账见 [docs/agent/harness-iteration-plan-phase6.md](docs/agent/harness-iteration-plan-phase6.md) 和 [docs/agent/harness-progress-phase6.md](docs/agent/harness-progress-phase6.md)。

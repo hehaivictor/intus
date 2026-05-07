@@ -2,15 +2,27 @@
   "schemaVersion": 1,
   "branch": "codex/manus-style-workbench",
   "baseRef": "origin/main",
-  "sourceCommit": "8015291",
-  "committedAt": "2026-05-07T18:33:05+08:00",
-  "versionType": "patch",
-  "title": "忽略本地视觉生成产物",
+  "sourceCommit": "fe1d3c8",
+  "committedAt": "2026-05-07T18:44:37+08:00",
+  "versionType": "minor",
+  "title": "建立 Manus 工作台复刻执行台账",
   "changes": [
+    "文档：新增 Manus 风格工作台复刻阶段计划和恢复规则",
+    "Harness：新增 product-ui-flow 任务画像并同步 playbook 与索引",
+    "测试：按任务画像动态数量校验 agent ops 覆盖率",
+    "忽略本地视觉生成产物",
     "配置忽略 logo smoke 截图目录。",
     "配置忽略 imagegen 与浏览器截图输出目录。"
   ],
   "changedFiles": [
-    ".gitignore"
+    ".gitignore",
+    "AGENTS.md",
+    "README.md",
+    "docs/agent/README.md",
+    "docs/agent/plans/manus-style-replica.md",
+    "docs/agent/playbooks/README.md",
+    "docs/agent/playbooks/product-ui-flow.md",
+    "resources/harness/tasks/product-ui-flow.json",
+    "tests/test_scripts_comprehensive.py"
   ]
 }

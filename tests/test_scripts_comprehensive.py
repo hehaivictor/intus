@@ -2854,11 +2854,12 @@ class ComprehensiveScriptTests(unittest.TestCase):
             payload["phase"]["current_priority"],
             {"H6-6 Harness Ops Surface", "phase6 已完成，待新阶段计划"},
         )
-        self.assertEqual(8, payload["coverage"]["task_count"])
-        self.assertEqual(8, payload["coverage"]["planner_meta"])
-        self.assertEqual(8, payload["coverage"]["planner_materialized"])
-        self.assertEqual(8, payload["coverage"]["mission_meta"])
-        self.assertEqual(8, payload["coverage"]["mission_materialized"])
+        expected_task_count = len(agent_profiles.list_task_names())
+        self.assertEqual(expected_task_count, payload["coverage"]["task_count"])
+        self.assertEqual(expected_task_count, payload["coverage"]["planner_meta"])
+        self.assertEqual(expected_task_count, payload["coverage"]["planner_materialized"])
+        self.assertEqual(expected_task_count, payload["coverage"]["mission_meta"])
+        self.assertEqual(expected_task_count, payload["coverage"]["mission_materialized"])
         self.assertGreaterEqual(payload["coverage"]["high_risk_total"], payload["coverage"]["high_risk_contracts"])
         self.assertGreaterEqual(payload["coverage"]["calibration_samples"], 6)
         self.assertTrue(any("agent_ops.py status" in item for item in payload["recommended_commands"]))

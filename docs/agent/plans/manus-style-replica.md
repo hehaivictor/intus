@@ -191,7 +191,7 @@ python3 scripts/agent_ops.py task-gap
 - [x] 保留报告详情、方案入口和公开分享只读入口。
 - [x] 运行 browser smoke extended。
 - [x] 运行 `python3 -m unittest tests.test_solution_payload`。
-- [ ] 提交 Phase 6。
+- [x] 提交 Phase 6。
 
 ### Phase 7：Agent 化能力页
 
@@ -203,10 +203,10 @@ python3 scripts/agent_ops.py task-gap
 
 **步骤：**
 
-- [ ] 增加或重塑 `currentView === 'agents'`。
-- [ ] 将能力卡片绑定现有视图和动作。
-- [ ] 控制视觉层级，避免营销式大卡堆叠。
-- [ ] 运行 browser smoke extended。
+- [x] 增加或重塑 `currentView === 'agents'`。
+- [x] 将能力卡片绑定现有视图和动作。
+- [x] 控制视觉层级，避免营销式大卡堆叠。
+- [x] 运行 browser smoke extended。
 - [ ] 提交 Phase 7。
 
 ### Phase 8：报告、方案与管理员一致性
@@ -253,8 +253,8 @@ python3 scripts/agent_ops.py task-gap
 | Phase 3 | 已完成 | `node --check web/app_modules/session_list_state.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、中心输入器 Playwright 验证 `create-session=PASS`、截图：`artifacts/manus-style-phase3/workbench-desktop.png` / `artifacts/manus-style-phase3/workbench-mobile.png` | `53592f7` |
 | Phase 4 | 已完成 | `python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、截图：`artifacts/manus-style-phase4/sidebar-desktop.png` / `artifacts/manus-style-phase4/sidebar-mobile.png` | `da9ca5b` |
 | Phase 5 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、全局搜索 Playwright 验证 `global-search=PASS`、截图：`artifacts/manus-style-phase5/global-search-desktop.png` / `artifacts/manus-style-phase5/global-search-mobile.png` | `dd7b8f0` |
-| Phase 6 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`/Users/hehai/.local/bin/uv run --with ... python3 -m unittest tests.test_solution_payload`（32 tests OK）、`git diff --check`、库页 Playwright 验证 `library=PASS`、截图：`artifacts/manus-style-phase6/library-desktop.png` / `artifacts/manus-style-phase6/library-mobile.png` | 本阶段提交 |
-| Phase 7 | 未开始 | Agents 页截图、browser smoke | 待提交 |
+| Phase 6 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`/Users/hehai/.local/bin/uv run --with ... python3 -m unittest tests.test_solution_payload`（32 tests OK）、`git diff --check`、库页 Playwright 验证 `library=PASS`、截图：`artifacts/manus-style-phase6/library-desktop.png` / `artifacts/manus-style-phase6/library-mobile.png` | `60cb131` |
+| Phase 7 | 已完成 | `node --check web/app.js`、`node --check web/site-config.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、Agents 专项 Playwright 验证 `interview-focus/report-view/admin-config=PASS`、截图：`artifacts/manus-style-phase7/agents-desktop.png` / `artifacts/manus-style-phase7/agents-mobile.png` | 本阶段提交 |
 | Phase 8 | 未开始 | 报告/方案/管理员截图、security regression | 待提交 |
 | Phase 9 | 未开始 | harness auto + browser smoke artifact | 待提交 |
 

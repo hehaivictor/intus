@@ -739,6 +739,13 @@
                                 class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
                             <span>库</span>
                         </button>
+                        <button @click="switchView('agents')"
+                                aria-label="Agents"
+                                :class="getHeaderNavClass(currentView === 'agents')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span class="hidden sm:inline">Agents</span>
+                            <span class="sm:hidden">A</span>
+                        </button>
                         <button @click="switchView('reports')"
                                 aria-label="报告"
                                 :class="getHeaderNavClass(currentView === 'reports')"
@@ -1611,15 +1618,35 @@
             </template>
 
             <template x-if="currentView === 'agents'">
-                <div class="dv-shell-placeholder">
-                    <div>
-                        <h2>Agents</h2>
-                        <p>访谈、报告、方案和运维能力会在这里按任务呈现。</p>
-                    </div>
-                    <div class="dv-shell-placeholder-actions">
-                        <button type="button" class="btn-sage-blue text-white" @click="switchView('sessions'); focusWorkbenchTaskInput()">开始访谈</button>
-                        <button type="button" class="dv-workbench-chip" x-show="canViewAdminCenter()" x-cloak @click="openAdminCenter('overview')">管理员中心</button>
-                    </div>
+                <div class="dv-agents-shell">
+                    <section class="dv-agents-hero">
+                        <div class="dv-agents-mark" aria-hidden="true">✦</div>
+                        <div>
+                            <p class="dv-library-kicker">Agents</p>
+                            <h2>Intus Agents</h2>
+                            <p>把 Intus 的真实能力按任务入口组织起来。</p>
+                        </div>
+                        <div class="dv-library-actions">
+                            <button type="button" class="btn-sage-blue text-white" @click="switchView('sessions'); focusWorkbenchTaskInput()">开始访谈</button>
+                            <button type="button" class="dv-workbench-chip" @click="switchView('library')">打开库</button>
+                        </div>
+                    </section>
+
+                    <section class="dv-agents-grid" aria-label="Agents 能力">
+                        <template x-for="agent in getAgentCapabilityCards()" :key="agent.key">
+                            <button type="button" class="dv-agent-card" @click="activateAgentCapability(agent.key)">
+                                <span class="dv-library-type" x-text="agent.category"></span>
+                                <span class="dv-agent-card-main">
+                                    <span class="dv-agent-title" x-text="agent.title"></span>
+                                    <span class="dv-agent-desc" x-text="agent.description"></span>
+                                </span>
+                                <span class="dv-agent-card-foot">
+                                    <span x-text="agent.meta"></span>
+                                    <strong x-text="agent.actionLabel"></strong>
+                                </span>
+                            </button>
+                        </template>
+                    </section>
                 </div>
             </template>
 

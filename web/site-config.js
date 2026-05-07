@@ -255,6 +255,12 @@ const SITE_CONFIG = {
         "titleId": "dv-dialog-delete-report-title",
         "descId": "dv-dialog-delete-report-desc"
       },
+      "showGlobalSearchModal": {
+        "dialogId": "dv-dialog-global-search",
+        "titleId": "dv-dialog-global-search-title",
+        "descId": "dv-dialog-global-search-desc",
+        "initialFocus": "#global-search-input"
+      },
       "showSettingsModal": {
         "dialogId": "dv-dialog-settings",
         "titleId": "dv-dialog-settings-title",

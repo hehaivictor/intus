@@ -116,6 +116,10 @@ function intusApp() {
         effectiveTheme: 'light',
         visualPreset: (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG?.visualPresets?.default) || 'rational',
         showAccountMenu: false,
+        showGlobalSearchModal: false,
+        globalSearchQuery: '',
+        globalSearchLoading: false,
+        globalSearchLoadRequestId: 0,
         dialogFocusWatchRegistered: false,
         dialogFocusReturnTargets: {},
         dialogTabTrapRegistered: false,
@@ -132,6 +136,7 @@ function intusApp() {
             'showRestartModal',
             'showDeleteDocModal',
             'showDeleteReportModal',
+            'showGlobalSearchModal',
             'showSettingsModal',
             'showBindPhoneModal',
             'showAccountMergeModal',
@@ -969,6 +974,349 @@ function intusApp() {
 
         canViewAdminCenter() {
             return !!this.currentUser?.is_admin;
+        },
+
+        handleGlobalSearchShortcut(event) {
+            if (!event) return;
+            const key = String(event.key || '').toLowerCase();
+            if (key !== 'k' || (!event.metaKey && !event.ctrlKey)) return;
+            if (!this.authReady || this.authChecking || this.licenseChecking || this.licenseGateActive) return;
+            event.preventDefault();
+            if (this.showGlobalSearchModal) {
+                this.focusGlobalSearchInput();
+                return;
+            }
+            this.openGlobalSearch();
+        },
+
+        openGlobalSearch() {
+            if (!this.authReady || this.licenseGateActive) return;
+            if (typeof this.isAnyDialogVisible === 'function' && this.isAnyDialogVisible('showGlobalSearchModal')) {
+                return;
+            }
+            this.showAccountMenu = false;
+            this.showGlobalSearchModal = true;
+            this.$nextTick(() => this.focusGlobalSearchInput());
+            void this.ensureGlobalSearchData();
+        },
+
+        closeGlobalSearchModal() {
+            this.showGlobalSearchModal = false;
+        },
+
+        focusGlobalSearchInput() {
+            this.$nextTick(() => {
+                const input = document.querySelector('[data-global-search-input]');
+                if (input && typeof input.focus === 'function') {
+                    input.focus({ preventScroll: true });
+                }
+            });
+        },
+
+        clearGlobalSearchQuery() {
+            this.globalSearchQuery = '';
+            this.focusGlobalSearchInput();
+        },
+
+        async ensureGlobalSearchData() {
+            if (!this.authReady || this.licenseGateActive) return;
+            if (this.sessionsLoaded && this.reportsLoaded) return;
+            if (this.globalSearchLoading) return;
+
+            const requestId = this.globalSearchLoadRequestId + 1;
+            this.globalSearchLoadRequestId = requestId;
+            this.globalSearchLoading = true;
+            try {
+                const tasks = [];
+                if (!this.sessionsLoaded && typeof this.loadSessions === 'function') {
+                    tasks.push(this.loadSessions({
+                        silent: true,
+                        preserveListState: true,
+                        suppressErrorToast: true
+                    }));
+                }
+                if (!this.reportsLoaded && typeof this.loadReports === 'function') {
+                    tasks.push(this.loadReports({ suppressErrorToast: true }));
+                }
+                await Promise.all(tasks);
+            } finally {
+                if (this.globalSearchLoadRequestId === requestId) {
+                    this.globalSearchLoading = false;
+                }
+            }
+        },
+
+        normalizeGlobalSearchValue(value = '') {
+            return String(value ?? '').trim().toLowerCase();
+        },
+
+        getGlobalSearchTerms() {
+            return this.normalizeGlobalSearchValue(this.globalSearchQuery)
+                .split(/\s+/)
+                .filter(Boolean);
+        },
+
+        globalSearchEntryMatches(entry, terms = []) {
+            if (!entry || terms.length === 0) return true;
+            const keywords = Array.isArray(entry.keywords) ? entry.keywords : [];
+            const haystack = [
+                entry.category,
+                entry.title,
+                entry.description,
+                entry.meta,
+                ...keywords
+            ].map(value => this.normalizeGlobalSearchValue(value)).join('\n');
+            return terms.every(term => haystack.includes(term));
+        },
+
+        buildGlobalSearchNavigationEntries() {
+            const entries = [
+                {
+                    id: 'nav:workbench',
+                    category: '工作台',
+                    title: '工作台',
+                    description: '继续访谈或新建任务',
+                    meta: '会话入口',
+                    action: 'workbench',
+                    keywords: ['会话', '访谈', '任务', '开始']
+                },
+                {
+                    id: 'action:new-session',
+                    category: '操作',
+                    title: '新建访谈',
+                    description: '输入业务问题并创建访谈会话',
+                    meta: '创建',
+                    action: 'new-session',
+                    keywords: ['创建', '新建', '访谈', '会话']
+                },
+                {
+                    id: 'nav:reports',
+                    category: '报告',
+                    title: '报告列表',
+                    description: '查看已生成的访谈报告',
+                    meta: '报告入口',
+                    action: 'reports',
+                    keywords: ['报告', '详情', '生成']
+                },
+                {
+                    id: 'nav:solution',
+                    category: '方案',
+                    title: '方案页',
+                    description: '先选择报告，再打开对应方案页',
+                    meta: '方案入口',
+                    action: 'solution-home',
+                    keywords: ['方案', '解决方案', 'solution']
+                },
+                {
+                    id: 'nav:library',
+                    category: '库',
+                    title: '库',
+                    description: '汇总会话、报告、资料和方案',
+                    meta: '资源入口',
+                    action: 'library',
+                    keywords: ['资料', '资源', 'library']
+                },
+                {
+                    id: 'nav:agents',
+                    category: 'Agents',
+                    title: 'Agents',
+                    description: '查看 Intus 的任务能力入口',
+                    meta: '能力入口',
+                    action: 'agents',
+                    keywords: ['agent', 'agents', '能力', '助手']
+                },
+                {
+                    id: 'nav:help',
+                    category: '帮助',
+                    title: '帮助中心',
+                    description: '查看使用说明与常见问题',
+                    meta: '帮助入口',
+                    action: 'help',
+                    keywords: ['帮助', '说明', '文档']
+                }
+            ];
+
+            if (this.canViewAdminCenter()) {
+                entries.push({
+                    id: 'nav:admin',
+                    category: '管理员',
+                    title: '管理员中心',
+                    description: 'License、配置中心和运行监控',
+                    meta: '管理入口',
+                    action: 'admin',
+                    keywords: ['admin', '管理员', 'license', '配置', '运维']
+                });
+            }
+            return entries;
+        },
+
+        buildGlobalSearchSessionEntries() {
+            const sessions = Array.isArray(this.sessions) ? this.sessions : [];
+            return sessions.map((session) => {
+                const sessionId = String(session?.session_id || '').trim();
+                const title = String(session?.topic || '未命名会话').trim();
+                const status = typeof this.getEffectiveSessionStatus === 'function'
+                    ? this.getEffectiveSessionStatus(session)
+                    : String(session?.status || '').trim();
+                const statusText = typeof this.getStatusText === 'function'
+                    ? this.getStatusText(status)
+                    : (status || '会话');
+                const updatedAt = session?.updated_at || session?.created_at || '';
+                const dateText = updatedAt && typeof this.formatDate === 'function'
+                    ? this.formatDate(updatedAt)
+                    : '';
+                const scenarioName = String(session?.scenario_config?.name || '').trim();
+                return {
+                    id: `session:${sessionId || title}`,
+                    category: '会话',
+                    title,
+                    description: String(session?.description || scenarioName || '继续访谈会话').trim(),
+                    meta: [statusText, dateText].filter(Boolean).join(' · '),
+                    action: 'session',
+                    sessionId,
+                    updatedAt,
+                    keywords: [
+                        sessionId,
+                        title,
+                        session?.description,
+                        scenarioName,
+                        statusText
+                    ]
+                };
+            });
+        },
+
+        buildGlobalSearchReportEntries() {
+            const reports = Array.isArray(this.reports) ? this.reports : [];
+            return reports.flatMap((report) => {
+                const reportName = String(report?.name || '').trim();
+                if (!reportName) return [];
+                const matchedSession = typeof this.findMatchedSessionForReport === 'function'
+                    ? this.findMatchedSessionForReport(report)
+                    : null;
+                const displayTitle = typeof this.resolveReportDisplayTitle === 'function'
+                    ? this.resolveReportDisplayTitle(report, matchedSession)
+                    : (report?.title || reportName);
+                const scenarioName = typeof this.resolveReportScenarioName === 'function'
+                    ? this.resolveReportScenarioName(report, matchedSession)
+                    : String(report?.scenario_name || matchedSession?.scenario_config?.name || '').trim();
+                const createdAt = report?.created_at || report?.updated_at || '';
+                const dateText = createdAt && typeof this.formatDate === 'function'
+                    ? this.formatDate(createdAt)
+                    : '';
+                const baseKeywords = [
+                    reportName,
+                    displayTitle,
+                    scenarioName,
+                    matchedSession?.topic,
+                    matchedSession?.description
+                ];
+
+                return [
+                    {
+                        id: `report:${reportName}`,
+                        category: '报告',
+                        title: String(displayTitle || reportName).trim(),
+                        description: scenarioName || '打开报告详情',
+                        meta: ['报告', dateText].filter(Boolean).join(' · '),
+                        action: 'report',
+                        reportName,
+                        updatedAt: createdAt,
+                        keywords: baseKeywords
+                    },
+                    {
+                        id: `solution:${reportName}`,
+                        category: '方案',
+                        title: `方案：${String(displayTitle || reportName).trim()}`,
+                        description: '基于该报告打开方案页',
+                        meta: '方案页',
+                        action: 'solution',
+                        reportName,
+                        updatedAt: createdAt,
+                        keywords: [...baseKeywords, '方案', '解决方案', 'solution']
+                    }
+                ];
+            });
+        },
+
+        sortGlobalSearchEntries(entries = []) {
+            return [...entries].sort((a, b) => {
+                const aTime = this.parseValidTimestamp?.(a.updatedAt) || 0;
+                const bTime = this.parseValidTimestamp?.(b.updatedAt) || 0;
+                return bTime - aTime;
+            });
+        },
+
+        getGlobalSearchResults() {
+            const terms = this.getGlobalSearchTerms();
+            const navigationEntries = this.buildGlobalSearchNavigationEntries();
+            const sessionEntries = this.sortGlobalSearchEntries(this.buildGlobalSearchSessionEntries());
+            const reportEntries = this.sortGlobalSearchEntries(this.buildGlobalSearchReportEntries());
+
+            if (terms.length === 0) {
+                return [
+                    ...navigationEntries.slice(0, 5),
+                    ...sessionEntries.slice(0, 3),
+                    ...reportEntries.filter(entry => entry.action === 'report').slice(0, 2)
+                ].slice(0, 10);
+            }
+
+            return [
+                ...navigationEntries,
+                ...sessionEntries,
+                ...reportEntries
+            ].filter(entry => this.globalSearchEntryMatches(entry, terms)).slice(0, 12);
+        },
+
+        async activateGlobalSearchResult(result) {
+            if (!result || !result.action) return;
+            const action = String(result.action || '').trim();
+            const sessionId = String(result.sessionId || '').trim();
+            const reportName = String(result.reportName || '').trim();
+            this.closeGlobalSearchModal();
+
+            if (action === 'new-session') {
+                this.switchView('sessions');
+                this.openWorkbenchSessionComposer();
+                return;
+            }
+            if (action === 'workbench') {
+                this.switchView('sessions');
+                this.focusWorkbenchTaskInput();
+                return;
+            }
+            if (action === 'reports') {
+                this.switchView('reports');
+                return;
+            }
+            if (action === 'solution-home') {
+                this.openWorkbenchReportsForSolution();
+                return;
+            }
+            if (action === 'library' || action === 'agents') {
+                this.switchView(action);
+                return;
+            }
+            if (action === 'admin') {
+                this.openAdminCenter('overview');
+                return;
+            }
+            if (action === 'help') {
+                window.location.href = 'help.html';
+                return;
+            }
+            if (action === 'session' && sessionId) {
+                await this.openSession(sessionId);
+                return;
+            }
+            if (action === 'report' && reportName) {
+                this.switchView('reports');
+                await this.viewReport(reportName, { forceReload: false });
+                return;
+            }
+            if (action === 'solution' && reportName) {
+                this.openSolutionPage(reportName);
+            }
         },
 
         canManageAdminLicenses() {

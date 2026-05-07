@@ -115,11 +115,11 @@ python3 scripts/agent_ops.py task-gap
 
 **步骤：**
 
-- [ ] 定位 `web/index.html` 登录页和 License gate 区块。
-- [ ] 只调整结构、文案密度和视觉层级。
-- [ ] 保留现有 `auth_license_state.js` 数据契约。
-- [ ] 运行 `python3 scripts/agent_browser_smoke.py --suite extended`。
-- [ ] 运行 `python3 -m unittest tests.test_security_regression`。
+- [x] 定位 `web/index.html` 登录页和 License gate 区块。
+- [x] 只调整结构、文案密度和视觉层级。
+- [x] 保留现有 `auth_license_state.js` 数据契约。
+- [x] 运行 `python3 scripts/agent_browser_smoke.py --suite extended`。
+- [x] 使用 `uv run --with ... python3 -m unittest tests.test_security_regression` 补齐本地依赖后运行 security regression。
 - [ ] 提交 Phase 2。
 
 ### Phase 3：Manus 式任务启动器
@@ -248,8 +248,8 @@ python3 scripts/agent_ops.py task-gap
 | 阶段 | 状态 | 证据 | 提交 |
 | --- | --- | --- | --- |
 | Phase 0 | 已完成 | `agent_playbook_sync --check`、`agent_workflow --task product-ui-flow --execute plan`、`agent_ops.py task-gap`、`agent_doc_gardener.py`、`agent_static_guardrails.py`、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`、`git diff --check`、`agent_heartbeat.py` | `38fa54c` |
-| Phase 1 | 已完成 | `node --check scripts/agent_browser_smoke_runner.mjs`、`node --check web/site-config.js`、`node --check web/app.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_workflow.py --task product-ui-flow --execute plan`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`（94 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase1/login.png` / `artifacts/manus-style-phase1/home.png` | 本阶段提交 |
-| Phase 2 | 未开始 | 登录与 License gate 截图、security regression | 待提交 |
+| Phase 1 | 已完成 | `node --check scripts/agent_browser_smoke_runner.mjs`、`node --check web/site-config.js`、`node --check web/app.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_workflow.py --task product-ui-flow --execute plan`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`（94 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase1/login.png` / `artifacts/manus-style-phase1/home.png` | `6146959` |
+| Phase 2 | 已完成 | `python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 scripts/agent_static_guardrails.py`、`/Users/hehai/.local/bin/uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 python3 -m unittest tests.test_security_regression`（131 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase2/login.png` / `artifacts/manus-style-phase2/license-gate.png` | 本阶段提交 |
 | Phase 3 | 未开始 | 工作台输入器截图、browser smoke | 待提交 |
 | Phase 4 | 未开始 | 侧边导航桌面/移动截图、browser smoke | 待提交 |
 | Phase 5 | 未开始 | 搜索弹层截图、browser smoke | 待提交 |

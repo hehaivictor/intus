@@ -797,8 +797,8 @@
         </header>
 
         <template x-if="authChecking">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="bg-surface border border-border rounded-2xl p-8 shadow-sm w-full max-w-md text-center">
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel text-center">
                     <div class="w-10 h-10 mx-auto border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm text-muted">正在检查登录状态...</p>
                 </div>
@@ -806,11 +806,11 @@
         </template>
 
         <template x-if="!authChecking && !authReady">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="w-full max-w-md bg-surface border border-border rounded-2xl shadow-sm px-6 pb-6 pt-7 md:px-8 md:pb-8 md:pt-9 space-y-6">
-                    <div class="text-center space-y-2 pb-1">
-                        <h2 class="text-xl font-semibold text-primary">欢迎回来</h2>
-                        <p class="text-sm text-muted">登录后即可使用访谈与报告功能</p>
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel space-y-6">
+                    <div class="dv-auth-panel-header">
+                        <h2 class="dv-auth-title">欢迎回来</h2>
+                        <p class="dv-auth-subtitle">登录后即可使用访谈与报告功能</p>
                     </div>
 
                     <form class="space-y-4" @submit.prevent="submitAuth()" novalidate>
@@ -829,7 +829,7 @@
                                        inputmode="numeric"
                                        autocomplete="tel"
                                        placeholder="请输入手机号（11位）"
-                                       class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                       class="dv-auth-input"
                                        :aria-invalid="authErrors.account ? 'true' : 'false'"
                                        :aria-expanded="(authAccountSuggestionsOpen && getFilteredAuthAccountHistory().length > 0) ? 'true' : 'false'"
                                        aria-controls="auth-account-history-list"
@@ -877,13 +877,13 @@
                                            autocomplete="one-time-code"
                                            :maxlength="smsCodeLength"
                                            placeholder="请输入验证码"
-                                           class="flex-1 min-w-0 h-10 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                           class="dv-auth-input flex-1 min-w-0"
                                            :aria-invalid="authErrors.code ? 'true' : 'false'"
                                            required>
                                     <button type="button"
                                             @click="sendAuthCode()"
                                             :disabled="!canSendAuthCode()"
-                                            class="h-10 px-3 text-sm whitespace-nowrap rounded-lg border border-gray-200 text-primary hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5">
+                                            class="dv-auth-secondary-button px-3 text-sm whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5">
                                         <svg x-show="authCodeSending" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
                                             <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
@@ -905,7 +905,7 @@
                             </button>
                         </div>
 
-                        <p x-show="!smsLoginEnabled && !wechatLoginEnabled" x-cloak role="alert" class="text-xs text-danger">当前未启用可用登录方式，请联系管理员。</p>
+                        <p x-show="!smsLoginEnabled && !wechatLoginEnabled" x-cloak role="alert" class="dv-auth-alert">当前未启用可用登录方式，请联系管理员。</p>
 
                         <div x-show="wechatLoginEnabled" x-cloak class="space-y-3" :class="smsLoginEnabled ? 'pt-1' : ''">
                             <div x-show="smsLoginEnabled" x-cloak class="flex items-center gap-3">
@@ -916,7 +916,7 @@
                             <button type="button"
                                     @click="startWechatLogin()"
                                     :disabled="authLoading || wechatLoginLoading"
-                                    class="w-full px-5 py-2.5 rounded-lg font-medium border border-gray-200 text-primary hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                    class="dv-auth-secondary-button w-full px-5 py-2.5 font-medium cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 28 28" aria-hidden="true" style="color: #07C160;">
                                     <path fill="currentColor" fill-opacity="0.82" d="M18.9 10.2c4.5 0 8.1 2.9 8.1 6.5 0 2.1-1.2 4-3.1 5.2l.8 2.7c.1.4-.3.8-.7.6l-3.3-1.7c-.6.1-1.2.2-1.8.2-4.5 0-8.1-2.9-8.1-6.5s3.6-7 8.1-7Z"/>
                                     <path fill="currentColor" d="M10.6 4C5.3 4 1 7.6 1 12.1c0 2.5 1.4 4.8 3.8 6.3l-.9 3.2c-.1.4.3.8.7.6l3.8-2c.7.2 1.4.3 2.2.3 5.3 0 9.6-3.6 9.6-8.1S15.9 4 10.6 4Z"/>
@@ -934,8 +934,8 @@
         </template>
 
         <template x-if="!authChecking && authReady && licenseChecking">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="bg-surface border border-border rounded-2xl p-8 shadow-sm w-full max-w-md text-center">
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel text-center">
                     <div class="w-10 h-10 mx-auto border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     <p class="mt-4 text-sm text-muted">正在检查 License 状态...</p>
                 </div>
@@ -943,14 +943,14 @@
         </template>
 
         <template x-if="!authChecking && authReady && !licenseChecking && licenseGateActive">
-            <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 flex items-center justify-center">
-                <div class="w-full max-w-xl bg-surface border border-border rounded-2xl shadow-sm px-6 pb-6 pt-7 md:px-8 md:pb-8 md:pt-9 space-y-6">
-                    <div class="text-center space-y-2 pb-1">
-                        <h2 class="text-xl font-semibold text-primary" x-text="getLicenseGateTitle()"></h2>
-                        <p class="text-sm text-muted" x-text="getLicenseGateDescription()"></p>
+            <main class="dv-auth-shell">
+                <div class="dv-auth-panel dv-auth-panel--wide space-y-6">
+                    <div class="dv-auth-panel-header">
+                        <h2 class="dv-auth-title" x-text="getLicenseGateTitle()"></h2>
+                        <p class="dv-auth-subtitle" x-text="getLicenseGateDescription()"></p>
                     </div>
 
-                    <div class="rounded-xl border border-border bg-gray-50/80 px-4 py-4 space-y-3">
+                    <div class="dv-auth-status-card space-y-3">
                         <div class="flex items-center justify-between gap-3 text-sm">
                             <span class="text-muted">当前状态</span>
                             <span class="font-medium text-primary" x-text="getLicenseStatusLabel()"></span>
@@ -984,7 +984,7 @@
                                    type="text"
                                    autocomplete="off"
                                    placeholder="请输入管理员发放的 License"
-                                   class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                   class="dv-auth-input"
                                    :aria-invalid="licenseActivationError ? 'true' : 'false'"
                                    required>
                             <p x-show="licenseActivationError" x-text="licenseActivationError" role="alert" class="mt-1 text-xs text-red-500"></p>
@@ -1001,13 +1001,13 @@
                         </button>
                     </form>
 
-                    <div class="flex items-center justify-between gap-3 text-sm">
+                    <div class="dv-auth-footer">
                         <div class="text-muted">
                             <span>剩余有效期：</span>
                             <span x-text="getLicenseRemainingText()"></span>
                         </div>
                         <button @click="logout()"
-                                class="text-primary hover:text-cta transition-colors font-medium">
+                                class="text-primary hover:text-cta transition-colors font-medium cursor-pointer">
                             退出登录
                         </button>
                     </div>

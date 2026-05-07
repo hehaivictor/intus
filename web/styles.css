@@ -73,6 +73,135 @@ body {
     letter-spacing: 0;
 }
 
+.dv-auth-shell {
+    min-height: clamp(34rem, calc(100vh - 9.5rem), 46rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) 1rem;
+}
+
+.dv-auth-panel {
+    width: 100%;
+    max-width: 28rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--dv-shadow-card);
+    padding: clamp(1.5rem, 4vw, 2rem);
+}
+
+.dv-auth-panel--wide {
+    max-width: 34rem;
+}
+
+.dv-auth-panel-header {
+    text-align: center;
+    padding-bottom: 0.25rem;
+}
+
+.dv-auth-title {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    font-weight: 650;
+    color: var(--dv-color-text-primary);
+    letter-spacing: 0;
+}
+
+.dv-auth-subtitle {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--dv-color-text-muted);
+}
+
+.dv-auth-input {
+    width: 100%;
+    min-height: 2.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    padding: 0.625rem 0.75rem;
+    transition:
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        box-shadow var(--dv-duration-base) var(--dv-ease-standard),
+        background-color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-auth-input::placeholder {
+    color: #A1A1AA;
+}
+
+.dv-auth-input:focus {
+    outline: none;
+    border-color: var(--dv-focus-border-color);
+    box-shadow: var(--dv-shadow-focus);
+}
+
+.dv-auth-secondary-button {
+    min-height: 2.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-auth-secondary-button:hover {
+    border-color: #D4D4D8;
+    background: #FAFAFA;
+}
+
+.dv-auth-status-card {
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #FAFAFA;
+    padding: 1rem;
+}
+
+.dv-auth-alert {
+    border: 1px solid #FECACA;
+    border-radius: var(--dv-radius-sm);
+    background: #FEF2F2;
+    color: #B91C1C;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.dv-auth-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--dv-color-text-muted);
+    font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+    .dv-auth-shell {
+        min-height: calc(100vh - 8rem);
+        padding: 1rem;
+    }
+
+    .dv-auth-panel {
+        padding: 1.25rem;
+    }
+
+    .dv-auth-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
 .dv-display-title {
     font-family: var(--dv-font-display);
     font-weight: 500;

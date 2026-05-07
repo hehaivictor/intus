@@ -208,6 +208,268 @@ body {
     letter-spacing: 0;
 }
 
+.dv-workbench-shell {
+    width: 100%;
+}
+
+.dv-workbench-launcher {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+    gap: 1.25rem;
+    align-items: stretch;
+}
+
+.dv-workbench-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 18rem;
+    padding: clamp(1rem, 3vw, 2.25rem) 0;
+}
+
+.dv-workbench-heading {
+    max-width: 44rem;
+}
+
+.dv-workbench-title {
+    font-family: var(--dv-font-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.08;
+    font-weight: 500;
+    color: var(--dv-color-text-primary);
+    letter-spacing: 0;
+}
+
+.dv-workbench-subtitle {
+    margin-top: 0.75rem;
+    color: var(--dv-color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.dv-workbench-command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    width: min(100%, 48rem);
+    margin-top: 1.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
+    padding: 0.5rem;
+}
+
+.dv-workbench-command:focus-within {
+    border-color: var(--dv-focus-border-color);
+    box-shadow: var(--dv-shadow-focus);
+}
+
+.dv-workbench-command-input {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding-left: 0.75rem;
+}
+
+.dv-workbench-task-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--dv-color-text-primary);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.dv-workbench-task-input:focus {
+    outline: none;
+}
+
+.dv-workbench-task-input::placeholder {
+    color: #A1A1AA;
+}
+
+.dv-workbench-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    min-width: 7.5rem;
+    border-radius: var(--dv-radius-sm);
+    padding: 0 1rem;
+    font-weight: 600;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        opacity var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-workbench-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.dv-workbench-chip,
+.dv-workbench-new-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    color: var(--dv-color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0 0.75rem;
+    cursor: pointer;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-workbench-chip:hover,
+.dv-workbench-new-btn:hover {
+    border-color: #D4D4D8;
+    background: #FAFAFA;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-workbench-side {
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    align-self: center;
+    min-height: 15rem;
+}
+
+.dv-workbench-side-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 650;
+}
+
+.dv-workbench-active,
+.dv-workbench-recent-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.dv-workbench-recent {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: var(--dv-radius-sm);
+    background: #FAFAFA;
+    padding: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-workbench-recent:hover {
+    border-color: #D4D4D8;
+    background: #ffffff;
+}
+
+.dv-workbench-recent.is-active {
+    border-color: rgba(37, 99, 235, 0.28);
+    background: rgba(37, 99, 235, 0.06);
+}
+
+.dv-workbench-recent-title,
+.dv-workbench-recent-meta {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-workbench-recent-title {
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.dv-workbench-recent-meta {
+    margin-top: 0.25rem;
+    color: var(--dv-color-text-muted);
+    font-size: 0.75rem;
+}
+
+.dv-workbench-empty {
+    margin-top: 0.75rem;
+    border: 1px dashed var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    color: var(--dv-color-text-muted);
+    font-size: 0.875rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.dv-workbench-list-head {
+    border-top: 1px solid var(--dv-color-border);
+    padding-top: 1rem;
+}
+
+.dv-workbench-search-input {
+    width: 100%;
+    min-height: 2.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    padding: 0.5rem 2rem 0.5rem 2.25rem;
+}
+
+.dv-workbench-search-input:focus {
+    outline: none;
+    border-color: var(--dv-focus-border-color);
+    box-shadow: var(--dv-shadow-focus);
+}
+
+@media (max-width: 900px) {
+    .dv-workbench-launcher {
+        grid-template-columns: 1fr;
+    }
+
+    .dv-workbench-side {
+        align-self: stretch;
+    }
+}
+
+@media (max-width: 640px) {
+    .dv-workbench-main {
+        min-height: auto;
+        padding-top: 0.5rem;
+    }
+
+    .dv-workbench-command {
+        grid-template-columns: 1fr;
+    }
+
+    .dv-workbench-submit {
+        width: 100%;
+    }
+}
+
 .dv-overlay {
     background: var(--dv-color-overlay);
     backdrop-filter: blur(3px);

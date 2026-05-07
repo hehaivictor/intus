@@ -1058,47 +1058,105 @@
 
             <!-- ========== 会话管理视图 ========== -->
             <template x-if="currentView === 'sessions'">
-                <div class="space-y-4 md:space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-xl md:text-2xl font-semibold text-primary">访谈会话</h2>
-                            <p class="text-muted text-sm mt-1">管理您的访谈会话</p>
-                        </div>
-                        <button data-guide="guide-new-session"
-                                x-show="!sessionBatchMode"
-                                @click="resetScenarioSelection(); showNewSessionModal = true"
-                                class="btn-sage-blue text-white px-5 py-2.5 rounded-lg font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2 w-full sm:w-auto">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            新建访谈
-                        </button>
-                    </div>
-
-                    <!-- 搜索和筛选栏 -->
-                    <div class="bg-surface border border-border rounded-xl p-3 md:p-4" x-show="!selectedReport">
-                        <div class="flex flex-col gap-3">
-                            <!-- 搜索框 -->
-                            <div class="relative flex-1">
-                                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <div class="dv-workbench-shell space-y-5 md:space-y-7">
+                    <section class="dv-workbench-launcher">
+                        <div class="dv-workbench-main">
+                            <div class="dv-workbench-heading">
+                                <h2 class="dv-workbench-title">访谈会话</h2>
+                                <p class="dv-workbench-subtitle">把一个业务问题交给 Intus</p>
+                            </div>
+                            <form class="dv-workbench-command" @submit.prevent="newSessionDescription = ''; resetScenarioSelection(); createNewSession()">
+                                <div class="dv-workbench-command-input">
+                                    <svg class="w-5 h-5 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636"/>
                                     </svg>
                                     <input type="text"
-                                           x-model="sessionSearchQuery"
-                                           @input="onSessionSearchInput()"
-                                           placeholder="搜索访谈主题..."
-                                           class="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                                    <button x-show="sessionSearchQuery"
-                                            @click="sessionSearchQuery = ''; filterSessions()"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
+                                           data-workbench-task-input
+                                           x-model="newSessionTopic"
+                                           @input="onTopicInput()"
+                                           :placeholder="getTopicPlaceholder()"
+                                           class="dv-workbench-task-input"
+                                           autocomplete="off">
+                                </div>
+                                <button type="submit"
+                                        :disabled="!newSessionTopic.trim() || loading"
+                                        :class="newSessionTopic.trim() && !loading ? 'btn-sage-blue text-white cursor-pointer' : 'report-action-disabled cursor-not-allowed'"
+                                        class="dv-workbench-submit">
+                                    <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+                                        <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
+                                    </svg>
+                                    <span x-text="loading ? '创建中...' : '开始访谈'"></span>
+                                </button>
+                            </form>
+                            <div class="dv-workbench-chips" aria-label="快捷入口">
+                                <button type="button" class="dv-workbench-chip" @click="focusWorkbenchTaskInput()">访谈</button>
+                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
+                                <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
+                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchReportsForSolution()">生成方案</button>
+                                <button type="button" class="dv-workbench-chip" x-show="canViewAdminCenter()" x-cloak @click="openWorkbenchAdminConfig()">管理员配置</button>
                             </div>
-
                         </div>
-                    </div>
+                        <aside class="dv-workbench-side" aria-label="最近任务">
+                            <div class="dv-workbench-side-head">
+                                <span>最近任务</span>
+                                <button data-guide="guide-new-session"
+                                        x-show="!sessionBatchMode"
+                                        @click="openWorkbenchSessionComposer()"
+                                        class="dv-workbench-new-btn">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    新建访谈
+                                </button>
+                            </div>
+                            <div class="dv-workbench-active" x-show="getWorkbenchActiveReportSessions().length > 0" x-cloak>
+                                <template x-for="session in getWorkbenchActiveReportSessions(2)" :key="`active-${session.session_id}`">
+                                    <button type="button" class="dv-workbench-recent is-active" @click="openSession(session.session_id)">
+                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
+                                        <span class="dv-workbench-recent-meta" x-text="getSessionReportGenerationBadgeText(session)"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-workbench-recent-list" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
+                                <template x-for="session in getWorkbenchRecentSessions(3)" :key="`recent-${session.session_id}`">
+                                    <button type="button" class="dv-workbench-recent" @click="openSession(session.session_id)">
+                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
+                                        <span class="dv-workbench-recent-meta" x-text="`${getStatusText(getEffectiveSessionStatus(session))} · ${formatDate(session.updated_at || session.created_at)}`"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-workbench-empty" x-show="!loading && getWorkbenchRecentSessions().length === 0" x-cloak>
+                                暂无会话
+                            </div>
+                        </aside>
+                    </section>
+
+                    <!-- 搜索和筛选栏 -->
+                    <section class="dv-workbench-list-head" x-show="!selectedReport">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <h3 class="text-base font-semibold text-primary">会话列表</h3>
+                            </div>
+                            <div class="relative flex-1 sm:max-w-md">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input type="text"
+                                       x-model="sessionSearchQuery"
+                                       @input="onSessionSearchInput()"
+                                       placeholder="搜索访谈主题..."
+                                       class="dv-workbench-search-input">
+                                <button x-show="sessionSearchQuery"
+                                        @click="sessionSearchQuery = ''; filterSessions()"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
 
                     <!-- 加载状态 -->
                     <template x-if="loading">

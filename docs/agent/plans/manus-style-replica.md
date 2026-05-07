@@ -133,11 +133,11 @@ python3 scripts/agent_ops.py task-gap
 
 **步骤：**
 
-- [ ] 定位 `currentView === 'sessions'` 页面结构和 `createSession()`。
-- [ ] 增加中心任务输入器 UI。
-- [ ] 将快捷 chip 接到现有视图切换或会话创建逻辑。
-- [ ] 保留最近会话与运行中报告的可见入口。
-- [ ] 运行 browser smoke extended。
+- [x] 定位 `currentView === 'sessions'` 页面结构和 `createSession()`。
+- [x] 增加中心任务输入器 UI。
+- [x] 将快捷 chip 接到现有视图切换或会话创建逻辑。
+- [x] 保留最近会话与运行中报告的可见入口。
+- [x] 运行 browser smoke extended。
 - [ ] 提交 Phase 3。
 
 ### Phase 4：侧边导航与最近任务
@@ -249,8 +249,8 @@ python3 scripts/agent_ops.py task-gap
 | --- | --- | --- | --- |
 | Phase 0 | 已完成 | `agent_playbook_sync --check`、`agent_workflow --task product-ui-flow --execute plan`、`agent_ops.py task-gap`、`agent_doc_gardener.py`、`agent_static_guardrails.py`、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`、`git diff --check`、`agent_heartbeat.py` | `38fa54c` |
 | Phase 1 | 已完成 | `node --check scripts/agent_browser_smoke_runner.mjs`、`node --check web/site-config.js`、`node --check web/app.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_workflow.py --task product-ui-flow --execute plan`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 -m unittest tests.test_version_manager tests.test_scripts_comprehensive`（94 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase1/login.png` / `artifacts/manus-style-phase1/home.png` | `6146959` |
-| Phase 2 | 已完成 | `python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 scripts/agent_static_guardrails.py`、`/Users/hehai/.local/bin/uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 python3 -m unittest tests.test_security_regression`（131 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase2/login.png` / `artifacts/manus-style-phase2/license-gate.png` | 本阶段提交 |
-| Phase 3 | 未开始 | 工作台输入器截图、browser smoke | 待提交 |
+| Phase 2 | 已完成 | `python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`python3 scripts/agent_static_guardrails.py`、`/Users/hehai/.local/bin/uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 python3 -m unittest tests.test_security_regression`（131 tests OK）、`git diff --check`、截图：`artifacts/manus-style-phase2/login.png` / `artifacts/manus-style-phase2/license-gate.png` | `61a5ce4` |
+| Phase 3 | 已完成 | `node --check web/app_modules/session_list_state.js`、`python3 scripts/agent_static_guardrails.py`、`python3 scripts/agent_browser_smoke.py --suite extended --json`（16/16 PASS）、`git diff --check`、中心输入器 Playwright 验证 `create-session=PASS`、截图：`artifacts/manus-style-phase3/workbench-desktop.png` / `artifacts/manus-style-phase3/workbench-mobile.png` | 本阶段提交 |
 | Phase 4 | 未开始 | 侧边导航桌面/移动截图、browser smoke | 待提交 |
 | Phase 5 | 未开始 | 搜索弹层截图、browser smoke | 待提交 |
 | Phase 6 | 未开始 | 库页截图、solution payload | 待提交 |

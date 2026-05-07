@@ -52,8 +52,8 @@ MINIMAL_SCENARIOS = [
     ),
     BrowserScenario(
         "admin-config-entry",
-        "管理员中心入口",
-        "确认管理员账号可从 index.html 主界面进入管理员中心。",
+        "设置菜单管理员入口",
+        "确认管理员账号可从侧栏设置菜单进入管理员中心。",
     ),
 ]
 
@@ -91,7 +91,7 @@ EXTENDED_EXTRA_SCENARIOS = [
     BrowserScenario(
         "license-activate-success",
         "License 绑定成功后切回业务壳",
-        "确认在 License gate 中提交有效 License 后，前端会退出门禁并回到访谈会话主页。",
+        "确认在 License gate 中提交有效 License 后，前端会退出门禁并回到访谈工作台。",
     ),
     BrowserScenario(
         "license-activate-refresh",
@@ -100,8 +100,8 @@ EXTENDED_EXTRA_SCENARIOS = [
     ),
     BrowserScenario(
         "report-detail-flow",
-        "报告详情与方案入口",
-        "确认可从报告列表进入报告详情，并看到方案入口按钮与核心报告内容。",
+        "报告详情入口收敛",
+        "确认可从报告列表进入报告详情，并确认方案入口按钮不再展示。",
     ),
     BrowserScenario(
         "report-detail-refresh",
@@ -129,7 +129,7 @@ LIVE_EXTENDED_SCENARIOS = [
     BrowserScenario(
         "live-login-license-flow",
         "真实后端登录与 License 绑定",
-        "确认隔离运行态下可完成短信验证码登录、License 绑定，并切回访谈会话主页。",
+        "确认隔离运行态下可完成短信验证码登录、License 绑定，并切回访谈工作台。",
     ),
     BrowserScenario(
         "live-report-generation-refresh",
@@ -138,8 +138,8 @@ LIVE_EXTENDED_SCENARIOS = [
     ),
     BrowserScenario(
         "live-report-solution-flow",
-        "真实后端报告详情与方案页",
-        "确认隔离运行态下可生成真实报告，进入报告详情并打开方案页。",
+        "真实后端方案页直达",
+        "确认隔离运行态下可生成真实报告，报告详情不展示方案入口，方案页仍可通过直达 URL 渲染。",
     ),
     BrowserScenario(
         "live-solution-public-share-flow",
@@ -163,7 +163,7 @@ SUITES = {
             BrowserScenario(
                 "live-login-license-flow",
                 "真实后端登录与 License 绑定",
-                "确认隔离运行态下可完成短信验证码登录、License 绑定，并在刷新后仍留在访谈会话主页。",
+                "确认隔离运行态下可完成短信验证码登录、License 绑定，并在刷新后仍留在访谈工作台。",
             ),
         ],
     },

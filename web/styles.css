@@ -328,6 +328,17 @@ body {
     line-height: 1;
 }
 
+.dv-sidebar-settings {
+    width: 100%;
+}
+
+.dv-sidebar-settings .account-menu {
+    top: 100%;
+    left: 0;
+    right: auto;
+    margin-top: 0.5rem;
+}
+
 .dv-sidebar-section {
     border-top: 1px solid var(--dv-color-border);
     padding-top: 0.9rem;
@@ -1411,6 +1422,10 @@ body {
 
 @media (min-width: 1024px) {
     .dv-header-nav-links {
+        display: none !important;
+    }
+
+    .dv-header-account-menu {
         display: none !important;
     }
 }

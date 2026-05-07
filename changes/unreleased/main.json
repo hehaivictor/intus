@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "937a6eb",
+  "committedAt": "2026-05-07T22:42:37+08:00",
+  "versionType": "major",
+  "title": "精简工作台冗余入口",
+  "changes": [
+    "前端：移除顶部搜索、会话搜索、最近任务、快捷入口和方案直达入口",
+    "前端：将账号与外观设置收口到侧栏帮助下方并保留移动端入口",
+    "Harness：更新浏览器 smoke 对管理员设置入口和方案入口隐藏的验收",
+    "文档：同步产品 UI 任务画像和 Manus 复刻计划中的审查收敛口径"
+  ],
+  "changedFiles": [
+    "docs/agent/plans/manus-style-replica.md",
+    "resources/harness/tasks/product-ui-flow.json",
+    "scripts/agent_browser_smoke.py",
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/app.js",
+    "web/index.html",
+    "web/styles.css"
+  ]
+}

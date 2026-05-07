@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260316-report-detail-v26">
+    <link rel="stylesheet" href="styles.css?v=20260507-ui-entry-trim-v1">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -716,15 +716,6 @@
                     </p>
                 </div>
                 <nav class="flex items-center gap-2 md:gap-3" x-show="authReady && !licenseChecking && !licenseGateActive" x-cloak>
-                    <button type="button"
-                            @click="openGlobalSearch()"
-                            class="dv-global-search-trigger"
-                            aria-label="打开全局搜索">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
-                        </svg>
-                        <span class="hidden sm:inline">搜索</span>
-                    </button>
                     <div class="dv-header-nav-links flex items-center gap-2 md:gap-3">
                         <button @click="switchView('sessions')"
                                 aria-label="会话"
@@ -761,7 +752,7 @@
                             <span class="sm:hidden">助</span>
                         </button>
                     </div>
-                    <div class="relative" @keydown.escape.window="showAccountMenu = false">
+                    <div class="relative dv-header-account-menu" @keydown.escape.window="showAccountMenu = false">
                         <button @click="showAccountMenu = !showAccountMenu"
                                 :class="getHeaderNavClass(false)"
                                 class="theme-toggle-trigger w-10 h-10 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
@@ -1068,18 +1059,65 @@
                             <span class="dv-side-nav-icon" aria-hidden="true">▤</span>
                             <span>报告</span>
                         </button>
-                        <button type="button" @click="openWorkbenchReportsForSolution()" class="dv-side-nav-item">
-                            <span class="dv-side-nav-icon" aria-hidden="true">↗</span>
-                            <span>方案</span>
-                        </button>
-                        <button type="button" x-show="canViewAdminCenter()" x-cloak @click="openAdminCenter('overview')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'admin' }">
-                            <span class="dv-side-nav-icon" aria-hidden="true">⚙</span>
-                            <span>管理员中心</span>
-                        </button>
                         <button type="button" @click="window.location.href='help.html'" class="dv-side-nav-item">
                             <span class="dv-side-nav-icon" aria-hidden="true">?</span>
                             <span>帮助</span>
                         </button>
+                        <div class="relative dv-sidebar-settings" @keydown.escape.window="showAccountMenu = false">
+                            <button type="button"
+                                    @click="showAccountMenu = !showAccountMenu"
+                                    class="dv-side-nav-item dv-sidebar-settings-trigger"
+                                    aria-label="账号与外观设置"
+                                    aria-haspopup="menu"
+                                    :aria-expanded="showAccountMenu.toString()">
+                                <span class="dv-side-nav-icon" aria-hidden="true">⚙</span>
+                                <span>设置</span>
+                            </button>
+                            <div x-cloak
+                                 x-show="showAccountMenu"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                                 @click.outside="showAccountMenu = false"
+                                class="theme-menu account-menu dv-popover-panel absolute left-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-lg z-50">
+                                <div class="px-2.5 py-2 space-y-1">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <p class="text-xs font-semibold text-primary tracking-wide">当前账号</p>
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium"
+                                              :class="currentLevelInfo?.key === 'professional'
+                                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                                  : (currentLevelInfo?.key === 'standard'
+                                                      ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                                                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200')"
+                                              :title="currentLevelInfo?.description || ''"
+                                              x-text="currentLevelInfo?.name || '体验版'"></span>
+                                    </div>
+                                    <p class="text-xs text-muted break-all" x-text="getCurrentAccountDisplay()"></p>
+                                </div>
+                                <div class="account-menu-divider my-2"></div>
+                                <button @click="openSettingsModal('account')"
+                                        class="theme-menu-item w-full text-left px-2.5 py-2 text-sm rounded-lg border border-transparent hover:bg-gray-100 hover:text-primary transition-colors duration-150">
+                                    账号与绑定
+                                </button>
+                                <button @click="openSettingsModal('appearance')"
+                                        class="theme-menu-item w-full text-left px-2.5 py-2 text-sm rounded-lg border border-transparent hover:bg-gray-100 hover:text-primary transition-colors duration-150 mt-1">
+                                    外观设置
+                                </button>
+                                <button x-show="canViewAdminCenter()"
+                                        x-cloak
+                                        @click="openAdminCenter('overview')"
+                                        class="theme-menu-item w-full text-left px-2.5 py-2 text-sm rounded-lg border border-transparent hover:bg-gray-100 hover:text-primary transition-colors duration-150 mt-1">
+                                    管理员中心
+                                </button>
+                                <button @click="requestLogout()"
+                                        class="account-menu-logout-btn w-full text-left px-2.5 py-2 text-sm rounded-lg border border-transparent transition-colors duration-150 mt-1">
+                                    退出登录
+                                </button>
+                            </div>
+                        </div>
                     </nav>
                     <div class="dv-sidebar-section">
                         <div class="dv-sidebar-section-title">账号</div>
@@ -1172,71 +1210,14 @@
                                     <span x-text="loading ? '创建中...' : '开始访谈'"></span>
                                 </button>
                             </form>
-                            <div class="dv-workbench-chips" aria-label="快捷入口">
-                                <button type="button" class="dv-workbench-chip" @click="focusWorkbenchTaskInput()">访谈</button>
-                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
-                                <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
-                                <button type="button" class="dv-workbench-chip" @click="openWorkbenchReportsForSolution()">生成方案</button>
-                                <button type="button" class="dv-workbench-chip" x-show="canViewAdminCenter()" x-cloak @click="openWorkbenchAdminConfig()">管理员配置</button>
-                            </div>
                         </div>
-                        <aside class="dv-workbench-side" aria-label="最近任务">
-                            <div class="dv-workbench-side-head">
-                                <span>最近任务</span>
-                                <button data-guide="guide-new-session"
-                                        x-show="!sessionBatchMode"
-                                        @click="openWorkbenchSessionComposer()"
-                                        class="dv-workbench-new-btn">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                    新建访谈
-                                </button>
-                            </div>
-                            <div class="dv-workbench-active" x-show="getWorkbenchActiveReportSessions().length > 0" x-cloak>
-                                <template x-for="session in getWorkbenchActiveReportSessions(2)" :key="`active-${session.session_id}`">
-                                    <button type="button" class="dv-workbench-recent is-active" @click="openSession(session.session_id)">
-                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
-                                        <span class="dv-workbench-recent-meta" x-text="getSessionReportGenerationBadgeText(session)"></span>
-                                    </button>
-                                </template>
-                            </div>
-                            <div class="dv-workbench-recent-list" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
-                                <template x-for="session in getWorkbenchRecentSessions(3)" :key="`recent-${session.session_id}`">
-                                    <button type="button" class="dv-workbench-recent" @click="openSession(session.session_id)">
-                                        <span class="dv-workbench-recent-title" x-text="session.topic"></span>
-                                        <span class="dv-workbench-recent-meta" x-text="`${getStatusText(getEffectiveSessionStatus(session))} · ${formatDate(session.updated_at || session.created_at)}`"></span>
-                                    </button>
-                                </template>
-                            </div>
-                            <div class="dv-workbench-empty" x-show="!loading && getWorkbenchRecentSessions().length === 0" x-cloak>
-                                暂无会话
-                            </div>
-                        </aside>
                     </section>
 
-                    <!-- 搜索和筛选栏 -->
+                    <!-- 筛选栏 -->
                     <section class="dv-workbench-list-head" x-show="!selectedReport">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
                                 <h3 class="text-base font-semibold text-primary">会话列表</h3>
-                            </div>
-                            <div class="relative flex-1 sm:max-w-md">
-                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                                <input type="text"
-                                       x-model="sessionSearchQuery"
-                                       @input="onSessionSearchInput()"
-                                       placeholder="搜索访谈主题..."
-                                       class="dv-workbench-search-input">
-                                <button x-show="sessionSearchQuery"
-                                        @click="sessionSearchQuery = ''; filterSessions()"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
                             </div>
                         </div>
                     </section>
@@ -1442,7 +1423,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                     </svg>
                                     <h3 class="text-lg font-medium text-gray-600 mb-2">未找到匹配的会话</h3>
-                                    <p class="text-muted mb-4">尝试调整搜索条件或筛选器</p>
+                                    <p class="text-muted mb-4">尝试调整筛选条件</p>
                                     <button @click="sessionSearchQuery = ''; sessionStatusFilter = 'all'; sessionSortOrder = 'newest'; sessionGroupBy = 'none'; filterSessions()"
                                             class="text-primary hover:text-primary/80 text-sm font-medium cursor-pointer">
                                         清除筛选条件
@@ -1529,7 +1510,7 @@
                         <div class="min-w-0">
                             <p class="dv-library-kicker">Library</p>
                             <h2>库</h2>
-                            <p>会话、报告、资料和方案集中在一个低噪声列表里。</p>
+                            <p>会话、报告和资料集中在一个低噪声列表里。</p>
                             <span class="dv-library-summary" x-text="getLibrarySummaryText()"></span>
                         </div>
                         <div class="dv-library-actions">
@@ -1546,7 +1527,7 @@
                             </svg>
                             <input type="text"
                                    x-model="librarySearchQuery"
-                                   placeholder="搜索会话、报告、方案或资料..."
+                                   placeholder="搜索会话、报告或资料..."
                                    class="dv-library-search-input">
                             <button type="button"
                                     x-show="librarySearchQuery"
@@ -1589,7 +1570,7 @@
                                 <div class="dv-library-empty-mark" aria-hidden="true">□</div>
                                 <div>
                                     <h3>暂无匹配资源</h3>
-                                    <p>清空搜索或新建访谈后，相关报告、方案和资料会进入库。</p>
+                                    <p>清空搜索或新建访谈后，相关报告和资料会进入库。</p>
                                 </div>
                                 <button type="button" class="btn-sage-blue text-white" @click="librarySearchQuery ? clearLibrarySearch() : openWorkbenchSessionComposer()">
                                     <span x-text="librarySearchQuery ? '清空搜索' : '新建访谈'"></span>
@@ -2967,15 +2948,6 @@
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                                                 </svg>
                                                 <span>生成精审版</span>
-                                            </button>
-                                            <button type="button"
-                                                    x-show="canViewSolutionPage()"
-                                                    @click="openSolutionPage()"
-                                                    class="report-action-secondary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h8m0 0l-3-3m3 3l-3 3M5 7h6M5 11h3M5 15h3"/>
-                                                </svg>
-                                                查看方案
                                             </button>
                                             <div class="flex flex-col gap-1" x-show="isPresentationEnabled() && canGeneratePresentation()">
                                                 <button @click="isPresentationGeneratingCurrentReport() ? stopPresentationGeneration() : generatePresentation()"
@@ -5084,7 +5056,7 @@
                 <div class="dv-global-search-head">
                     <div>
                         <h3 id="dv-dialog-global-search-title">搜索 Intus</h3>
-                        <p id="dv-dialog-global-search-desc">会话、报告、方案与帮助入口</p>
+                        <p id="dv-dialog-global-search-desc">会话、报告与帮助入口</p>
                     </div>
                     <button type="button"
                             class="dv-global-search-close"
@@ -5107,7 +5079,7 @@
                            x-model="globalSearchQuery"
                            @input="ensureGlobalSearchData()"
                            @keydown.enter.prevent="activateGlobalSearchResult(getGlobalSearchResults()[0])"
-                           placeholder="搜索会话、报告、方案或帮助..."
+                           placeholder="搜索会话、报告或帮助..."
                            autocomplete="off"
                            class="dv-global-search-input">
                     <button type="button"
@@ -6949,6 +6921,6 @@
     <script src="app_modules/interview_runtime.js?v=20260506-interview-assistant-chat-v1"></script>
     <script src="app_modules/auth_license_state.js?v=20260427-license-benefits-entry-v1"></script>
     <script src="app_modules/admin_center_state.js?v=20260410-admin-center-state-v1"></script>
-    <script src="app.js?v=20260410-admin-center-state-v1"></script>
+    <script src="app.js?v=20260507-ui-entry-trim-v1"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 > **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:executing-plans 逐阶段实现此计划。每个阶段完成后必须更新 checkpoint、运行验证，并形成分段提交或至少保留分段 diff。
 
-**目标：** 将 Intus 前端重塑为接近 Manus 的 agent-first 工作台体验，同时保留登录、License、报告、方案页和管理员中心的真实状态边界。
+**目标：** 将 Intus 前端重塑为接近 Manus 的 agent-first 工作台体验，同时保留登录、License、报告、方案页直达能力和设置菜单内管理员中心的真实状态边界。
 
 **架构：** 以现有 `web/index.html`、`web/styles.css`、`web/app.js` 和 `web/app_modules/*` 为落点，不引入第二套前端框架。视觉系统先统一 token、字体和布局壳层，再分阶段替换首页任务启动器、侧边导航、全局搜索、库页和 Agent 能力页。验证控制面使用 Intus 原生 harness、browser smoke 和阶段 checkpoint，不引入外部 `.harness` 或 managed block。
 
@@ -15,7 +15,8 @@
 - Manus `/app` 工作台基调：黑白灰低噪声、左侧导航、中心任务输入器、快捷能力 chip、模型/积分/头像入口。
 - Manus `/app/agents` 基调：中心插图、能力卡片、单一强 CTA，整体留白充足。
 - Manus `/app/library` 基调：顶部筛选、搜索、视图切换、轻量空状态和新建任务入口。
-- Intus 必须保留：License gate、账号状态、报告生成状态、方案页入口、管理员中心、分享只读和 owner / instance 边界。
+- Intus 必须保留：License gate、账号状态、报告生成状态、方案页直达能力、设置菜单内管理员中心、分享只读和 owner / instance 边界。
+- 2026-05-07 审查收敛：顶部全局搜索、会话列表搜索、工作台快捷 chip、最近任务、主导航方案入口、报告详情查看方案入口、库页/Agents/全局搜索中的方案入口、侧栏管理员中心入口均不再展示；账号与外观设置固定在侧栏帮助下方，移动端仍保留顶部入口。
 
 ## 文件职责
 
@@ -27,8 +28,8 @@
 - `web/index.html`：页面结构、工作台首屏、侧边导航、搜索弹层、库页和 Agent 能力页。
 - `web/styles.css`：Manus 风格 token、字体、布局、组件状态和响应式规则。
 - `web/site-config.js`：展示配置中的品牌色与文案口径，避免蓝色品牌残留主导界面。
-- `web/app.js`：视图切换、任务创建、全局搜索、最近任务和 UI shell 状态编排。
-- `web/app_modules/session_list_state.js`：会话列表、最近任务、库页数据入口。
+- `web/app.js`：视图切换、任务创建、全局搜索、库页和 UI shell 状态编排。
+- `web/app_modules/session_list_state.js`：会话列表与库页数据入口。
 - `web/app_modules/auth_license_state.js`：登录态与 License gate 状态展示。
 - `web/app_modules/report_state.js`：报告入口和任务进度状态展示。
 - `web/app_modules/admin_center_state.js`：管理员中心入口和状态摘要展示。
@@ -127,7 +128,7 @@ python3 scripts/agent_ops.py task-gap
 **完成定义：**
 
 - 登录后的默认工作台首屏以中心任务输入器为核心。
-- 快捷 chip 覆盖访谈、导入资料、查看报告、生成方案、管理员配置等 Intus 真实能力。
+- 审查收敛后不再展示快捷 chip，任务启动器只保留中心输入器和开始访谈动作。
 - 输入器提交仍复用现有 `createSession()` 或等价会话创建链路。
 - 空状态不再以传统卡片列表为首屏主视觉。
 
@@ -137,6 +138,7 @@ python3 scripts/agent_ops.py task-gap
 - [x] 增加中心任务输入器 UI。
 - [x] 将快捷 chip 接到现有视图切换或会话创建逻辑。
 - [x] 保留最近会话与运行中报告的可见入口。
+- [x] 按审查意见移除工作台快捷 chip 与最近任务块。
 - [x] 运行 browser smoke extended。
 - [ ] 提交 Phase 3。
 
@@ -145,8 +147,8 @@ python3 scripts/agent_ops.py task-gap
 **完成定义：**
 
 - 左侧导航成为桌面主导航，移动端收敛为顶部或抽屉式入口。
-- 导航包含工作台、库、Agents、报告、方案、管理员中心和帮助。
-- 最近任务、当前 License / 账号状态在侧栏或顶部紧凑展示。
+- 导航包含工作台、库、Agents、报告、帮助和帮助下方的设置入口；方案与管理员中心不再作为侧栏直达入口展示。
+- 当前 License / 账号状态在侧栏或顶部紧凑展示。
 - 原顶部导航不会与侧栏重复制造噪声。
 
 **步骤：**
@@ -155,6 +157,7 @@ python3 scripts/agent_ops.py task-gap
 - [x] 新增 shell 布局容器和侧栏项。
 - [x] 调整移动端断点，确保不遮挡主内容。
 - [x] 补最近任务入口与运行状态摘要。
+- [x] 按审查意见移除最近任务侧栏块，将设置入口移到帮助下方。
 - [x] 运行 browser smoke extended。
 - [ ] 提交 Phase 4。
 
@@ -162,7 +165,7 @@ python3 scripts/agent_ops.py task-gap
 
 **完成定义：**
 
-- 提供 Manus 式搜索弹层，可搜索会话、报告、方案和帮助入口。
+- 提供 Manus 式搜索弹层，可搜索会话、报告和帮助入口；方案结果不再展示。
 - 搜索结果点击复用现有视图切换和详情入口。
 - 空结果与加载状态低噪声、可恢复。
 
@@ -172,6 +175,7 @@ python3 scripts/agent_ops.py task-gap
 - [x] 在 `web/app.js` 增加搜索弹层状态与结果聚合。
 - [x] 在 `web/index.html` 增加弹层模板。
 - [x] 在 `web/styles.css` 增加弹层和键盘焦点样式。
+- [x] 按审查意见从搜索结果中移除方案入口。
 - [x] 运行 browser smoke extended。
 - [x] 提交 Phase 5。
 
@@ -179,7 +183,7 @@ python3 scripts/agent_ops.py task-gap
 
 **完成定义：**
 
-- 库页承载会话、报告、导入资料和方案入口。
+- 库页承载会话、报告和导入资料入口；方案入口不再展示。
 - 顶部提供筛选、搜索、排序或视图切换。
 - 空状态采用 Manus 式小图标、简短提示和新建任务 CTA。
 - 不削弱分享只读和报告 owner 边界。
@@ -188,7 +192,8 @@ python3 scripts/agent_ops.py task-gap
 
 - [x] 将现有列表能力收口到库页视图。
 - [x] 增加库页筛选与空状态。
-- [x] 保留报告详情、方案入口和公开分享只读入口。
+- [x] 保留报告详情和公开分享只读能力。
+- [x] 按审查意见移除库页方案条目与筛选。
 - [x] 运行 browser smoke extended。
 - [x] 运行 `python3 -m unittest tests.test_solution_payload`。
 - [x] 提交 Phase 6。
@@ -198,7 +203,7 @@ python3 scripts/agent_ops.py task-gap
 **完成定义：**
 
 - Agents 页展示 Intus 能力，而不是泛化产品营销页。
-- 能力卡片至少覆盖访谈助手、报告生成、方案页、导出、License 管理和配置中心。
+- 能力卡片覆盖访谈助手、报告生成、导出、License 管理和配置中心；方案页卡片不再展示。
 - CTA 能进入对应真实流程。
 
 **步骤：**
@@ -213,7 +218,7 @@ python3 scripts/agent_ops.py task-gap
 
 **完成定义：**
 
-- 报告详情、方案页入口、管理员中心与新 shell 视觉一致。
+- 报告详情、方案页直达能力、设置菜单内管理员中心与新 shell 视觉一致。
 - 高风险操作仍保持明确确认、权限提示和运行状态。
 - 管理后台不被过度极简化到看不见风险。
 
@@ -222,6 +227,7 @@ python3 scripts/agent_ops.py task-gap
 - [x] 审查报告页、方案入口、管理员中心的布局噪声。
 - [x] 调整为同一 token 和按钮体系。
 - [x] 保留高风险状态、错误提示、确认链路。
+- [x] 按审查意见移除报告详情查看方案按钮和侧栏管理员中心按钮。
 - [x] 运行 `python3 -m unittest tests.test_security_regression tests.test_solution_payload`。
 - [x] 运行 browser smoke extended。
 - [ ] 提交 Phase 8。

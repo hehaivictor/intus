@@ -1392,7 +1392,7 @@ async function waitForLiveAppState(page, timeoutMs = 20000) {
       (node) => isVisible(node) && String(node.textContent || '').includes('访谈会话'),
     );
     const primaryActionHit = Array.from(document.querySelectorAll('button')).some(
-      (button) => isVisible(button) && String(button.textContent || '').includes('新建访谈'),
+      (button) => isVisible(button) && String(button.textContent || '').includes('开始访谈'),
     );
     if (titleHit || primaryActionHit) return 'home';
     return '';
@@ -1416,7 +1416,7 @@ async function waitForLiveHomeReady(page, timeoutMs = 25000) {
     );
     const primaryActionHit = Array.from(document.querySelectorAll('button')).some((button) => {
       const text = String(button.textContent || '');
-      return isVisible(button) && (text.includes('新建访谈') || text.includes('报告'));
+      return isVisible(button) && (text.includes('开始访谈') || text.includes('报告'));
     });
     const gateVisible = isVisible(document.querySelector('#license-code-input'));
     return (titleHit || primaryActionHit) && !gateVisible;
@@ -1660,8 +1660,8 @@ async function scenarioSolutionShare(browser, baseUrl) {
 }
 
 async function openAdminCenterFromAccountMenu(page) {
-  await page.getByLabel('账号与外观设置').click({ timeout: 15000 });
-  await page.locator('.account-menu button:has-text("管理员中心")').first().click({ timeout: 15000 });
+  await page.locator('button[aria-label="账号与外观设置"]:visible').first().click({ timeout: 15000 });
+  await page.locator('.account-menu:visible button:has-text("管理员中心")').first().click({ timeout: 15000 });
 }
 
 async function scenarioAdminConfigEntry(browser, baseUrl) {
@@ -1677,7 +1677,7 @@ async function scenarioAdminConfigEntry(browser, baseUrl) {
       await page.waitForSelector('h2:has-text("管理员中心")', { timeout: 15000 });
     },
   );
-  return '管理员账号可从主界面进入管理员中心';
+  return '管理员账号可从侧栏设置菜单进入管理员中心';
 }
 
 async function scenarioSolutionPublicReadonly(browser, baseUrl) {
@@ -1867,9 +1867,9 @@ async function scenarioLicenseGateView(browser, baseUrl) {
       await page.waitForSelector('#license-code-input', { timeout: 15000 });
       await page.getByRole('button', { name: '绑定 License', exact: true }).waitFor({ timeout: 15000 });
       await page.getByRole('button', { name: '退出登录', exact: true }).waitFor({ timeout: 15000 });
-      const primaryNavVisible = await page.locator('button:visible').filter({ hasText: '新建访谈' }).count();
-      if (primaryNavVisible > 0) {
-        throw new Error('License gate 生效时不应显示主业务导航');
+      const workbenchVisible = await page.locator('h2:has-text("访谈会话"), [data-workbench-task-input]:visible').count();
+      if (workbenchVisible > 0) {
+        throw new Error('License gate 生效时不应显示访谈工作台');
       }
     },
     undefined,
@@ -1921,7 +1921,8 @@ async function scenarioLicenseActivateSuccess(browser, baseUrl) {
       await page.fill('#license-code-input', 'LIC-ACTIVATED-001');
       await page.getByRole('button', { name: '绑定 License', exact: true }).click({ timeout: 15000 });
       await page.waitForSelector('h2:has-text("访谈会话")', { timeout: 15000 });
-      await page.locator('button:visible').filter({ hasText: '新建访谈' }).first().waitFor({ timeout: 15000 });
+      await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
+      await page.getByRole('button', { name: '开始访谈', exact: true }).waitFor({ timeout: 15000 });
       const gateStillVisible = await page.locator('h2:has-text("请输入 License 继续使用")').count();
       if (gateStillVisible > 0) {
         throw new Error('License 绑定成功后不应继续停留在 License gate');
@@ -1948,7 +1949,7 @@ async function scenarioLicenseActivateSuccess(browser, baseUrl) {
       licenseActivatePayload: activatedPayload,
     },
   );
-  return 'License 绑定成功后会退出门禁，并回到访谈会话主页';
+  return 'License 绑定成功后会退出门禁，并回到访谈工作台';
 }
 
 async function scenarioLicenseActivateRefresh(browser, baseUrl) {
@@ -2026,11 +2027,14 @@ async function scenarioReportDetailFlow(browser, baseUrl) {
         throw new Error(`报告详情标题异常: ${safeText(titleText, '<empty>')}`);
       }
       await page.waitForSelector('text=核心判断', { timeout: 15000 });
-      await page.getByRole('button', { name: '查看方案', exact: true }).waitFor({ timeout: 15000 });
+      const solutionButtonCount = await page.locator('button:visible').filter({ hasText: '查看方案' }).count();
+      if (solutionButtonCount > 0) {
+        throw new Error('报告详情不应继续展示查看方案入口');
+      }
       await page.getByRole('button', { name: '返回报告列表', exact: true }).waitFor({ timeout: 15000 });
     },
   );
-  return '可从报告列表进入报告详情，并看到方案入口按钮与核心报告内容';
+  return '可从报告列表进入报告详情，且不再展示查看方案入口';
 }
 
 async function scenarioReportDetailRefresh(browser, baseUrl) {
@@ -2221,24 +2225,23 @@ async function scenarioLiveReportSolutionFlow(browser, baseUrl, liveContext) {
         throw new Error(`真实报告详情标题异常: ${titleText || '<empty>'}`);
       }
 
-      const popupPromise = page.waitForEvent('popup');
-      await page.getByRole('button', { name: '查看方案', exact: true }).click({ timeout: 15000 });
-      const popup = await popupPromise;
-      try {
-        await popup.waitForLoadState('domcontentloaded');
-        const solutionResponse = await popup.waitForResponse(
-          (response) => response.ok() && response.url().includes(`/api/reports/${encodeURIComponent(fixture.report_name)}/solution`),
-          { timeout: 25000 },
-        );
-        const payload = await solutionResponse.json();
-        if (safeText(payload?.report_name) !== fixture.report_name) {
-          throw new Error(`真实方案页 report_name 异常: ${safeText(payload?.report_name, '<empty>')}`);
-        }
-        await popup.waitForSelector('#solution-shell:not([hidden])', { timeout: 25000 });
-        await popup.waitForSelector('#btn-share', { timeout: 25000 });
-      } finally {
-        await popup.close();
+      const solutionEntryCount = await page.locator('button:visible').filter({ hasText: '查看方案' }).count();
+      if (solutionEntryCount > 0) {
+        throw new Error('真实报告详情不应继续展示查看方案入口');
       }
+
+      const solutionResponsePromise = page.waitForResponse(
+        (response) => response.ok() && response.url().includes(`/api/reports/${encodeURIComponent(fixture.report_name)}/solution`),
+        { timeout: 25000 },
+      );
+      await page.goto(`${baseUrl}/solution.html?report=${encodeURIComponent(fixture.report_name)}`, { waitUntil: 'domcontentloaded' });
+      const solutionResponse = await solutionResponsePromise;
+      const payload = await solutionResponse.json();
+      if (safeText(payload?.report_name) !== fixture.report_name) {
+        throw new Error(`真实方案页 report_name 异常: ${safeText(payload?.report_name, '<empty>')}`);
+      }
+      await page.waitForSelector('#solution-shell:not([hidden])', { timeout: 25000 });
+      await page.waitForSelector('#btn-share', { timeout: 25000 });
     },
     undefined,
     undefined,
@@ -2438,7 +2441,7 @@ function resolveSuite(name) {
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
-        { id: 'admin-config-entry', label: '管理员中心入口' },
+        { id: 'admin-config-entry', label: '设置菜单管理员入口' },
       ],
     };
   }
@@ -2450,7 +2453,7 @@ function resolveSuite(name) {
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
-        { id: 'admin-config-entry', label: '管理员中心入口' },
+        { id: 'admin-config-entry', label: '设置菜单管理员入口' },
         { id: 'solution-public-readonly', label: '方案页公开分享只读' },
         { id: 'solution-public-readonly-refresh', label: '方案页公开分享刷新保持只读' },
         { id: 'login-view', label: '登录前端视图' },
@@ -2459,7 +2462,7 @@ function resolveSuite(name) {
         { id: 'license-gate-view', label: 'License 门禁前端视图' },
         { id: 'license-activate-success', label: 'License 绑定成功后切回业务壳' },
         { id: 'license-activate-refresh', label: 'License 绑定后刷新保持业务壳' },
-        { id: 'report-detail-flow', label: '报告详情与方案入口' },
+        { id: 'report-detail-flow', label: '报告详情入口收敛' },
         { id: 'report-detail-refresh', label: '报告详情刷新后保持详情态' },
         { id: 'interview-refresh', label: '访谈进行中刷新后保持当前会话' },
         { id: 'report-generation-refresh', label: '报告生成中刷新后保持进度' },
@@ -2485,7 +2488,7 @@ function resolveSuite(name) {
       scenarios: [
         { id: 'live-login-license-flow', label: '真实后端登录与 License 绑定' },
         { id: 'live-report-generation-refresh', label: '真实后端报告生成中刷新恢复' },
-        { id: 'live-report-solution-flow', label: '真实后端报告详情与方案页' },
+        { id: 'live-report-solution-flow', label: '真实后端方案页直达' },
         { id: 'live-solution-public-share-flow', label: '真实后端公开分享只读链路' },
       ],
     };

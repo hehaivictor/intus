@@ -3034,8 +3034,8 @@ class ComprehensiveScriptTests(unittest.TestCase):
                 {"scenario_id": "solution-public-readonly", "label": "方案页公开分享只读", "status": "PASS", "detail": "公开分享模式可渲染，并保持只读边界", "highlights": []},
                 {"scenario_id": "login-view", "label": "登录前端视图", "status": "PASS", "detail": "未登录状态会展示登录表单，并明确提示当前短信登录不可用", "highlights": []},
                 {"scenario_id": "license-gate-view", "label": "License 门禁前端视图", "status": "PASS", "detail": "已登录但无有效 License 时，会展示 License gate 与绑定入口", "highlights": []},
-                {"scenario_id": "license-activate-success", "label": "License 绑定成功后切回业务壳", "status": "PASS", "detail": "License 绑定成功后会退出门禁，并回到访谈会话主页", "highlights": []},
-                {"scenario_id": "report-detail-flow", "label": "报告详情与方案入口", "status": "PASS", "detail": "可从报告列表进入报告详情，并看到方案入口按钮与核心报告内容", "highlights": []},
+                {"scenario_id": "license-activate-success", "label": "License 绑定成功后切回业务壳", "status": "PASS", "detail": "License 绑定成功后会退出门禁，并回到访谈工作台", "highlights": []},
+                {"scenario_id": "report-detail-flow", "label": "报告详情入口收敛", "status": "PASS", "detail": "可从报告列表进入报告详情，且不再展示查看方案入口", "highlights": []},
             ],
         }
         with patch.object(agent_browser_smoke, "run_browser_smoke", return_value=(fake_payload, 0)):

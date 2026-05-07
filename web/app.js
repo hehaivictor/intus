@@ -525,7 +525,7 @@ function intusApp() {
                 activeReportName: this.currentView === 'reports'
                     ? String(this.selectedReport || this.selectedReportMeta?.name || '').trim()
                     : '',
-                sessionSearchQuery: String(this.sessionSearchQuery || ''),
+                sessionSearchQuery: '',
                 sessionStatusFilter: String(this.sessionStatusFilter || 'all'),
                 sessionSortOrder: String(this.sessionSortOrder || 'newest'),
                 sessionGroupBy: String(this.sessionGroupBy || 'none'),
@@ -586,7 +586,7 @@ function intusApp() {
                 sessionId: this.currentView === 'interview' ? restoredSessionId : '',
                 reportName: this.currentView === 'reports' ? restoredReportName : '',
             };
-            this.sessionSearchQuery = String(payload.sessionSearchQuery || '');
+            this.sessionSearchQuery = '';
             this.sessionStatusFilter = String(payload.sessionStatusFilter || 'all') || 'all';
             this.sessionSortOrder = String(payload.sessionSortOrder || 'newest') || 'newest';
             this.sessionGroupBy = String(payload.sessionGroupBy || 'none') || 'none';
@@ -1106,19 +1106,10 @@ function intusApp() {
                     keywords: ['报告', '详情', '生成']
                 },
                 {
-                    id: 'nav:solution',
-                    category: '方案',
-                    title: '方案页',
-                    description: '先选择报告，再打开对应方案页',
-                    meta: '方案入口',
-                    action: 'solution-home',
-                    keywords: ['方案', '解决方案', 'solution']
-                },
-                {
                     id: 'nav:library',
                     category: '库',
                     title: '库',
-                    description: '汇总会话、报告、资料和方案',
+                    description: '汇总会话、报告和资料',
                     meta: '资源入口',
                     action: 'library',
                     keywords: ['资料', '资源', 'library']
@@ -1143,17 +1134,6 @@ function intusApp() {
                 }
             ];
 
-            if (this.canViewAdminCenter()) {
-                entries.push({
-                    id: 'nav:admin',
-                    category: '管理员',
-                    title: '管理员中心',
-                    description: 'License、配置中心和运行监控',
-                    meta: '管理入口',
-                    action: 'admin',
-                    keywords: ['admin', '管理员', 'license', '配置', '运维']
-                });
-            }
             return entries;
         },
 
@@ -1219,30 +1199,17 @@ function intusApp() {
                     matchedSession?.description
                 ];
 
-                return [
-                    {
-                        id: `report:${reportName}`,
-                        category: '报告',
-                        title: String(displayTitle || reportName).trim(),
-                        description: scenarioName || '打开报告详情',
-                        meta: ['报告', dateText].filter(Boolean).join(' · '),
-                        action: 'report',
-                        reportName,
-                        updatedAt: createdAt,
-                        keywords: baseKeywords
-                    },
-                    {
-                        id: `solution:${reportName}`,
-                        category: '方案',
-                        title: `方案：${String(displayTitle || reportName).trim()}`,
-                        description: '基于该报告打开方案页',
-                        meta: '方案页',
-                        action: 'solution',
-                        reportName,
-                        updatedAt: createdAt,
-                        keywords: [...baseKeywords, '方案', '解决方案', 'solution']
-                    }
-                ];
+                return [{
+                    id: `report:${reportName}`,
+                    category: '报告',
+                    title: String(displayTitle || reportName).trim(),
+                    description: scenarioName || '打开报告详情',
+                    meta: ['报告', dateText].filter(Boolean).join(' · '),
+                    action: 'report',
+                    reportName,
+                    updatedAt: createdAt,
+                    keywords: baseKeywords
+                }];
             });
         },
 
@@ -1296,16 +1263,8 @@ function intusApp() {
                 this.switchView('reports');
                 return;
             }
-            if (action === 'solution-home') {
-                this.openWorkbenchReportsForSolution();
-                return;
-            }
             if (action === 'library' || action === 'agents') {
                 this.switchView(action);
-                return;
-            }
-            if (action === 'admin') {
-                this.openAdminCenter('overview');
                 return;
             }
             if (action === 'help') {
@@ -1320,9 +1279,6 @@ function intusApp() {
                 this.switchView('reports');
                 await this.viewReport(reportName, { forceReload: false });
                 return;
-            }
-            if (action === 'solution' && reportName) {
-                this.openSolutionPage(reportName);
             }
         },
 
@@ -1359,7 +1315,6 @@ function intusApp() {
                 { key: 'all', label: '全部' },
                 { key: 'session', label: '会话' },
                 { key: 'report', label: '报告' },
-                { key: 'solution', label: '方案' },
                 { key: 'document', label: '资料' }
             ];
         },
@@ -1422,10 +1377,10 @@ function intusApp() {
                 category: '会话',
                 actionLabel: '继续'
             }));
-            const reportAndSolutionItems = this.buildGlobalSearchReportEntries().map(item => ({
+            const reportItems = this.buildGlobalSearchReportEntries().map(item => ({
                 ...item,
-                type: item.action === 'solution' ? 'solution' : 'report',
-                actionLabel: item.action === 'solution' ? '打开方案' : '查看报告'
+                type: 'report',
+                actionLabel: '查看报告'
             }));
             const documentItems = this.buildLibraryDocumentItems().map(item => ({
                 ...item,
@@ -1446,7 +1401,7 @@ function intusApp() {
 
             return [
                 ...sessionItems,
-                ...reportAndSolutionItems,
+                ...reportItems,
                 ...documentItems,
                 importItem
             ];
@@ -1466,7 +1421,7 @@ function intusApp() {
                 items = items.filter(item => this.globalSearchEntryMatches(item, queryTerms));
             }
 
-            const typeRank = { session: 1, report: 2, solution: 3, document: 4 };
+            const typeRank = { session: 1, report: 2, document: 3 };
             return items.sort((a, b) => {
                 if (this.librarySortOrder === 'type') {
                     const rankDelta = (typeRank[a.type] || 99) - (typeRank[b.type] || 99);
@@ -1484,9 +1439,8 @@ function intusApp() {
         getLibrarySummaryText() {
             const sessions = this.getLibraryTypeCount('session');
             const reports = this.getLibraryTypeCount('report');
-            const solutions = this.getLibraryTypeCount('solution');
             const documents = this.getLibraryTypeCount('document');
-            return `会话 ${sessions} · 报告 ${reports} · 方案 ${solutions} · 资料 ${documents}`;
+            return `会话 ${sessions} · 报告 ${reports} · 资料 ${documents}`;
         },
 
         clearLibrarySearch() {
@@ -1506,10 +1460,6 @@ function intusApp() {
             if (action === 'report' && reportName) {
                 this.switchView('reports');
                 await this.viewReport(reportName, { forceReload: false });
-                return;
-            }
-            if (action === 'solution' && reportName) {
-                this.openSolutionPage(reportName);
                 return;
             }
             if (action === 'import-docs') {
@@ -1536,15 +1486,6 @@ function intusApp() {
                     meta: '报告列表',
                     actionLabel: '查看报告',
                     keywords: ['报告', '生成', '详情']
-                },
-                {
-                    key: 'solution',
-                    category: '方案',
-                    title: '方案页',
-                    description: '从已绑定报告打开方案页，继续保留分享只读边界。',
-                    meta: this.canViewSolutionPage() ? '专业能力' : '需升级',
-                    actionLabel: '打开方案入口',
-                    keywords: ['方案', '解决方案', '分享']
                 },
                 {
                     key: 'export',
@@ -1587,10 +1528,6 @@ function intusApp() {
             }
             if (normalized === 'report') {
                 this.switchView('reports');
-                return;
-            }
-            if (normalized === 'solution') {
-                this.openWorkbenchReportsForSolution();
                 return;
             }
             if (normalized === 'export') {

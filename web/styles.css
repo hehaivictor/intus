@@ -212,6 +212,174 @@ body {
     width: 100%;
 }
 
+.dv-app-shell {
+    display: grid;
+    grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+    gap: 1.25rem;
+    width: min(100%, 96rem);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.dv-app-content {
+    min-width: 0;
+}
+
+.dv-app-sidebar {
+    position: sticky;
+    top: 5.25rem;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: calc(100vh - 6rem);
+    padding: 1rem 0 1.5rem;
+}
+
+.dv-side-nav {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.dv-side-nav-item {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 2.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--dv-radius-sm);
+    color: var(--dv-color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 560;
+    padding: 0 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-side-nav-item:hover {
+    background: #ffffff;
+    border-color: var(--dv-color-border);
+    color: var(--dv-color-text-primary);
+}
+
+.dv-side-nav-item.is-active {
+    background: var(--dv-color-brand);
+    border-color: var(--dv-color-brand);
+    color: #ffffff;
+}
+
+.dv-side-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.dv-sidebar-section {
+    border-top: 1px solid var(--dv-color-border);
+    padding-top: 0.9rem;
+}
+
+.dv-sidebar-section-title {
+    color: var(--dv-color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    margin-bottom: 0.5rem;
+}
+
+.dv-sidebar-account {
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    padding: 0.75rem;
+}
+
+.dv-sidebar-account-name,
+.dv-sidebar-account-meta {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-sidebar-account-name {
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 650;
+}
+
+.dv-sidebar-account-meta {
+    color: var(--dv-color-text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.dv-sidebar-recent-list {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.dv-sidebar-recent {
+    border-radius: var(--dv-radius-sm);
+    color: var(--dv-color-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    min-height: 2.25rem;
+    overflow: hidden;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-sidebar-recent:hover {
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-shell-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 16rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.dv-shell-placeholder h2 {
+    color: var(--dv-color-text-primary);
+    font-family: var(--dv-font-display);
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 500;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.dv-shell-placeholder p {
+    color: var(--dv-color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0.75rem 0 0;
+}
+
+.dv-shell-placeholder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
 .dv-workbench-launcher {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
@@ -467,6 +635,32 @@ body {
 
     .dv-workbench-submit {
         width: 100%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .dv-header-nav-links {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    .dv-app-shell {
+        display: block;
+        padding: 0;
+    }
+
+    .dv-app-sidebar {
+        display: none;
+    }
+
+    .dv-shell-placeholder {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dv-shell-placeholder-actions {
+        justify-content: flex-start;
     }
 }
 

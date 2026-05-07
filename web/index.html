@@ -716,24 +716,26 @@
                     </p>
                 </div>
                 <nav class="flex items-center gap-2 md:gap-3" x-show="authReady && !licenseChecking && !licenseGateActive" x-cloak>
-                    <button @click="switchView('sessions')"
-                            :class="getHeaderNavClass(isSessionViewActive())"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">会话</span>
-                        <span class="sm:hidden">会话</span>
-                    </button>
-                    <button @click="switchView('reports')"
-                            :class="getHeaderNavClass(currentView === 'reports')"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">报告</span>
-                        <span class="sm:hidden">报告</span>
-                    </button>
-                    <button @click="window.location.href='help.html'"
-                            :class="getHeaderNavClass(false)"
-                            class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
-                        <span class="hidden sm:inline">帮助</span>
-                        <span class="sm:hidden">帮助</span>
-                    </button>
+                    <div class="dv-header-nav-links flex items-center gap-2 md:gap-3">
+                        <button @click="switchView('sessions')"
+                                :class="getHeaderNavClass(isSessionViewActive())"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                            <span class="hidden sm:inline">会话</span>
+                            <span class="sm:hidden">会话</span>
+                        </button>
+                        <button @click="switchView('reports')"
+                                :class="getHeaderNavClass(currentView === 'reports')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                            <span class="hidden sm:inline">报告</span>
+                            <span class="sm:hidden">报告</span>
+                        </button>
+                        <button @click="window.location.href='help.html'"
+                                :class="getHeaderNavClass(false)"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                            <span class="hidden sm:inline">帮助</span>
+                            <span class="sm:hidden">帮助</span>
+                        </button>
+                    </div>
                     <div class="relative" @keydown.escape.window="showAccountMenu = false">
                         <button @click="showAccountMenu = !showAccountMenu"
                                 :class="getHeaderNavClass(false)"
@@ -1016,7 +1018,57 @@
         </template>
 
         <template x-if="!authChecking && authReady && !licenseChecking && !licenseGateActive">
-            <div>
+            <div class="dv-app-shell">
+                <aside class="dv-app-sidebar" aria-label="主导航">
+                    <nav class="dv-side-nav">
+                        <button type="button" @click="switchView('sessions')" class="dv-side-nav-item" :class="{ 'is-active': isSessionViewActive() }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">⌘</span>
+                            <span>工作台</span>
+                        </button>
+                        <button type="button" @click="switchView('library')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'library' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">□</span>
+                            <span>库</span>
+                        </button>
+                        <button type="button" @click="switchView('agents')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'agents' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">✦</span>
+                            <span>Agents</span>
+                        </button>
+                        <button type="button" @click="switchView('reports')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'reports' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">▤</span>
+                            <span>报告</span>
+                        </button>
+                        <button type="button" @click="openWorkbenchReportsForSolution()" class="dv-side-nav-item">
+                            <span class="dv-side-nav-icon" aria-hidden="true">↗</span>
+                            <span>方案</span>
+                        </button>
+                        <button type="button" x-show="canViewAdminCenter()" x-cloak @click="openAdminCenter('overview')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'admin' }">
+                            <span class="dv-side-nav-icon" aria-hidden="true">⚙</span>
+                            <span>管理员中心</span>
+                        </button>
+                        <button type="button" @click="window.location.href='help.html'" class="dv-side-nav-item">
+                            <span class="dv-side-nav-icon" aria-hidden="true">?</span>
+                            <span>帮助</span>
+                        </button>
+                    </nav>
+                    <div class="dv-sidebar-section">
+                        <div class="dv-sidebar-section-title">账号</div>
+                        <div class="dv-sidebar-account">
+                            <span class="dv-sidebar-account-name" x-text="currentUser?.account || currentUser?.name || currentUser?.phone || '当前用户'"></span>
+                            <span class="dv-sidebar-account-meta" x-text="currentLevelInfo?.name || getLicenseStatusLabel()"></span>
+                        </div>
+                    </div>
+                    <div class="dv-sidebar-section" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
+                        <div class="dv-sidebar-section-title">最近</div>
+                        <div class="dv-sidebar-recent-list">
+                            <template x-for="session in getWorkbenchRecentSessions(3)" :key="`sidebar-recent-${session.session_id}`">
+                                <button type="button" class="dv-sidebar-recent" @click="openSession(session.session_id)">
+                                    <span x-text="session.topic"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </aside>
+                <div class="dv-app-content">
         <!-- 流程步骤指示器（仅在访谈中显示） -->
         <template x-if="currentView === 'interview' && currentSession">
             <div class="bg-white border-b border-gray-200 shadow-sm">
@@ -1436,6 +1488,32 @@
                             <button class="guide-btn ghost" @click="prevGuideStep()" :disabled="guideStepIndex === 0" x-show="guideStepIndex < guideStepTotal">上一步</button>
                             <button class="guide-btn primary" @click="nextGuideStep()" x-text="guideSteps[guideStepIndex].cta"></button>
                         </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="currentView === 'library'">
+                <div class="dv-shell-placeholder">
+                    <div>
+                        <h2>库</h2>
+                        <p>会话、报告、资料和方案会在这里汇总。</p>
+                    </div>
+                    <div class="dv-shell-placeholder-actions">
+                        <button type="button" class="btn-sage-blue text-white" @click="openWorkbenchSessionComposer()">新建访谈</button>
+                        <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="currentView === 'agents'">
+                <div class="dv-shell-placeholder">
+                    <div>
+                        <h2>Agents</h2>
+                        <p>访谈、报告、方案和运维能力会在这里按任务呈现。</p>
+                    </div>
+                    <div class="dv-shell-placeholder-actions">
+                        <button type="button" class="btn-sage-blue text-white" @click="switchView('sessions'); focusWorkbenchTaskInput()">开始访谈</button>
+                        <button type="button" class="dv-workbench-chip" x-show="canViewAdminCenter()" x-cloak @click="openAdminCenter('overview')">管理员中心</button>
                     </div>
                 </div>
             </template>
@@ -4849,6 +4927,7 @@
                 </div>
             </template>
         </main>
+                </div>
             </div>
         </template>
 

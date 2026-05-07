@@ -4,9 +4,9 @@
 # dependencies = ["flask", "flask-cors", "anthropic", "requests", "reportlab", "pillow", "jdcloud-sdk", "psycopg[binary]", "boto3"]
 # ///
 """
-DeepInsight Web Server - AI 驱动版本
+Intus Web Server - AI 驱动版本
 
-完整实现 deepinsight 技能的所有功能：
+完整实现 intus 技能的所有功能：
 - 动态生成问题和选项（基于上下文和行业知识）
 - 智能追问（识别表面需求，挖掘本质）
 - 冲突检测（检测回答与参考文档的冲突）
@@ -190,7 +190,7 @@ except Exception:
 # - hybrid: 保留历史行为，env 未命中时继续回落 config.py
 # - env_only: 只使用 env/default，不回落 config.py
 CONFIG_RESOLUTION_MODE = str(
-    os.environ.get("DEEPINSIGHT_CONFIG_RESOLUTION_MODE")
+    os.environ.get("INTUS_CONFIG_RESOLUTION_MODE")
     or os.environ.get("CONFIG_RESOLUTION_MODE")
     or "auto"
 ).strip().lower()
@@ -284,8 +284,8 @@ def _should_use_runtime_config_fallback(name: str) -> bool:
 
 # ============ 配置读取工具 ============
 def _cfg_get(name: str, default):
-    # 生产环境可通过 DEEPINSIGHT_ 前缀变量覆盖（优先级最高）
-    env_prefixed_val = os.environ.get(f"DEEPINSIGHT_{name}")
+    # 生产环境可通过 INTUS_ 前缀变量覆盖（优先级最高）
+    env_prefixed_val = os.environ.get(f"INTUS_{name}")
     if env_prefixed_val is not None:
         return env_prefixed_val
 
@@ -537,7 +537,7 @@ OBJECT_STORAGE_ACCESS_KEY_ID = _cfg_text("OBJECT_STORAGE_ACCESS_KEY_ID", "")
 OBJECT_STORAGE_SECRET_ACCESS_KEY = _cfg_text("OBJECT_STORAGE_SECRET_ACCESS_KEY", "")
 OBJECT_STORAGE_FORCE_PATH_STYLE = _cfg_bool("OBJECT_STORAGE_FORCE_PATH_STYLE", False)
 OBJECT_STORAGE_SIGNATURE_VERSION = _cfg_text("OBJECT_STORAGE_SIGNATURE_VERSION", "v4") or "v4"
-OBJECT_STORAGE_PREFIX = _cfg_text("OBJECT_STORAGE_PREFIX", "deepinsight") or "deepinsight"
+OBJECT_STORAGE_PREFIX = _cfg_text("OBJECT_STORAGE_PREFIX", "intus") or "intus"
 
 # 列表接口性能与并发保护配置
 LIST_API_DEFAULT_PAGE_SIZE = _cfg_int("LIST_API_DEFAULT_PAGE_SIZE", 20)
@@ -2273,12 +2273,12 @@ CORS(app)
 
 # Session 配置
 config_secret_key = CONFIG_SECRET_KEY
-env_secret_key = os.environ.get("DEEPINSIGHT_SECRET_KEY", "") or os.environ.get("SECRET_KEY", "")
+env_secret_key = os.environ.get("INTUS_SECRET_KEY", "") or os.environ.get("SECRET_KEY", "")
 if config_secret_key or env_secret_key:
     app_secret_key = config_secret_key or env_secret_key
 elif DEBUG_MODE:
     # 开发模式使用固定默认密钥，避免每次重启后登录态全部失效
-    app_secret_key = os.environ.get("DEEPINSIGHT_DEV_SECRET_KEY", "deepinsight-dev-secret-key")
+    app_secret_key = os.environ.get("INTUS_DEV_SECRET_KEY", "intus-dev-secret-key")
     print("⚠️  未配置 SECRET_KEY，开发模式使用固定默认会话密钥")
 else:
     app_secret_key = secrets.token_hex(32)
@@ -2294,7 +2294,7 @@ app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 SKILL_DIR = Path(__file__).parent.parent.resolve()
 WEB_DIR = Path(__file__).parent.resolve()
 RESOURCES_DIR = SKILL_DIR / "resources"
-configured_data_dir = str(os.environ.get("DEEPINSIGHT_DATA_DIR", "") or CONFIG_DATA_DIR).strip()
+configured_data_dir = str(os.environ.get("INTUS_DATA_DIR", "") or CONFIG_DATA_DIR).strip()
 if configured_data_dir:
     resolved_data_dir = Path(configured_data_dir).expanduser()
     if not resolved_data_dir.is_absolute():
@@ -2581,7 +2581,7 @@ else:
     CUSTOM_SCENARIOS_DIR = default_custom_scenarios_dir
 
 auth_db_from_config = CONFIG_AUTH_DB_PATH
-auth_db_from_env = os.environ.get("DEEPINSIGHT_AUTH_DB_PATH", "")
+auth_db_from_env = os.environ.get("INTUS_AUTH_DB_PATH", "")
 raw_auth_db_path = auth_db_from_env or auth_db_from_config
 AUTH_DB_PATH = resolve_db_target(
     raw_auth_db_path,
@@ -2590,7 +2590,7 @@ AUTH_DB_PATH = resolve_db_target(
 )
 
 license_db_from_config = CONFIG_LICENSE_DB_PATH
-license_db_from_env = os.environ.get("DEEPINSIGHT_LICENSE_DB_PATH", "")
+license_db_from_env = os.environ.get("INTUS_LICENSE_DB_PATH", "")
 raw_license_db_path = license_db_from_env or license_db_from_config
 LICENSE_DB_PATH = resolve_db_target(
     raw_license_db_path,
@@ -2599,12 +2599,12 @@ LICENSE_DB_PATH = resolve_db_target(
 )
 
 meta_index_db_from_config = CONFIG_META_INDEX_DB_PATH
-meta_index_db_from_env = os.environ.get("DEEPINSIGHT_META_INDEX_DB_PATH", "")
+meta_index_db_from_env = os.environ.get("INTUS_META_INDEX_DB_PATH", "")
 META_INDEX_DB_TARGET_RAW = str(meta_index_db_from_env or meta_index_db_from_config).strip()
 
 INSECURE_SECRET_KEY_PLACEHOLDERS = {
     "replace-with-a-strong-random-secret",
-    "deepinsight-dev-secret-key",
+    "intus-dev-secret-key",
 }
 INSECURE_INSTANCE_SCOPE_PLACEHOLDERS = {
     "replace-with-instance-scope-key",
@@ -2682,8 +2682,8 @@ for d in [SESSIONS_DIR, REPORTS_DIR, CONVERTED_DIR, TEMP_DIR, METRICS_DIR, SUMMA
 validate_runtime_security_config()
 
 ADMIN_SETTINGS_WRITE_LOCK = threading.RLock()
-ADMIN_CONFIG_MANAGED_BEGIN = "# === DEEPINSIGHT ADMIN UI MANAGED CONFIG BEGIN ==="
-ADMIN_CONFIG_MANAGED_END = "# === DEEPINSIGHT ADMIN UI MANAGED CONFIG END ==="
+ADMIN_CONFIG_MANAGED_BEGIN = "# === INTUS ADMIN UI MANAGED CONFIG BEGIN ==="
+ADMIN_CONFIG_MANAGED_END = "# === INTUS ADMIN UI MANAGED CONFIG END ==="
 
 
 def _admin_setting(
@@ -3725,7 +3725,7 @@ def _write_admin_config_updates(updates: dict[str, Any]) -> Path:
 
     with ADMIN_SETTINGS_WRITE_LOCK:
         existing_text = config_path.read_text(encoding="utf-8") if config_path.exists() else (
-            "\"\"\"DeepInsight 本地策略配置（由管理员中心可选覆盖）\"\"\"\n"
+            "\"\"\"Intus 本地策略配置（由管理员中心可选覆盖）\"\"\"\n"
         )
         managed_values = _read_admin_managed_config_values(config_path)
         managed_values.update(updates)
@@ -3747,7 +3747,7 @@ def _render_admin_site_config_file(values: dict[str, Any]) -> str:
     serialized = json.dumps(values, ensure_ascii=False, indent=2)
     return (
         "/**\n"
-        " * DeepInsight 前端配置文件\n"
+        " * Intus 前端配置文件\n"
         " *\n"
         " * 此文件由管理员中心维护。\n"
         " * 修改后请刷新浏览器页面生效。\n"
@@ -3775,8 +3775,8 @@ def _write_admin_site_config_updates(updates: dict[str, Any]) -> Path:
 def _get_admin_runtime_source_label(source: str, key: str) -> str:
     if source == "site":
         return "共享数据库 site_config_store（刷新页面后生效）"
-    if os.environ.get(f"DEEPINSIGHT_{key}") is not None:
-        return "DEEPINSIGHT_ 环境变量（保存配置文件不会覆盖当前运行值）"
+    if os.environ.get(f"INTUS_{key}") is not None:
+        return "INTUS_ 环境变量（保存配置文件不会覆盖当前运行值）"
     if os.environ.get(key) is not None:
         if key in LOADED_ENV_KEYS:
             return ".env 文件"
@@ -3852,7 +3852,7 @@ from scripts.scenario_loader import get_scenario_loader
 scenario_loader = get_scenario_loader(
     builtin_dir=BUILTIN_SCENARIOS_DIR,
     custom_dir=CUSTOM_SCENARIOS_DIR,
-    migrate_legacy_custom_dir=Path.home() / ".deepinsight" / "scenarios" / "custom",
+    migrate_legacy_custom_dir=Path.home() / ".intus" / "scenarios" / "custom",
     meta_index_db_path=resolve_db_target(
         META_INDEX_DB_TARGET_RAW,
         root_dir=SKILL_DIR,
@@ -9066,7 +9066,7 @@ def _legacy_license_signing_secret() -> str:
     return _first_non_empty(
         CONFIG_SECRET_KEY,
         str(app.secret_key or ""),
-        "deepinsight-dev-license-secret",
+        "intus-dev-license-secret",
     )
 
 
@@ -11226,7 +11226,7 @@ def _sms_signing_secret() -> str:
         _cfg_text("SMS_CODE_SIGNING_SECRET", ""),
         CONFIG_SECRET_KEY,
         str(app.secret_key or ""),
-        "deepinsight-dev-sms-secret",
+        "intus-dev-sms-secret",
     )
     return configured
 
@@ -13087,7 +13087,7 @@ def _normalize_object_storage_segment(value: object, fallback: str = "item") -> 
 
 def build_object_storage_key(category: str, *segments: object, filename: str = "") -> str:
     scope_key = _normalize_object_storage_segment(get_active_instance_scope_key(), fallback="default")
-    prefix = _normalize_object_storage_segment(OBJECT_STORAGE_PREFIX, fallback="deepinsight")
+    prefix = _normalize_object_storage_segment(OBJECT_STORAGE_PREFIX, fallback="intus")
     parts = [prefix, scope_key, _normalize_object_storage_segment(category, fallback="misc")]
     for segment in segments:
         normalized = _normalize_object_storage_segment(segment, fallback="")
@@ -16849,7 +16849,7 @@ def build_session_report_filename(session: dict, now: Optional[datetime] = None)
     if not session_token:
         raise ValueError("session_id 无效，无法生成报告文件名")
 
-    parts = ["deepinsight", date_str]
+    parts = ["intus", date_str]
     scope_tag = get_instance_scope_short_tag()
     if scope_tag:
         parts.append(scope_tag)
@@ -17288,7 +17288,7 @@ class MCPClient:
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
                 "clientInfo": {
-                    "name": "deepinsight",
+                    "name": "intus",
                     "version": "1.0.0"
                 }
             })
@@ -17814,7 +17814,7 @@ def generate_search_query(topic: str, dimension: str, context: dict) -> str:
         return f"{topic} {dim_name}"
 
 
-# ============ DeepInsight AI 核心逻辑 ============
+# ============ Intus AI 核心逻辑 ============
 
 DIMENSION_INFO = {
     "customer_needs": {
@@ -20686,7 +20686,7 @@ xychart-beta
 - 客观公正，既要指出优势也要指出不足
 - 报告要专业、结构清晰、有理有据
 - 使用 Markdown 格式
-- 报告末尾使用署名：*此报告由 DeepInsight 深察生成*
+- 报告末尾使用署名：*此报告由 Intus 见真生成*
 
 请生成完整的评估报告："""
 
@@ -20853,7 +20853,7 @@ def build_compact_report_prompt(session: dict, evidence_pack: Optional[dict] = N
 3. 结论优先引用 Q 编号；信息不足时明确写“暂无数据”或“待补充”。
 4. component 为 `table` 时输出 Markdown 表格；为 `list` 时输出列表；为 `mermaid` 时输出 ```mermaid 代码块。
 5. 内容要紧凑、结论先行，避免大段空话和重复表述。
-6. 报告末尾使用署名：*此报告由 DeepInsight 深察生成*{schema_issue_notice}
+6. 报告末尾使用署名：*此报告由 Intus 见真生成*{schema_issue_notice}
 
 请直接生成完整报告："""
 
@@ -20887,7 +20887,7 @@ def build_compact_report_prompt(session: dict, evidence_pack: Optional[dict] = N
 4. 可视化分析可包含 Mermaid，但仅保留 1-2 个最有价值的图，不要堆砌。
 5. 所有关键结论尽量引用 Q 编号；信息不足时明确写“暂无数据”。
 6. 内容要紧凑、结论先行，避免大段空话和重复表述。
-7. 报告末尾使用署名：*此报告由 DeepInsight 深察生成*
+7. 报告末尾使用署名：*此报告由 Intus 见真生成*
 
 请直接生成完整报告："""
 
@@ -21015,7 +21015,7 @@ def build_report_prompt_with_options(session: dict, evidence_pack: Optional[dict
 3. 关键结论优先引用问答证据（Q数字），不得编造访谈事实。
 4. 若某章节信息不足，明确写出“暂无数据”或“待补充”，不得空章节。
 5. flowchart 连接线标签必须使用 `A -->|标签| B` 语法。
-6. 报告末尾使用署名：*此报告由 DeepInsight 深察生成*{schema_issue_notice}
+6. 报告末尾使用署名：*此报告由 Intus 见真生成*{schema_issue_notice}
 
 请生成完整的报告："""
     else:
@@ -21186,7 +21186,7 @@ flowchart TD
 - 报告要专业、结构清晰、可操作
 - **Mermaid 语法要求严格，请仔细检查每个图表的语法正确性**
 - **flowchart 连接线带标签语法必须是 `A -->|标签| B`，禁止使用 `A --|标签|--> B`**
-- 报告末尾使用署名：*此报告由 DeepInsight 深察生成*
+- 报告末尾使用署名：*此报告由 Intus 见真生成*
 
 请生成完整的报告："""
 
@@ -25110,7 +25110,7 @@ def build_report_temporal_fields(generated_at: Optional[datetime] = None) -> dic
         "interview_date": local_now.strftime("%Y-%m-%d"),
         "generated_datetime_cn": local_now.strftime("%Y年%m月%d日 %H:%M"),
         "generated_datetime_iso_minute": local_now.strftime("%Y-%m-%d %H:%M"),
-        "report_id": f"deepinsight-{local_now.strftime('%Y%m%d-%H%M')}",
+        "report_id": f"intus-{local_now.strftime('%Y%m%d-%H%M')}",
     }
 
 
@@ -25554,7 +25554,7 @@ def render_report_from_draft_custom_v1(session: dict, draft: dict, quality_meta:
         lines.append("")
 
     lines.extend([
-        "*此报告由 DeepInsight 深察生成*",
+        "*此报告由 Intus 见真生成*",
         "",
     ])
     return "\n".join(lines)
@@ -25719,7 +25719,7 @@ def render_report_from_draft_assessment_v1(session: dict, draft: dict, quality_m
         "",
         *open_questions_table,
         "",
-        "*此报告由 DeepInsight 深察生成*",
+        "*此报告由 Intus 见真生成*",
         "",
     ]
     return "\n".join(lines)
@@ -26035,7 +26035,7 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
         "",
         *open_questions_table,
         "",
-        "*此报告由 DeepInsight 深察生成*",
+        "*此报告由 Intus 见真生成*",
         "",
     ]
 
@@ -32784,7 +32784,7 @@ def generate_simple_report(session: dict) -> str:
     content += generate_interview_appendix(session)
 
     content += """
-*此报告由 DeepInsight 深察生成*
+*此报告由 Intus 见真生成*
 """
 
     return content
@@ -34452,7 +34452,7 @@ def simplify_solution_subject(value: object, max_len: int = 0) -> str:
     if not text:
         return ""
 
-    text = text.replace("DeepInsight", "").replace("深察", "").strip()
+    text = text.replace("Intus", "").replace("见真", "").strip()
     original = text
     patterns = [
         r"(产品)?需求调研报告$",
@@ -34743,7 +34743,7 @@ def build_solution_comparison_items(
         {
             "label": "问题识别",
             "traditional": "传统推进往往先收集纪要，再由不同角色各自解读问题，根因判断容易分散。",
-            "proposed": f"DeepInsight 先围绕「{scene_text}」提炼问题树，把「{pain_text}」明确为首轮验证主题。",
+            "proposed": f"Intus 先围绕「{scene_text}」提炼问题树，把「{pain_text}」明确为首轮验证主题。",
             "effect": "让问题定义、验证目标和优先级在同一份方案里达成统一。",
         },
         {
@@ -39234,7 +39234,7 @@ def build_solution_render_model(snapshot: dict, proposal_brief: dict, chapter_co
     )
 
     overview = {
-        "eyebrow": clean_solution_text(hero.get("eyebrow", ""), max_len=24) or "DeepInsight 企业级提案",
+        "eyebrow": clean_solution_text(hero.get("eyebrow", ""), max_len=24) or "Intus 企业级提案",
         "title": clean_solution_text(hero.get("title", ""), max_len=96),
         "subtitle": clean_solution_text(hero.get("summary", ""), max_len=180),
         "judgement": clean_solution_text(hero.get("judgement", ""), max_len=180),
@@ -39441,7 +39441,7 @@ def build_solution_render_model(snapshot: dict, proposal_brief: dict, chapter_co
     return {
         "mode": "proposal",
         "hasProposal": True,
-        "brandTitle": clean_solution_text(meta.get("topic", ""), max_len=48) or clean_solution_text(normalized.get("topic", ""), max_len=48) or "DeepInsight 企业提案",
+        "brandTitle": clean_solution_text(meta.get("topic", ""), max_len=48) or clean_solution_text(normalized.get("topic", ""), max_len=48) or "Intus 企业提案",
         "navItems": copy.deepcopy(SOLUTION_PROPOSAL_RENDER_NAV_ITEMS),
         "contentPriorityPlan": copy.deepcopy(content_priority_plan),
         "overview": overview,
@@ -40242,7 +40242,7 @@ def build_solution_render_model_v1(
     return {
         "mode": "decision_v1",
         "hasProposal": True,
-        "brandTitle": clean_solution_text(brief.get("topic", ""), max_len=48) or clean_solution_text((legacy_render_model or {}).get("brandTitle", ""), max_len=48) or "DeepInsight 决策提案",
+        "brandTitle": clean_solution_text(brief.get("topic", ""), max_len=48) or clean_solution_text((legacy_render_model or {}).get("brandTitle", ""), max_len=48) or "Intus 决策提案",
         "navItems": nav_items or copy.deepcopy(SOLUTION_DECISION_RENDER_NAV_ITEMS),
         "contentPriorityPlan": copy.deepcopy(content_priority_plan_v1 if isinstance(content_priority_plan_v1, dict) else {}),
         "overview": copy.deepcopy(overview),
@@ -41955,7 +41955,7 @@ def build_solution_chapter_copy(snapshot: dict, proposal_brief: dict, quality_si
         {
             "id": "hero",
             "nav_label": "方案判断",
-            "eyebrow": "DeepInsight 企业级方案",
+            "eyebrow": "Intus 企业级方案",
             "title": clean_solution_text(thesis.get("headline", ""), max_len=72) or clean_solution_text(f"围绕「{context.get('entry_point', '关键切口')}」形成首轮闭环试点", max_len=72),
             "judgement": clean_solution_text(thesis.get("core_decision", ""), max_len=140) or clean_solution_text(thesis.get("why_now", ""), max_len=140),
             "summary": clean_solution_text(thesis.get("subheadline", ""), max_len=180) or clean_solution_text(context.get("summary", ""), max_len=180),
@@ -42744,7 +42744,7 @@ def _build_solution_degraded_payload(snapshot: dict, source_mode: str, quality_s
         "fingerprint": quality_signals.get("fingerprint", {}),
         "quality_signals": quality_signals,
         "hero": {
-            "eyebrow": "DeepInsight 真实信息摘要",
+            "eyebrow": "Intus 真实信息摘要",
             "title": title,
             "subtitle": subtitle,
             "summary": context.get("summary", ""),
@@ -42788,7 +42788,7 @@ def _build_solution_payload_from_snapshot(
         max_len=88,
     )
     default_hero = {
-        "eyebrow": "DeepInsight 差异化方案",
+        "eyebrow": "Intus 差异化方案",
         "title": title,
         "subtitle": subtitle,
         "summary": context.get("summary", ""),
@@ -42985,7 +42985,7 @@ def _build_payload_from_legacy_solution(legacy_payload: dict) -> dict:
             "fingerprint": quality_signals.get("fingerprint", {}),
             "quality_signals": quality_signals,
             "hero": {
-                "eyebrow": "DeepInsight 旧版兼容视图",
+                "eyebrow": "Intus 旧版兼容视图",
                 "title": clean_solution_text(f"{legacy_payload.get('title', '旧版报告')}真实信息摘要", max_len=40),
                 "subtitle": clean_solution_text("旧版报告只展示真实抽取信息，避免继续生成雷同模板方案。", max_len=72),
                 "summary": legacy_payload.get("overview", ""),
@@ -43014,7 +43014,7 @@ def _build_payload_from_legacy_solution(legacy_payload: dict) -> dict:
         "fingerprint": quality_signals.get("fingerprint", {}),
         "quality_signals": quality_signals,
         "hero": {
-            "eyebrow": "DeepInsight 旧版兼容方案",
+            "eyebrow": "Intus 旧版兼容方案",
             "title": legacy_payload.get("title", ""),
             "subtitle": legacy_payload.get("subtitle", ""),
             "summary": legacy_payload.get("overview", ""),
@@ -44900,7 +44900,7 @@ if __name__ == '__main__':
         ai_state_label = "不可用"
 
     print("=" * 60)
-    print("DeepInsight Web Server - AI 驱动版本")
+    print("Intus Web Server - AI 驱动版本")
     print("=" * 60)
     print(f"Sessions: {SESSIONS_DIR}")
     print(f"Reports: {REPORTS_DIR}")

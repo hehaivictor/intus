@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 全局 heartbeat / memory 指针生成器。
+Intus harness 全局 heartbeat / memory 指针生成器。
 """
 
 from __future__ import annotations
@@ -259,7 +259,7 @@ def build_heartbeat_payload(*, root_dir: Path = ROOT_DIR) -> dict[str, Any]:
 def render_heartbeat_markdown(payload: dict[str, Any]) -> str:
     active_phase = payload.get("active_phase", {}) if isinstance(payload.get("active_phase"), dict) else {}
     lines = [
-        "# DeepInsight Heartbeat",
+        "# Intus Heartbeat",
         "",
         f"> 生成时间：{payload.get('generated_at', '')}",
         "",
@@ -353,7 +353,7 @@ def write_heartbeat_artifacts(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="生成 DeepInsight 全局 heartbeat / memory 指针")
+    parser = argparse.ArgumentParser(description="生成 Intus 全局 heartbeat / memory 指针")
     parser.add_argument("--artifact-dir", default=str(DEFAULT_ARTIFACT_DIR.relative_to(ROOT_DIR)), help="JSON 指针输出目录")
     parser.add_argument("--output-markdown", default=str(DEFAULT_MARKDOWN_PATH.relative_to(ROOT_DIR)), help="Heartbeat markdown 输出路径")
     parser.add_argument("--dry-run", action="store_true", help="仅打印 markdown，不写文件")
@@ -373,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
         artifact_dir=args.artifact_dir,
         output_markdown=args.output_markdown,
     )
-    print("DeepInsight agent heartbeat")
+    print("Intus agent heartbeat")
     print(f"[WRITE] {outputs['markdown_file']}")
     print(f"[WRITE] {outputs['json_file']}")
     return 0

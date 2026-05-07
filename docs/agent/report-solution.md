@@ -11,12 +11,12 @@
 
 ## 主要代码与测试
 
-- 后端主入口：[web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- 方案页前端：[web/solution.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.js)
-- 方案页页面与样式：[web/solution.html](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.html)、[web/solution.css](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.css)
-- 主接口回归：[tests/test_api_comprehensive.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_api_comprehensive.py)
-- 方案页载荷回归：[tests/test_solution_payload.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_solution_payload.py)
-- 安全回归：[tests/test_security_regression.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_security_regression.py)
+- 后端主入口：[web/server.py](../../web/server.py)
+- 方案页前端：[web/solution.js](../../web/solution.js)
+- 方案页页面与样式：[web/solution.html](../../web/solution.html)、[web/solution.css](../../web/solution.css)
+- 主接口回归：[tests/test_api_comprehensive.py](../../tests/test_api_comprehensive.py)
+- 方案页载荷回归：[tests/test_solution_payload.py](../../tests/test_solution_payload.py)
+- 安全回归：[tests/test_security_regression.py](../../tests/test_security_regression.py)
 
 ## 先建立的心智模型
 
@@ -28,8 +28,8 @@
 ## 进入代码前先看什么
 
 - 如果改报告生成链路，先定位 `generate-report`、状态轮询和质量门控相关路由。
-- 如果改方案页输出，先读 [tests/test_solution_payload.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_solution_payload.py)，确认当前兼容矩阵。
-- 如果改分享、公开访问、导出下载，先补看 [tests/test_security_regression.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_security_regression.py)。
+- 如果改方案页输出，先读 [tests/test_solution_payload.py](../../tests/test_solution_payload.py)，确认当前兼容矩阵。
+- 如果改分享、公开访问、导出下载，先补看 [tests/test_security_regression.py](../../tests/test_security_regression.py)。
 
 ## 不变量
 

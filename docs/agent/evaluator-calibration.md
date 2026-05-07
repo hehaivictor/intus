@@ -1,6 +1,6 @@
 # Evaluator 校准样本
 
-这份文档记录 DeepInsight evaluator 的评分标尺与真实误判案例。目标不是增加更多场景，而是让 `PASS / WARN / FAIL` 的尺度有可回溯依据，避免 nightly 因断言过硬或过松而漂移。
+这份文档记录 Intus evaluator 的评分标尺与真实误判案例。目标不是增加更多场景，而是让 `PASS / WARN / FAIL` 的尺度有可回溯依据，避免 nightly 因断言过硬或过松而漂移。
 
 ## 固定入口
 
@@ -13,42 +13,42 @@
 
 ### report-solution-wording-drift
 
-- 样本文件：[`tests/harness_calibration/report-solution-wording-drift.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/report-solution-wording-drift.json)
+- 样本文件：[`tests/harness_calibration/report-solution-wording-drift.json`](../../tests/harness_calibration/report-solution-wording-drift.json)
 - 适用场景：`report-solution-preview`、`report-solution-core`
 - 目标：防止方案页标题、卡片或指标文案发生轻微措辞变化时，被 evaluator 因逐字比较误判为 `FAIL`
 - 期望判定：`WARN`
 
 ### tenant-leak-must-fail
 
-- 样本文件：[`tests/harness_calibration/tenant-leak-must-fail.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/tenant-leak-must-fail.json)
+- 样本文件：[`tests/harness_calibration/tenant-leak-must-fail.json`](../../tests/harness_calibration/tenant-leak-must-fail.json)
 - 适用场景：`instance-scope-boundaries`
 - 目标：把跨 `INSTANCE_SCOPE_KEY` 的会话、报告或批量删除泄露固定为硬失败
 - 期望判定：`FAIL`
 
 ### share-readonly-regression-must-fail
 
-- 样本文件：[`tests/harness_calibration/share-readonly-regression-must-fail.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/share-readonly-regression-must-fail.json)
+- 样本文件：[`tests/harness_calibration/share-readonly-regression-must-fail.json`](../../tests/harness_calibration/share-readonly-regression-must-fail.json)
 - 适用场景：`access-boundaries`、`asset-ownership-boundaries`
 - 目标：把 owner 校验、公开只读和匿名写拦截边界回退固定为硬失败
 - 期望判定：`FAIL`
 
 ### license-gate-ui-wording-drift-should-warn
 
-- 样本文件：[`tests/harness_calibration/license-gate-ui-wording-drift-should-warn.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/license-gate-ui-wording-drift-should-warn.json)
+- 样本文件：[`tests/harness_calibration/license-gate-ui-wording-drift-should-warn.json`](../../tests/harness_calibration/license-gate-ui-wording-drift-should-warn.json)
 - 适用场景：`browser-smoke-extended`
 - 目标：区分“License 门禁仍有效但前端文案轻微变化”和“门禁失效”的不同风险等级
 - 期望判定：`WARN`
 
 ### workflow-governance-missing-must-fail
 
-- 样本文件：[`tests/harness_calibration/workflow-governance-missing-must-fail.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/workflow-governance-missing-must-fail.json)
+- 样本文件：[`tests/harness_calibration/workflow-governance-missing-must-fail.json`](../../tests/harness_calibration/workflow-governance-missing-must-fail.json)
 - 适用场景：`ownership-migration-governance`、`license-admin-preview`
 - 目标：把治理字段、确认词、备份目录或管理员前置条件的缺失固定为硬失败
 - 期望判定：`FAIL`
 
 ### presentation-sidecar-integrity-must-fail
 
-- 样本文件：[`tests/harness_calibration/presentation-sidecar-integrity-must-fail.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/presentation-sidecar-integrity-must-fail.json)
+- 样本文件：[`tests/harness_calibration/presentation-sidecar-integrity-must-fail.json`](../../tests/harness_calibration/presentation-sidecar-integrity-must-fail.json)
 - 适用场景：`presentation-map-concurrency`
 - 目标：把 sidecar 映射完整性和导出资产元数据回退固定为硬失败
 - 期望判定：`FAIL`

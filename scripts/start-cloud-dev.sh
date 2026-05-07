@@ -11,9 +11,9 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-export DEEPINSIGHT_ENV_FILE="$ENV_FILE"
+export INTUS_ENV_FILE="$ENV_FILE"
 
-echo "启动 DeepInsight 云端联调环境"
-echo "环境文件: ${DEEPINSIGHT_ENV_FILE}"
+echo "启动 Intus 云端联调环境"
+echo "环境文件: ${INTUS_ENV_FILE}"
 
 exec uv run web/server.py "$@"

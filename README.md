@@ -1,6 +1,6 @@
-# DeepInsight
+# Intus
 
-DeepInsight 是一个面向需求访谈、方案沉淀与交付输出的 AI Web 应用。系统覆盖「发起访谈 -> 沉淀记录 -> 生成报告 -> 派生方案页 -> 导出与分享」的完整链路，适合需求调研、售前咨询、业务诊断与方案澄清场景。
+Intus 是一个面向需求访谈、方案沉淀与交付输出的 AI Web 应用。系统覆盖「发起访谈 -> 沉淀记录 -> 生成报告 -> 派生方案页 -> 导出与分享」的完整链路，适合需求调研、售前咨询、业务诊断与方案澄清场景。
 
 当前版本：`1.0.0`（`2026-04-20`，见 [web/version.json](web/version.json)）
 
@@ -102,7 +102,7 @@ http://127.0.0.1:5002
 ```
 
 - 云端联调脚本只加载 `web/.env.cloud`
-- 如需显式指定环境文件，可使用 `DEEPINSIGHT_ENV_FILE=/path/to/custom.env uv run web/server.py`
+- 如需显式指定环境文件，可使用 `INTUS_ENV_FILE=/path/to/custom.env uv run web/server.py`
 - 首次运行时，`uv` 会按 [web/server.py](web/server.py) 顶部声明自动准备依赖
 
 ## 生产启动
@@ -111,7 +111,7 @@ http://127.0.0.1:5002
 
 - [deploy/docker-compose.production.yml](deploy/docker-compose.production.yml)
 - [deploy/Dockerfile.production](deploy/Dockerfile.production)
-- [deploy/nginx/deepinsight.conf.example](deploy/nginx/deepinsight.conf.example)
+- [deploy/nginx/intus.conf.example](deploy/nginx/intus.conf.example)
 
 ### 方式一：使用脚本
 
@@ -130,7 +130,7 @@ python3 scripts/run_gunicorn.py
 - [scripts/run_gunicorn.py](scripts/run_gunicorn.py) 会自动读取 [web/server.py](web/server.py) 顶部的 inline dependency metadata，并额外补上 `gunicorn`
 - Gunicorn 运行参数由 [web/gunicorn.conf.py](web/gunicorn.conf.py) 从进程环境变量读取
 - 如果只改 `web/config.py`，Gunicorn 相关参数不会自动生效
-- Nginx 示例配置见 [deploy/nginx/deepinsight.conf.example](deploy/nginx/deepinsight.conf.example)
+- Nginx 示例配置见 [deploy/nginx/intus.conf.example](deploy/nginx/intus.conf.example)
 - 如需使用 Docker Compose 生产部署，请以 [deploy/docker-compose.production.yml](deploy/docker-compose.production.yml) 为唯一正式入口
 - 生产环境启动前会校验关键安全配置；`SECRET_KEY` 为模板占位值、`INSTANCE_SCOPE_KEY` 为空或 `SMS_PROVIDER=mock` 时会拒绝启动
 
@@ -156,7 +156,7 @@ python3 scripts/run_gunicorn.py
   - `REPORT_REVIEW_MODEL_NAME`
 - 配置解析：
   - `CONFIG_RESOLUTION_MODE`
-  - `DEEPINSIGHT_ENV_FILE`
+  - `INTUS_ENV_FILE`
 - 鉴权：
   - `SECRET_KEY`
   - `AUTH_DB_PATH`
@@ -186,7 +186,7 @@ python3 scripts/run_gunicorn.py
 DEBUG_MODE=true
 ENABLE_DEBUG_LOG=false
 SECRET_KEY=replace-with-your-own-random-secret
-INSTANCE_SCOPE_KEY=deepinsight-demo
+INSTANCE_SCOPE_KEY=intus-demo
 SMS_PROVIDER=mock
 SMS_TEST_CODE=666666
 ADMIN_PHONE_NUMBERS=13886047722
@@ -270,7 +270,7 @@ python3 scripts/agent_smoke.py
 ## 目录结构
 
 ```text
-DeepInsight/
+Intus/
 ├── web/                 # Web 服务、前端页面、静态资源与配置模板
 ├── resources/           # 内置场景资源
 ├── scripts/             # 启动、迁移、压测、版本管理等脚本

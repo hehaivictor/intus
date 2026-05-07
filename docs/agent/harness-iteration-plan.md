@@ -1,6 +1,6 @@
-# DeepInsight Harness 二阶段迭代计划
+# Intus Harness 二阶段迭代计划
 
-这份计划只覆盖 DeepInsight 在现有 harness 基线之上的第二阶段优化，不重复记录已经落地的入口、artifact、task profile、browser smoke、CI summary 和 history/observe 能力。
+这份计划只覆盖 Intus 在现有 harness 基线之上的第二阶段优化，不重复记录已经落地的入口、artifact、task profile、browser smoke、CI summary 和 history/observe 能力。
 
 ## 目标
 
@@ -45,7 +45,7 @@
 
 ## 每项执行要求
 
-每完成一个编号，必须同步更新 [harness-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress.md)，至少记录：
+每完成一个编号，必须同步更新 [harness-progress.md](../../docs/agent/harness-progress.md)，至少记录：
 
 - 完成日期
 - 对应编号

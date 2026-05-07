@@ -11,13 +11,13 @@
 
 ## 主要代码与文档
 
-- 后端主入口：[web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- 管理员迁移脚本：[scripts/admin_migrate_ownership.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/admin_migrate_ownership.py)
-- 迁移服务层：[scripts/admin_ownership_service.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/admin_ownership_service.py)
-- License 管理脚本：[scripts/license_manager.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/license_manager.py)
-- 列表接口压测：[scripts/loadtest_list_endpoints.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/loadtest_list_endpoints.py)
-- 配置边界说明：[web/CONFIG.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/CONFIG.md)
-- 实例隔离说明：[docs/instance-scope.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/instance-scope.md)
+- 后端主入口：[web/server.py](../../web/server.py)
+- 管理员迁移脚本：[scripts/admin_migrate_ownership.py](../../scripts/admin_migrate_ownership.py)
+- 迁移服务层：[scripts/admin_ownership_service.py](../../scripts/admin_ownership_service.py)
+- License 管理脚本：[scripts/license_manager.py](../../scripts/license_manager.py)
+- 列表接口压测：[scripts/loadtest_list_endpoints.py](../../scripts/loadtest_list_endpoints.py)
+- 配置边界说明：[web/CONFIG.md](../../web/CONFIG.md)
+- 实例隔离说明：[docs/instance-scope.md](../../docs/instance-scope.md)
 
 ## 先建立的心智模型
 
@@ -49,7 +49,7 @@ python3 scripts/loadtest_list_endpoints.py --base-url http://127.0.0.1:5001
 - 归属迁移优先 `list-users`、`audit`、`migrate` 的 dry-run，再决定是否 `--apply`。
 - 配置中心写入前，先确认目标是 `.env`、`config.py` 还是 `site-config.js`，不要混淆层次。
 - 调整配置中心接口时，优先复用 `build_admin_config_center_payload()` 与 `save_admin_config_group()`，不要把文件写入逻辑重新塞回 Flask 路由。
-- 管理后台相关变更如果影响部署行为，务必同时检查 [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md) 和对应 runbook 是否需要更新。
+- 管理后台相关变更如果影响部署行为，务必同时检查 [README.md](../../README.md) 和对应 runbook 是否需要更新。
 
 ## 常见失误
 

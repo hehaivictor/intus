@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-Deep-Vision 会话管理工具
+Intus 会话管理工具
 
 用途: 管理访谈会话的保存、恢复和清理
 使用方式: uvx scripts/session_manager.py <命令> [参数]
@@ -460,7 +460,7 @@ def get_progress_display(session_id: str) -> str:
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
-        description="Deep-Vision 会话管理工具",
+        description="Intus 会话管理工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:

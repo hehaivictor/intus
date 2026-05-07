@@ -1,4 +1,4 @@
-# DeepInsight 多实例云部署计划
+# Intus 多实例云部署计划
 
 ## Summary
 

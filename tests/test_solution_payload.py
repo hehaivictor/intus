@@ -14,7 +14,7 @@ SERVER_PATH = ROOT_DIR / "web" / "server.py"
 FIXTURES_DIR = ROOT_DIR / "tests" / "fixtures" / "report_solution"
 
 
-def load_report_solution_fixture(name: str = "deepinsight-tech-solution-report.solution.json") -> dict:
+def load_report_solution_fixture(name: str = "intus-tech-solution-report.solution.json") -> dict:
     fixture_path = FIXTURES_DIR / name
     return json.loads(fixture_path.read_text(encoding="utf-8"))
 
@@ -200,7 +200,7 @@ class SolutionPayloadTests(unittest.TestCase):
 
     def test_build_solution_payload_falls_back_to_legacy_markdown_for_old_report(self):
         report_content = (
-            '# DeepInsight 访谈报告\n\n'
+            '# Intus 访谈报告\n\n'
             '## 1. 访谈概述\n'
             '- **访谈场景** - 微信私域客户接待\n'
             '- **核心问题** - 高意向客户识别和分层效率低\n'
@@ -232,7 +232,7 @@ class SolutionPayloadTests(unittest.TestCase):
 
     def test_build_solution_payload_strips_html_and_prefers_overview_facts(self):
         report_content = (
-            '# DeepInsight 访谈报告\n\n'
+            '# Intus 访谈报告\n\n'
             '## 1. 访谈概述\n'
             '- **访谈场景** - <b>售后服务回访</b>\n'
             '- **核心问题** - <script>alert(1)</script>回访记录无法统一归因\n'

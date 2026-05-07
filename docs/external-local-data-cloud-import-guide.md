@@ -4,7 +4,7 @@
 
 如果你要执行完整迁移，请优先阅读：
 
-- [docs/full-data-migration-runbook.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/full-data-migration-runbook.md)
+- [docs/full-data-migration-runbook.md](../docs/full-data-migration-runbook.md)
 
 ## 1. 先判断属于哪类迁移
 
@@ -19,7 +19,7 @@
 
 ### 2.1 业务迁移脚本
 
-- [scripts/import_external_local_data_to_cloud.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/import_external_local_data_to_cloud.py)
+- [scripts/import_external_local_data_to_cloud.py](../scripts/import_external_local_data_to_cloud.py)
 
 负责：
 
@@ -31,7 +31,7 @@
 
 ### 2.2 回滚脚本
 
-- [scripts/rollback_external_local_data_import.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/rollback_external_local_data_import.py)
+- [scripts/rollback_external_local_data_import.py](../scripts/rollback_external_local_data_import.py)
 
 负责：
 
@@ -43,7 +43,7 @@
 
 ### 2.3 对象存储历史补齐脚本
 
-- [scripts/sync_object_storage_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/sync_object_storage_history.py)
+- [scripts/sync_object_storage_history.py](../scripts/sync_object_storage_history.py)
 
 负责：
 
@@ -110,7 +110,7 @@
 
 完整命令、参数、输出 JSON、回滚目录和验证步骤，统一看：
 
-- [docs/full-data-migration-runbook.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/full-data-migration-runbook.md)
+- [docs/full-data-migration-runbook.md](../docs/full-data-migration-runbook.md)
 
 推荐重点阅读章节：
 

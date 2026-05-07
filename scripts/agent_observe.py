@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 运行态观察入口。
+Intus agent 运行态观察入口。
 
 目标：
 1. 收口运行态健康、运维历史和最近 harness 结果
@@ -139,7 +139,7 @@ def resolve_selected_env_file(*, root_dir: Path, profile: str, explicit_env_file
             candidate = (root_dir / candidate).resolve()
         return candidate, "explicit"
 
-    env_from_process = str(os.environ.get("DEEPINSIGHT_ENV_FILE", "") or "").strip()
+    env_from_process = str(os.environ.get("INTUS_ENV_FILE", "") or "").strip()
     if env_from_process:
         candidate = Path(env_from_process).expanduser()
         if not candidate.is_absolute():
@@ -1479,7 +1479,7 @@ def determine_overall(summary: dict[str, int]) -> str:
 
 
 def render_text(payload: dict[str, Any]) -> None:
-    print("DeepInsight agent observe")
+    print("Intus agent observe")
     print(f"仓库目录: {payload['root_dir']}")
     print("")
     for item in payload["items"]:
@@ -1548,7 +1548,7 @@ def run_observe(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 运行态观察入口")
+    parser = argparse.ArgumentParser(description="Intus agent 运行态观察入口")
     parser.add_argument("--profile", default="auto", choices=["auto", "local", "cloud", "production"], help="观察时使用的环境场景")
     parser.add_argument("--env-file", default="", help="显式指定环境文件")
     parser.add_argument("--recent", type=int, default=5, help="每类最近记录展示条数")

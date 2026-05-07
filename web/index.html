@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
-    <title>DeepInsight 深察</title>
+    <title>Intus 见真</title>
     <!-- 本地化资源 - 支持内网部署 -->
     <script>
         // 主题预加载：避免刷新时闪烁
         (function () {
-            const storageKey = 'deepinsight_theme_mode';
+            const storageKey = 'intus_theme_mode';
             const validModes = ['light', 'dark', 'system'];
             let mode = 'system';
             try {
@@ -233,7 +233,7 @@
     <script src="vendor/js/FileSaver.min.js"></script>
     <script>
         // 初始化 Mermaid 配置（深浅主题共享）
-        window.getDeepInsightMermaidConfig = function (theme) {
+        window.getIntusMermaidConfig = function (theme) {
             const isDark = theme === 'dark';
             const commonConfig = {
                 startOnLoad: false,
@@ -319,7 +319,7 @@
             };
         };
 
-        mermaid.initialize(window.getDeepInsightMermaidConfig(
+        mermaid.initialize(window.getIntusMermaidConfig(
             document.documentElement.getAttribute('data-theme') || 'light'
         ));
     </script>
@@ -688,11 +688,11 @@
     <script defer src="vendor/js/alpine.min.js"></script>
 </head>
 <body class="bg-surface-secondary min-h-screen font-sans text-text antialiased pb-safe">
-    <div x-data="deepInsight()" x-cloak class="min-h-screen flex flex-col">
+    <div x-data="intusApp()" x-cloak class="min-h-screen flex flex-col">
         <!-- Header -->
         <header class="bg-surface border-b border-border">
             <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-5 flex items-center justify-between">
-                <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="window.location.href='intro.html'" title="了解 DeepInsight">
+                <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="window.location.href='intro.html'" title="了解 Intus">
                     <div class="relative logo-icon" :class="webSearching ? 'logo-searching' : ''">
                         <svg class="w-9 h-9 logo-light" viewBox="0 0 100 100" fill="none">
                             <defs>
@@ -809,8 +809,8 @@
                     </div>
                     <div class="flex flex-col">
                         <h1 class="text-xl leading-tight">
-                            <span class="brand-title">DeepInsight</span>
-                            <span class="brand-title-cn ml-1.5">深察</span>
+                            <span class="brand-title">Intus</span>
+                            <span class="brand-title-cn ml-1.5">见真</span>
                         </h1>
                         <p class="text-xs text-muted tracking-wide">洞察深处，方见真章</p>
                     </div>
@@ -6670,7 +6670,7 @@
         <!-- Footer -->
         <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
             <div class="max-w-7xl mx-auto px-4 text-center text-xs sm:text-sm text-muted">
-                <span>© DeepInsight 深察</span>
+                <span>© Intus 见真</span>
                 <span class="mx-2">|</span>
                 <span x-text="`v${appVersion}`"></span>
                 <span class="mx-2">|</span>

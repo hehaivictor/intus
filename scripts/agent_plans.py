@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight harness Planner artifact 引用辅助。
+Intus harness Planner artifact 引用辅助。
 """
 
 from __future__ import annotations

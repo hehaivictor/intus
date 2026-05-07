@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 场景脚手架。
+Intus harness 场景脚手架。
 
 目标：
 1. 把一次失败的 harness/evaluator 结果更快沉淀为 tests/harness_scenarios 模板

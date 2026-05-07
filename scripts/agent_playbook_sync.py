@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight task-backed playbook 同步脚本。
+Intus task-backed playbook 同步脚本。
 
 目标：
 1. 把 task profile 与对应 playbook 文档收敛到同一份结构化元数据
@@ -175,7 +175,7 @@ def check_task_playbooks(task_names: list[str] | None = None) -> list[str]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="同步 DeepInsight task-backed playbook 文档")
+    parser = argparse.ArgumentParser(description="同步 Intus task-backed playbook 文档")
     parser.add_argument("--task", action="append", dest="tasks", help="仅同步指定 task，可多次传入")
     parser.add_argument("--check", action="store_true", help="仅检查 playbook 是否与 task profile 保持同步")
     return parser
@@ -187,16 +187,16 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         mismatches = check_task_playbooks(task_names)
         if mismatches:
-            print("DeepInsight agent playbook check")
+            print("Intus agent playbook check")
             for item in mismatches:
                 print(f"[DRIFT] {item}")
             return 2
-        print("DeepInsight agent playbook check")
+        print("Intus agent playbook check")
         print("[OK] task-backed playbook 均已同步")
         return 0
 
     written = write_task_playbooks(task_names)
-    print("DeepInsight agent playbook sync")
+    print("Intus agent playbook sync")
     for path in written:
         print(f"[WRITE] {path}")
     return 0

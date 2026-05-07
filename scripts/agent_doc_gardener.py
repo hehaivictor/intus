@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 文档园丁 / 一致性报告。
+Intus harness 文档园丁 / 一致性报告。
 
 目标：
 1. 只读检查 task / playbook / contract / calibration / 索引文档之间是否一致
@@ -340,7 +340,7 @@ def build_doc_gardening_report() -> dict[str, Any]:
 
 def render_markdown(payload: dict[str, Any]) -> str:
     lines = [
-        "# DeepInsight Doc Gardening Report",
+        "# Intus Doc Gardening Report",
         "",
         f"> 生成时间：{payload.get('generated_at', '')}",
         f"> Overall：`{payload.get('overall', '')}`",
@@ -396,7 +396,7 @@ def write_artifacts(payload: dict[str, Any], artifact_dir: Path) -> dict[str, st
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="生成 DeepInsight harness 文档园丁一致性报告")
+    parser = argparse.ArgumentParser(description="生成 Intus harness 文档园丁一致性报告")
     parser.add_argument("--artifact-dir", default=str(DEFAULT_ARTIFACT_DIR), help="报告输出目录")
     parser.add_argument("--json", action="store_true", help="输出 JSON 摘要")
     return parser
@@ -410,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
-        print("DeepInsight agent doc gardening")
+        print("Intus agent doc gardening")
         print(f"overall: {payload.get('overall', '')}")
         print(
             "summary: PASS={PASS} WARN={WARN} FAIL={FAIL}".format(

@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight 管理员归属迁移脚本
+Intus 管理员归属迁移脚本
 
 用途：
 1) 手动将历史会话/报告批量归属到指定用户
@@ -205,7 +205,7 @@ def run_audit(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="DeepInsight 管理员归属迁移工具（支持 dry-run / apply / rollback）"
+        description="Intus 管理员归属迁移工具（支持 dry-run / apply / rollback）"
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

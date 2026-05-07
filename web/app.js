@@ -1,5 +1,5 @@
 /**
- * DeepInsight - AI 驱动的智能访谈前端
+ * Intus - AI 驱动的智能访谈前端
  *
  * 核心功能：
  * - 调用后端 AI API 动态生成问题和选项
@@ -23,7 +23,7 @@ const QUESTION_TYPING_CHAR_DELAY_MS = 14;
 const QUESTION_OPTION_REVEAL_DELAY_MS = 70;
 const QUESTION_INTERACTION_READY_DELAY_MS = 80;
 
-function deepInsight() {
+function intusApp() {
     const app = {
         // ============ 状态 ============
         currentView: 'sessions',
@@ -103,8 +103,8 @@ function deepInsight() {
         reportProfileDefault: 'balanced',
         reportProfile: 'balanced',
         quoteRotationInterval: null,  // 诗句轮播定时器
-        themeStorageKey: 'deepinsight_theme_mode',
-        appShellSnapshotStorageKey: 'deepinsight_app_shell_snapshot',
+        themeStorageKey: 'intus_theme_mode',
+        appShellSnapshotStorageKey: 'intus_app_shell_snapshot',
         appShellSnapshotVersion: 2,
         appShellSnapshotPersistTimer: null,
         appShellRestoreTarget: {
@@ -2471,8 +2471,8 @@ function deepInsight() {
         applyMermaidTheme(theme) {
             if (typeof mermaid === 'undefined') return;
             try {
-                if (typeof window.getDeepInsightMermaidConfig === 'function') {
-                    mermaid.initialize(window.getDeepInsightMermaidConfig(theme));
+                if (typeof window.getIntusMermaidConfig === 'function') {
+                    mermaid.initialize(window.getIntusMermaidConfig(theme));
                 }
             } catch (error) {
                 console.warn('切换图表主题失败:', error);
@@ -2495,9 +2495,9 @@ function deepInsight() {
 
         // 检查首次访问
         checkFirstVisit() {
-            const hasSeenIntro = localStorage.getItem('deepinsight_intro_seen');
+            const hasSeenIntro = localStorage.getItem('intus_intro_seen');
             if (!hasSeenIntro) {
-                localStorage.setItem('deepinsight_intro_seen', 'true');
+                localStorage.setItem('intus_intro_seen', 'true');
                 window.location.href = 'intro.html';
                 return true;
             }
@@ -2506,7 +2506,7 @@ function deepInsight() {
         initGuide() {
             const params = new URLSearchParams(window.location.search);
             const forced = params.get('guide') === '1';
-            this.hasSeenGuide = localStorage.getItem('deepinsight_guide_seen') === 'true';
+            this.hasSeenGuide = localStorage.getItem('intus_guide_seen') === 'true';
             if (forced || !this.hasSeenGuide) {
                 this.openGuide();
             }
@@ -2529,7 +2529,7 @@ function deepInsight() {
             this.guideSpotlightStyle = '';
             this.guideCardStyle = '';
             this.hasSeenGuide = true;
-            localStorage.setItem('deepinsight_guide_seen', 'true');
+            localStorage.setItem('intus_guide_seen', 'true');
         },
         completeGuide() {
             this.clearGuideHighlight();
@@ -2538,7 +2538,7 @@ function deepInsight() {
             this.guideSpotlightStyle = '';
             this.guideCardStyle = '';
             this.hasSeenGuide = true;
-            localStorage.setItem('deepinsight_guide_seen', 'true');
+            localStorage.setItem('intus_guide_seen', 'true');
         },
         async nextGuideStep() {
             const step = this.guideSteps[this.guideStepIndex];
@@ -6955,23 +6955,23 @@ function deepInsight() {
         }
     };
 
-    if (window.DeepInsightSessionListStateModule?.attach) {
-        window.DeepInsightSessionListStateModule.attach(app);
+    if (window.IntusSessionListStateModule?.attach) {
+        window.IntusSessionListStateModule.attach(app);
     }
-    if (window.DeepInsightReportStateModule?.attach) {
-        window.DeepInsightReportStateModule.attach(app);
+    if (window.IntusReportStateModule?.attach) {
+        window.IntusReportStateModule.attach(app);
     }
-    if (window.DeepInsightReportDetailRuntimeModule?.attach) {
-        window.DeepInsightReportDetailRuntimeModule.attach(app);
+    if (window.IntusReportDetailRuntimeModule?.attach) {
+        window.IntusReportDetailRuntimeModule.attach(app);
     }
-    if (window.DeepInsightInterviewRuntimeModule?.attach) {
-        window.DeepInsightInterviewRuntimeModule.attach(app);
+    if (window.IntusInterviewRuntimeModule?.attach) {
+        window.IntusInterviewRuntimeModule.attach(app);
     }
-    if (window.DeepInsightAuthLicenseStateModule?.attach) {
-        window.DeepInsightAuthLicenseStateModule.attach(app);
+    if (window.IntusAuthLicenseStateModule?.attach) {
+        window.IntusAuthLicenseStateModule.attach(app);
     }
-    if (window.DeepInsightAdminCenterStateModule?.attach) {
-        window.DeepInsightAdminCenterStateModule.attach(app);
+    if (window.IntusAdminCenterStateModule?.attach) {
+        window.IntusAdminCenterStateModule.attach(app);
     }
 
     return app;

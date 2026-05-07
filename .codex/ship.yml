@@ -1,5 +1,5 @@
 project:
-  repo: hehaivictor/deep-vision
+  repo: hehaivictor/intus
   default_base: main
   branch_prefix: codex/
   task_metadata_file: .codex/task.json

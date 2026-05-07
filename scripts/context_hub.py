@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight Context Hub 包装脚本。
+Intus Context Hub 包装脚本。
 
 目标：
 1. 把 Context Hub 作为仓库内统一的第三方文档检索入口。
@@ -117,7 +117,7 @@ def build_doctor_payload(
 def print_doctor(payload: dict[str, object]) -> None:
     runtime = payload.get("runtime") or {}
     tools = payload.get("tools") or {}
-    print("DeepInsight Context Hub 诊断")
+    print("Intus Context Hub 诊断")
     print(f"- root_dir: {payload.get('root_dir')}")
     print(f"- package: {payload.get('package_name')}")
     print(f"- node: {runtime.get('node') or '未找到'}")
@@ -155,7 +155,7 @@ def run_passthrough(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="DeepInsight 的 Context Hub 统一入口，用于第三方 SDK/API 文档检索。",
+        description="Intus 的 Context Hub 统一入口，用于第三方 SDK/API 文档检索。",
     )
     parser.add_argument(
         "--dry-run",

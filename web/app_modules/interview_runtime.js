@@ -1876,5 +1876,5 @@
         return app;
     }
 
-    global.DeepInsightInterviewRuntimeModule = { attach };
+    global.IntusInterviewRuntimeModule = { attach };
 })(window);

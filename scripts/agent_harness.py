@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 单入口检查。
+Intus agent 单入口检查。
 
 目标：
 1. 一次执行完成 doctor、guardrails、smoke 三类检查
@@ -365,7 +365,7 @@ def run_browser_smoke_stage(*, suite_name: str, install_browser: bool) -> Harnes
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 单入口检查")
+    parser = argparse.ArgumentParser(description="Intus agent 单入口检查")
     parser.add_argument(
         "--profile",
         default="local",
@@ -411,7 +411,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def list_stages(args: argparse.Namespace) -> int:
     doctor_profile = resolve_doctor_profile(args.profile)
-    print("DeepInsight agent harness stages")
+    print("Intus agent harness stages")
     print(f"1. doctor: profile={doctor_profile}")
     stage_index = 2
     if args.observe:
@@ -435,7 +435,7 @@ def list_stages(args: argparse.Namespace) -> int:
 
 
 def list_tasks() -> int:
-    print("DeepInsight agent harness tasks")
+    print("Intus agent harness tasks")
     for index, name in enumerate(agent_profiles.list_task_names(), 1):
         profile = agent_profiles.get_task_profile(name)
         print(
@@ -496,7 +496,7 @@ def render_text_output(
     artifact_paths: dict[str, str] | None = None,
     task_payload: dict | None = None,
 ) -> None:
-    print("DeepInsight agent harness")
+    print("Intus agent harness")
     print(f"仓库目录: {ROOT_DIR}")
     if task_payload:
         print(f"任务画像: {task_payload['name']} | risk={task_payload['risk_level']} | mode={task_payload['workflow_mode']}")

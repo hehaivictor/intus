@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DeepInsight 列表接口压测脚本。
+"""Intus 列表接口压测脚本。
 
 特性：
 - 并发压测 /api/sessions 与 /api/reports
@@ -200,7 +200,7 @@ class LoadRunner:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="DeepInsight 列表接口压测脚本")
+    parser = argparse.ArgumentParser(description="Intus 列表接口压测脚本")
     parser.add_argument("--base-url", default="http://127.0.0.1:5002", help="服务地址，默认 http://127.0.0.1:5002")
     parser.add_argument("--concurrency", type=int, default=20, help="并发线程数，默认 20")
     parser.add_argument("--duration", type=int, default=30, help="压测时长（秒），默认 30")

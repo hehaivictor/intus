@@ -433,7 +433,7 @@ def build_interview_assistant_prompt(
     )
     client_messages = _format_client_messages(payload.get("client_messages", []))
 
-    return f"""你是 DeepInsight 访谈页里的题内助手。你的任务是帮助用户理解当前问题和选项，便于用户自己做选择。
+    return f"""你是 Intus 访谈页里的题内助手。你的任务是帮助用户理解当前问题和选项，便于用户自己做选择。
 
 必须遵守：
 1. 只解释当前题、当前选项和相关上下文，不要替用户直接提交答案。

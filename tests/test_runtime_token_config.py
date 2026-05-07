@@ -70,7 +70,7 @@ def load_server_module(
             env_paths.append(env_file.name)
 
     try:
-        patched_env = {"DEEPINSIGHT_ENV_FILE": os.pathsep.join(env_paths)}
+        patched_env = {"INTUS_ENV_FILE": os.pathsep.join(env_paths)}
         patched_env.update(process_env_overrides or {})
         with patch.dict(os.environ, patched_env, clear=True):
             sys.modules["config"] = config_stub
@@ -111,7 +111,7 @@ class RuntimeTokenConfigTests(unittest.TestCase):
                     "SMS_PROVIDER": "mock",
                 },
                 process_env_overrides={
-                    "DEEPINSIGHT_DATA_DIR": str(isolated_data_dir),
+                    "INTUS_DATA_DIR": str(isolated_data_dir),
                 },
             )
 

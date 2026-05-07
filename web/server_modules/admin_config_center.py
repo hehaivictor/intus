@@ -65,7 +65,7 @@ class AdminConfigCenterService:
         explicit_env_files = self._get_explicit_env_files()
         loaded_files = [str(item) for item in self._loaded_env_files if str(item or "").strip()]
         if explicit_env_files:
-            reason = "DEEPINSIGHT_ENV_FILE 指定了多个文件时，只写入最后一个最高优先级 env。"
+            reason = "INTUS_ENV_FILE 指定了多个文件时，只写入最后一个最高优先级 env。"
         elif loaded_files:
             reason = "未显式指定 env 链时，写入当前服务已加载的 env 文件。"
         else:

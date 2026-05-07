@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 任务工作流执行器。
+Intus agent 任务工作流执行器。
 
 目标：
 1. 把 task workflow 从“只渲染”升级成“可受控执行”
@@ -261,7 +261,7 @@ def _resolve_workflow_db_paths(*, root_dir: Path, profile: dict[str, Any]) -> di
     }
     doctor_profile = str(profile.get("doctor_profile") or "auto").strip() or "auto"
     env_file = None
-    process_env_file = str(os.environ.get("DEEPINSIGHT_ENV_FILE", "") or "").strip()
+    process_env_file = str(os.environ.get("INTUS_ENV_FILE", "") or "").strip()
     if process_env_file:
         candidate = Path(process_env_file).expanduser()
         env_file = candidate if candidate.is_absolute() else (root_dir / candidate).resolve()
@@ -839,7 +839,7 @@ def run_task_workflow(
 
 
 def render_text(payload: dict[str, Any]) -> None:
-    print("DeepInsight agent workflow")
+    print("Intus agent workflow")
     print(
         f"任务画像: {payload['task']} | risk={payload['risk_level']} | "
         f"execute={payload['execute_mode']} | overall={payload['overall']}"
@@ -895,7 +895,7 @@ def render_text(payload: dict[str, Any]) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 任务工作流执行器")
+    parser = argparse.ArgumentParser(description="Intus agent 任务工作流执行器")
     parser.add_argument("--task", required=True, choices=agent_profiles.list_task_names(), help="选择任务画像")
     parser.add_argument("--task-var", action="append", default=[], help="任务变量，格式 key=value，可重复传入")
     parser.add_argument("--allow-apply", action="store_true", help="显示并允许执行高风险 apply/rollback 步骤")

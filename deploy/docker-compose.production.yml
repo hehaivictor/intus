@@ -1,6 +1,6 @@
 services:
-  deepinsight:
-    container_name: deepinsight
+  intus:
+    container_name: intus
     build:
       context: ..
       dockerfile: deploy/Dockerfile.production

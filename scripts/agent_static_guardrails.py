@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 源码级静态 guardrail。
+Intus agent 源码级静态 guardrail。
 
 目标：
 1. 把最关键的高风险路由约束前移到源码扫描阶段
@@ -734,7 +734,7 @@ def run_static_guardrails(*, server_file: Path = DEFAULT_SERVER_FILE) -> tuple[d
 
 
 def render_text_output(payload: dict[str, Any]) -> None:
-    print("DeepInsight agent static guardrails")
+    print("Intus agent static guardrails")
     print(f"server: {payload.get('server_file', '')}")
     print(f"routes: {int(payload.get('route_count', 0) or 0)}")
     print("")
@@ -761,7 +761,7 @@ def render_text_output(payload: dict[str, Any]) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 源码级静态 guardrail")
+    parser = argparse.ArgumentParser(description="Intus agent 源码级静态 guardrail")
     parser.add_argument("--server-file", default=str(DEFAULT_SERVER_FILE), help="显式指定要扫描的 Flask 服务文件")
     parser.add_argument("--json", action="store_true", help="输出 JSON 摘要")
     parser.add_argument("--list", action="store_true", help="仅列出内置静态 guardrail 规则")
@@ -784,7 +784,7 @@ def list_rules() -> int:
         "ownership_apply_confirmation",
         "ownership_rollback_requires_backup",
     ]
-    print("DeepInsight agent static guardrails")
+    print("Intus agent static guardrails")
     for index, rule in enumerate(rules, 1):
         print(f"{index}. {rule}")
     return 0

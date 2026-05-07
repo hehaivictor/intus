@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-Deep-Vision 报告生成工具
+Intus 报告生成工具
 
 用途: 基于会话数据生成专业的需求访谈报告
 使用方式: uvx scripts/report_generator.py generate <会话ID> [输出文件]
@@ -419,7 +419,7 @@ def generate_simple_report(session: dict) -> str:
         "",
         f"**访谈日期**: {now.strftime('%Y-%m-%d %H:%M')}",
         f"**访谈场景**: {scenario}",
-        f"**报告编号**: deepinsight-{now.strftime('%Y%m%d')}-{slugify(topic)}",
+        f"**报告编号**: intus-{now.strftime('%Y%m%d')}-{slugify(topic)}",
         "",
         "---",
         "",
@@ -793,13 +793,13 @@ def generate_simple_report(session: dict) -> str:
         "",
         "## 文档信息",
         "",
-        "- **生成工具**: Deep-Vision 智能访谈技能",
+        "- **生成工具**: Intus 见真智能访谈技能",
         f"- **生成日期**: {now.strftime('%Y-%m-%d %H:%M')}",
         "- **版本**: v1.1",
         "",
         "---",
         "",
-        "*此报告由 Deep-Vision 智能访谈技能自动生成，内容严格基于访谈收集的信息*",
+        "*此报告由 Intus 见真智能访谈技能自动生成，内容严格基于访谈收集的信息*",
     ])
 
     return "\n".join(report_lines)
@@ -839,7 +839,7 @@ def generate_report(session_id: str, output_path: Optional[str] = None) -> Optio
     else:
         topic_slug = slugify(session.get("topic", "report"))
         date_str = datetime.now().strftime("%Y%m%d")
-        filename = f"deepinsight-{date_str}-{topic_slug}.md"
+        filename = f"intus-{date_str}-{topic_slug}.md"
         output_file = get_reports_dir() / filename
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -852,7 +852,7 @@ def generate_report(session_id: str, output_path: Optional[str] = None) -> Optio
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
-        description="Deep-Vision 报告生成工具",
+        description="Intus 报告生成工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:

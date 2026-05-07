@@ -1,4 +1,4 @@
-# DeepInsight Architecture Map
+# Intus Architecture Map
 
 这份文档只回答三类问题：
 
@@ -6,11 +6,11 @@
 2. 主要边界在哪里
 3. 哪些依赖方向不允许出现
 
-它不是业务说明书。业务细节请回到 [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md) 里的领域文档。
+它不是业务说明书。业务细节请回到 [docs/agent/README.md](docs/agent/README.md) 里的领域文档。
 
 ## 1. 总体分层
 
-DeepInsight 当前仍是 brownfield 仓库，主应用没有完全拆成多服务，但已经形成稳定的逻辑分层：
+Intus 当前仍是 brownfield 仓库，主应用没有完全拆成多服务，但已经形成稳定的逻辑分层：
 
 ```text
 Types / Config / Docs
@@ -26,78 +26,78 @@ Types / Config / Docs
 
 ### 2.1 核心入口
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
+- [web/server.py](web/server.py)
   - Flask 主服务入口
   - 仍承载主要路由与一部分编排
   - 应尽量保持为“路由 + 薄编排 + 必要 glue code”
-- [web/wsgi.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/wsgi.py)
+- [web/wsgi.py](web/wsgi.py)
   - WSGI 入口
-- [web/gunicorn.conf.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/gunicorn.conf.py)
+- [web/gunicorn.conf.py](web/gunicorn.conf.py)
   - 生产运行参数
 
 ### 2.2 已抽离的 server runtime / service 模块
 
-- [web/server_modules/runtime_bootstrap.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/runtime_bootstrap.py)
+- [web/server_modules/runtime_bootstrap.py](web/server_modules/runtime_bootstrap.py)
   - 启动初始化协调器与 startup snapshot
-- [web/server_modules/report_generation_runtime.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/report_generation_runtime.py)
+- [web/server_modules/report_generation_runtime.py](web/server_modules/report_generation_runtime.py)
   - 报告生成编排与质量门控运行时
-- [web/server_modules/interview_runtime.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/interview_runtime.py)
+- [web/server_modules/interview_runtime.py](web/server_modules/interview_runtime.py)
   - 访谈问题推进、下一题生成、超时恢复相关运行时
-- [web/server_modules/admin_config_center.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/admin_config_center.py)
+- [web/server_modules/admin_config_center.py](web/server_modules/admin_config_center.py)
   - 配置中心读写服务
-- [web/server_modules/ownership_admin_flow.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/ownership_admin_flow.py)
+- [web/server_modules/ownership_admin_flow.py](web/server_modules/ownership_admin_flow.py)
   - 管理员归属迁移 API 编排
-- [web/server_modules/object_storage_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/object_storage_history.py)
+- [web/server_modules/object_storage_history.py](web/server_modules/object_storage_history.py)
   - 对象存储历史补齐与归档能力
 
 ### 2.3 脚本层服务
 
-- [scripts/admin_ownership_service.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/admin_ownership_service.py)
+- [scripts/admin_ownership_service.py](scripts/admin_ownership_service.py)
   - 账号归属迁移、审计、回滚的核心脚本服务
-- [scripts/import_external_local_data_to_cloud.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/import_external_local_data_to_cloud.py)
+- [scripts/import_external_local_data_to_cloud.py](scripts/import_external_local_data_to_cloud.py)
   - 本地数据导入云端
-- [scripts/rollback_external_local_data_import.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/rollback_external_local_data_import.py)
+- [scripts/rollback_external_local_data_import.py](scripts/rollback_external_local_data_import.py)
   - 导入回滚
-- [scripts/sync_object_storage_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/sync_object_storage_history.py)
+- [scripts/sync_object_storage_history.py](scripts/sync_object_storage_history.py)
   - 历史对象存储记录补齐
 
 ## 3. 前端物理地图
 
 ### 3.1 页面入口
 
-- [web/index.html](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/index.html)
+- [web/index.html](web/index.html)
   - 主应用入口
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
+- [web/app.js](web/app.js)
   - 主前端编排入口
-- [web/solution.html](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.html)
+- [web/solution.html](web/solution.html)
   - 方案页入口
-- [web/solution.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.js)
+- [web/solution.js](web/solution.js)
   - 方案页脚本
-- [web/help.html](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/help.html)
+- [web/help.html](web/help.html)
   - 帮助页入口
 
 ### 3.2 已抽离的 app 模块
 
-- [web/app_modules/interview_runtime.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/interview_runtime.js)
+- [web/app_modules/interview_runtime.js](web/app_modules/interview_runtime.js)
   - 访谈问答主流程
-- [web/app_modules/report_detail_runtime.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/report_detail_runtime.js)
+- [web/app_modules/report_detail_runtime.js](web/app_modules/report_detail_runtime.js)
   - 报告详情、导出、演示稿状态链路
-- [web/app_modules/admin_center_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/admin_center_state.js)
+- [web/app_modules/admin_center_state.js](web/app_modules/admin_center_state.js)
   - 管理员中心页签状态与 ops/config/ownership 协调
-- [web/app_modules/session_list_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/session_list_state.js)
+- [web/app_modules/session_list_state.js](web/app_modules/session_list_state.js)
   - 会话列表状态
-- [web/app_modules/report_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/report_state.js)
+- [web/app_modules/report_state.js](web/app_modules/report_state.js)
   - 报告态管理
-- [web/app_modules/auth_license_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/auth_license_state.js)
+- [web/app_modules/auth_license_state.js](web/app_modules/auth_license_state.js)
   - 登录与 License 状态
 
 ## 4. 数据与配置地图
 
 ### 4.1 配置来源
 
-- [web/.env.example](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/.env.example)
+- [web/.env.example](web/.env.example)
   - 环境变量模板
-- [web/config.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/config.py)
+- [web/config.py](web/config.py)
   - 非敏感默认策略
 - `web/.env.local` / `web/.env.cloud`
   - 本机私有环境文件，不进入版本库
@@ -122,52 +122,52 @@ Types / Config / Docs
 
 ### 5.1 单入口与执行层
 
-- [scripts/agent_harness.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_harness.py)
+- [scripts/agent_harness.py](scripts/agent_harness.py)
   - 统一 harness 入口
-- [scripts/agent_workflow.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_workflow.py)
+- [scripts/agent_workflow.py](scripts/agent_workflow.py)
   - task workflow 执行器
-- [scripts/agent_doctor.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_doctor.py)
+- [scripts/agent_doctor.py](scripts/agent_doctor.py)
   - 环境自检
-- [scripts/agent_observe.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_observe.py)
+- [scripts/agent_observe.py](scripts/agent_observe.py)
   - 运行态观察与诊断面板
-- [scripts/agent_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_history.py)
+- [scripts/agent_history.py](scripts/agent_history.py)
   - 历史索引与 diff
 
 ### 5.2 规则与验证层
 
-- [scripts/agent_static_guardrails.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_static_guardrails.py)
+- [scripts/agent_static_guardrails.py](scripts/agent_static_guardrails.py)
   - 源码级静态规则
-- [scripts/agent_guardrails.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_guardrails.py)
+- [scripts/agent_guardrails.py](scripts/agent_guardrails.py)
   - 运行态关键不变量
-- [scripts/agent_smoke.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_smoke.py)
+- [scripts/agent_smoke.py](scripts/agent_smoke.py)
   - 最小主链路回归
-- [scripts/agent_browser_smoke.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_browser_smoke.py)
+- [scripts/agent_browser_smoke.py](scripts/agent_browser_smoke.py)
   - 浏览器 UI smoke
-- [scripts/agent_eval.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_eval.py)
+- [scripts/agent_eval.py](scripts/agent_eval.py)
   - 场景 evaluator
 
 ### 5.3 计划、契约、校准、交接
 
-- [scripts/agent_planner.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_planner.py)
+- [scripts/agent_planner.py](scripts/agent_planner.py)
   - Planner artifact 生成
-- [scripts/agent_plans.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_plans.py)
+- [scripts/agent_plans.py](scripts/agent_plans.py)
   - 按 task 的 latest plan 指针
-- [scripts/agent_contracts.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_contracts.py)
+- [scripts/agent_contracts.py](scripts/agent_contracts.py)
   - Sprint Contract 装载
-- [scripts/agent_calibration.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_calibration.py)
+- [scripts/agent_calibration.py](scripts/agent_calibration.py)
   - Evaluator 校准样本
-- [scripts/agent_artifacts.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_artifacts.py)
+- [scripts/agent_artifacts.py](scripts/agent_artifacts.py)
   - progress / failure-summary / handoff / latest 指针
 
 ### 5.4 配置与语料
 
-- [resources/harness/tasks](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/resources/harness/tasks)
+- [resources/harness/tasks](resources/harness/tasks)
   - task 画像
-- [resources/harness/contracts](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/resources/harness/contracts)
+- [resources/harness/contracts](resources/harness/contracts)
   - Sprint Contract
-- [tests/harness_scenarios](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_scenarios)
+- [tests/harness_scenarios](tests/harness_scenarios)
   - evaluator 场景
-- [tests/harness_calibration](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration)
+- [tests/harness_calibration](tests/harness_calibration)
   - evaluator 校准样本
 
 ## 6. 允许的依赖方向
@@ -204,9 +204,9 @@ Types / Config / Docs
 
 进入仓库后，推荐顺序：
 
-1. 先看 [AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
-2. 再看这份 [ARCHITECTURE.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/ARCHITECTURE.md)
-3. 然后按任务跳到 [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md) 对应领域文档
+1. 先看 [AGENTS.md](AGENTS.md)
+2. 再看这份 [ARCHITECTURE.md](ARCHITECTURE.md)
+3. 然后按任务跳到 [docs/agent/README.md](docs/agent/README.md) 对应领域文档
 
 如果要改大文件，优先先确认：
 

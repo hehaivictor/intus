@@ -916,5 +916,5 @@
         return app;
     }
 
-    global.DeepInsightAdminCenterStateModule = { attach };
+    global.IntusAdminCenterStateModule = { attach };
 })(window);

@@ -1,10 +1,10 @@
-# DeepInsight 仓库收口与精简活跃计划
+# Intus 仓库收口与精简活跃计划
 
 本文档只保留当前仍需推进的收尾任务，避免继续混入已完成阶段的历史执行细节。
 
 已归档的历史执行记录见：
 
-- [docs/archive/repo-cleanup-execution-history.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/archive/repo-cleanup-execution-history.md)
+- [docs/archive/repo-cleanup-execution-history.md](../docs/archive/repo-cleanup-execution-history.md)
 
 ## 1. 当前状态
 
@@ -53,18 +53,18 @@
 
 ### 3.4 涉及文件
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- [web/server_modules/report_generation_runtime.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/report_generation_runtime.py)
-- [web/server_modules/interview_runtime.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/interview_runtime.py)
-- [docs/agent/plans/module-split-phase2.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/module-split-phase2.md)
+- [web/server.py](../web/server.py)
+- [web/server_modules/report_generation_runtime.py](../web/server_modules/report_generation_runtime.py)
+- [web/server_modules/interview_runtime.py](../web/server_modules/interview_runtime.py)
+- [docs/agent/plans/module-split-phase2.md](../docs/agent/plans/module-split-phase2.md)
 
 ### 3.5 验收命令
 
 ```bash
-rg -n "_ensure_(report|interview)_runtime_bound|_INTERVIEW_RUNTIME_LOCAL_NAMES|generate_report_v3_pipeline|run_report_generation_job|build_interview_prompt|_select_question_generation_runtime_profile|_prepare_question_generation_runtime|_call_question_with_optional_hedge|generate_question_with_tiered_strategy" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py
-python3 -m py_compile /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/report_generation_runtime.py /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/interview_runtime.py
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_guardrails.py --quiet
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_smoke.py
+rg -n "_ensure_(report|interview)_runtime_bound|_INTERVIEW_RUNTIME_LOCAL_NAMES|generate_report_v3_pipeline|run_report_generation_job|build_interview_prompt|_select_question_generation_runtime_profile|_prepare_question_generation_runtime|_call_question_with_optional_hedge|generate_question_with_tiered_strategy" ../web/server.py
+python3 -m py_compile ../web/server.py ../web/server_modules/report_generation_runtime.py ../web/server_modules/interview_runtime.py
+python3 ../scripts/agent_guardrails.py --quiet
+python3 ../scripts/agent_smoke.py
 ```
 
 ### 3.6 完成标准
@@ -106,20 +106,20 @@ python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/a
 
 ### 4.4 涉及文件
 
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
-- [web/app_modules/interview_runtime.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/interview_runtime.js)
-- [web/app_modules/report_detail_runtime.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/report_detail_runtime.js)
-- [web/app_modules/admin_center_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/admin_center_state.js)
+- [web/app.js](../web/app.js)
+- [web/app_modules/interview_runtime.js](../web/app_modules/interview_runtime.js)
+- [web/app_modules/report_detail_runtime.js](../web/app_modules/report_detail_runtime.js)
+- [web/app_modules/admin_center_state.js](../web/app_modules/admin_center_state.js)
 
 ### 4.5 验收命令
 
 ```bash
-node --check /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js
-node --check /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/interview_runtime.js
-node --check /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/report_detail_runtime.js
-node --check /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/admin_center_state.js
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_guardrails.py --quiet
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_smoke.py
+node --check ../web/app.js
+node --check ../web/app_modules/interview_runtime.js
+node --check ../web/app_modules/report_detail_runtime.js
+node --check ../web/app_modules/admin_center_state.js
+python3 ../scripts/agent_guardrails.py --quiet
+python3 ../scripts/agent_smoke.py
 ```
 
 ### 4.6 完成标准
@@ -154,13 +154,13 @@ python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/a
 
 ### 5.4 涉及文件
 
-- [docs/repo-cleanup-execution-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md)
-- [docs/agent/plans/module-split-phase2.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/module-split-phase2.md)
+- [docs/repo-cleanup-execution-plan.md](../docs/repo-cleanup-execution-plan.md)
+- [docs/agent/plans/module-split-phase2.md](../docs/agent/plans/module-split-phase2.md)
 
 ### 5.5 验收命令
 
 ```bash
-rg -n "第三批|solution_rendering|admin_license_state|过渡残留" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/module-split-phase2.md
+rg -n "第三批|solution_rendering|admin_license_state|过渡残留" ../docs/repo-cleanup-execution-plan.md ../docs/agent/plans/module-split-phase2.md
 ```
 
 ### 5.6 完成标准
@@ -183,8 +183,8 @@ rg -n "第三批|solution_rendering|admin_license_state|过渡残留" /Users/heh
 ### 3.2 当前问题
 
 - `README.md` 目前同时承担产品总览、配置说明、生产部署、运维接口和长篇 agent 命令索引
-- [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md) 已具备承接命令导航的能力
-- [AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md) 已包含更适合 agent 使用的高密度入口
+- [docs/agent/README.md](../docs/agent/README.md) 已具备承接命令导航的能力
+- [AGENTS.md](../AGENTS.md) 已包含更适合 agent 使用的高密度入口
 
 ### 3.3 具体动作
 
@@ -195,9 +195,9 @@ rg -n "第三批|solution_rendering|admin_license_state|过渡残留" /Users/heh
 
 ### 3.4 涉及文件
 
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
-- [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md)
-- [AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
+- [README.md](../README.md)
+- [docs/agent/README.md](../docs/agent/README.md)
+- [AGENTS.md](../AGENTS.md)
 
 ### 3.5 验收命令
 
@@ -205,12 +205,12 @@ rg -n "第三批|solution_rendering|admin_license_state|过渡残留" /Users/heh
 python3 - <<'PY'
 from pathlib import Path
 for p in ['README.md','docs/agent/README.md','AGENTS.md']:
-    path=Path('/Users/hehai/Documents/开目软件/Agents/project/DeepInsight')/p
+    path=Path.cwd()/p
     with path.open('r', encoding='utf-8', errors='ignore') as f:
         lines=sum(1 for _ in f)
     print(f'{p}: {lines}')
 PY
-rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md
+rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" ../README.md ../docs/agent/README.md ../AGENTS.md
 ```
 
 ### 3.6 完成标准
@@ -227,8 +227,8 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 
 ### 4.2 当前问题
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py) 仍约 4.7 万行
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js) 仍约 1.1 万行
+- [web/server.py](../web/server.py) 仍约 4.7 万行
+- [web/app.js](../web/app.js) 仍约 1.1 万行
 - 第一批拆出的 `server_modules` / `app_modules` 主要解决了启动、配置、列表状态与登录边界
 - 还未触及最重的业务热点：
   - 访谈推进编排
@@ -249,12 +249,12 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 
 ### 4.4 涉及文件
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
-- [web/server_modules](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules)
-- [web/app_modules](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules)
+- [web/server.py](../web/server.py)
+- [web/app.js](../web/app.js)
+- [web/server_modules](../web/server_modules)
+- [web/app_modules](../web/app_modules)
 - 可新增的规划文档，例如 `docs/agent/plans/`
-- [docs/agent/plans/module-split-phase2.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/module-split-phase2.md)
+- [docs/agent/plans/module-split-phase2.md](../docs/agent/plans/module-split-phase2.md)
 
 ### 4.5 验收命令
 
@@ -262,13 +262,13 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 python3 - <<'PY'
 from pathlib import Path
 for p in ['web/server.py','web/app.js']:
-    path=Path('/Users/hehai/Documents/开目软件/Agents/project/DeepInsight')/p
+    path=Path.cwd()/p
     with path.open('r', encoding='utf-8', errors='ignore') as f:
         lines=sum(1 for _ in f)
     print(f'{p}: {lines}')
 PY
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules -maxdepth 1 -type f | sort
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules -maxdepth 1 -type f | sort
+find ../web/server_modules -maxdepth 1 -type f | sort
+find ../web/app_modules -maxdepth 1 -type f | sort
 ```
 
 ### 4.6 完成标准

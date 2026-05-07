@@ -47,7 +47,7 @@ import sys
 import uuid
 from pathlib import Path
 
-ROOT_DIR = Path(os.environ["DEEPINSIGHT_ROOT_DIR"]).resolve()
+ROOT_DIR = Path(os.environ["INTUS_ROOT_DIR"]).resolve()
 SERVER_PATH = ROOT_DIR / "web" / "server.py"
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
@@ -241,7 +241,7 @@ def run_seed_session(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="DeepInsight browser live helper")
+    parser = argparse.ArgumentParser(description="Intus browser live helper")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     p_generate = subparsers.add_parser("generate-license")
@@ -650,7 +650,7 @@ function buildConfigPayload() {
           title: '前端品牌',
           description: '站点标题与品牌文案',
           items: [
-            { key: 'site_title', label: '站点标题', value: 'DeepInsight', description: '默认标题' },
+            { key: 'site_title', label: '站点标题', value: 'Intus', description: '默认标题' },
           ],
         },
       ],
@@ -733,9 +733,9 @@ function recentLines(lines, limit = 8) {
 function liveCommandEnv(context) {
   return {
     ...process.env,
-    DEEPINSIGHT_ROOT_DIR: ROOT_DIR,
-    DEEPINSIGHT_ENV_FILE: context.envFilePath,
-    DEEPINSIGHT_DATA_DIR: context.dataDir,
+    INTUS_ROOT_DIR: ROOT_DIR,
+    INTUS_ENV_FILE: context.envFilePath,
+    INTUS_DATA_DIR: context.dataDir,
     PYTHONUNBUFFERED: '1',
   };
 }
@@ -875,7 +875,7 @@ function buildLiveEnvFile(port) {
     'SMS_PROVIDER=mock',
     `SMS_TEST_CODE=${LIVE_SMS_CODE}`,
     'LICENSE_ENFORCEMENT_ENABLED=true',
-    'DEEPINSIGHT_TEST_REPORT_GENERATION_DELAY_SECONDS=5',
+    'INTUS_TEST_REPORT_GENERATION_DELAY_SECONDS=5',
     'SERVER_HOST=127.0.0.1',
     `SERVER_PORT=${port}`,
   ].join('\n') + '\n';
@@ -917,7 +917,7 @@ async function generateLiveLicense(context) {
 }
 
 async function startLiveBackend() {
-  const runtimeRoot = await mkdtemp(join(tmpdir(), 'deepinsight-browser-live-'));
+  const runtimeRoot = await mkdtemp(join(tmpdir(), 'intus-browser-live-'));
   const dataDir = join(runtimeRoot, 'data');
   const envFilePath = join(runtimeRoot, '.env.browser-live');
   const authDbPath = join(dataDir, 'auth', 'users.db');
@@ -932,8 +932,8 @@ async function startLiveBackend() {
     cwd: ROOT_DIR,
     env: {
       ...process.env,
-      DEEPINSIGHT_ENV_FILE: envFilePath,
-      DEEPINSIGHT_DATA_DIR: dataDir,
+      INTUS_ENV_FILE: envFilePath,
+      INTUS_DATA_DIR: dataDir,
       PYTHONUNBUFFERED: '1',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -1647,7 +1647,7 @@ async function scenarioAdminConfigEntry(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1700,7 +1700,7 @@ async function scenarioLoginView(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1750,7 +1750,7 @@ async function scenarioLoginSmsOnlyView(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1791,7 +1791,7 @@ async function scenarioLoginWechatOnlyView(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1836,7 +1836,7 @@ async function scenarioLicenseGateView(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1891,7 +1891,7 @@ async function scenarioLicenseActivateSuccess(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1947,7 +1947,7 @@ async function scenarioLicenseActivateRefresh(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -1991,7 +1991,7 @@ async function scenarioReportDetailFlow(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -2016,7 +2016,7 @@ async function scenarioReportDetailRefresh(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -2046,7 +2046,7 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -2076,7 +2076,7 @@ async function scenarioReportGenerationRefresh(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -2133,7 +2133,7 @@ async function scenarioAdminConfigTab(browser, baseUrl) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
@@ -2155,7 +2155,7 @@ async function scenarioLiveLoginLicenseFlow(browser, baseUrl, liveContext) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await performLiveLoginAndLicense(page, baseUrl, liveContext);
@@ -2183,7 +2183,7 @@ async function scenarioLiveReportSolutionFlow(browser, baseUrl, liveContext) {
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await performLiveLoginAndLicense(page, baseUrl, liveContext);
@@ -2231,7 +2231,7 @@ async function scenarioLiveSolutionPublicShareFlow(browser, baseUrl, liveContext
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await performLiveLoginAndLicense(page, baseUrl, liveContext);
@@ -2291,7 +2291,7 @@ async function scenarioLiveReportGenerationRefreshFlow(browser, baseUrl, liveCon
     browser,
     baseUrl,
     () => {
-      localStorage.setItem('deepinsight_intro_seen', 'true');
+      localStorage.setItem('intus_intro_seen', 'true');
     },
     async (page) => {
       await performLiveLoginAndLicense(page, baseUrl, liveContext);

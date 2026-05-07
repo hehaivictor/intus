@@ -4,10 +4,10 @@
 
 ## 先看什么
 
-- 仓库物理地图：[../../ARCHITECTURE.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/ARCHITECTURE.md)
-- 管理后台与运维：[../../docs/agent/admin-ops.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/admin-ops.md)
-- 访谈链路：[../../docs/agent/interview.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/interview.md)
-- 报告与方案页：[../../docs/agent/report-solution.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/report-solution.md)
+- 仓库物理地图：[../../ARCHITECTURE.md](../../ARCHITECTURE.md)
+- 管理后台与运维：[../../docs/agent/admin-ops.md](../../docs/agent/admin-ops.md)
+- 访谈链路：[../../docs/agent/interview.md](../../docs/agent/interview.md)
+- 报告与方案页：[../../docs/agent/report-solution.md](../../docs/agent/report-solution.md)
 
 ## 当前模块职责
 

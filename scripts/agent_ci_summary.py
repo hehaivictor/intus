@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight CI 摘要生成器。
+Intus CI 摘要生成器。
 
 目标：
 1. 从 latest.json / summary.json / handoff.json 生成短摘要
@@ -80,7 +80,7 @@ def _render_eval_results(results: list[dict], *, limit: int = 6) -> list[str]:
 def render_summary_markdown(*, latest_payload: dict, summary_payload: dict, handoff_payload: dict, title: str = "") -> str:
     resolved_title = str(title or "").strip()
     if not resolved_title:
-        resolved_title = "DeepInsight CI Summary"
+        resolved_title = "Intus CI Summary"
 
     kind = _detect_kind(summary_payload, handoff_payload)
     overall = str(latest_payload.get("overall") or summary_payload.get("overall") or handoff_payload.get("overall") or "").strip() or "UNKNOWN"

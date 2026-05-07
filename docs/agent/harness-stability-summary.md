@@ -1,4 +1,4 @@
-# DeepInsight 稳定性测试结果总表
+# Intus 稳定性测试结果总表
 
 这份文档用于收口本轮 `harness-stability-plan.md` 的实际结果，回答三件事：
 
@@ -55,8 +55,8 @@
 
 关键证据：
 
-- [release-baseline latest progress](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/artifacts/harness-runs/stability-local/release-baseline/latest-progress.md)
-- [release-repeat latest progress](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/artifacts/harness-runs/stability-local/release-repeat/latest-progress.md)
+- [release-baseline latest progress](../../artifacts/harness-runs/stability-local/release-baseline/latest-progress.md)
+- [release-repeat latest progress](../../artifacts/harness-runs/stability-local/release-repeat/latest-progress.md)
 
 ## 三、本轮已补齐的稳定性能力
 
@@ -120,7 +120,7 @@
 
 修复：
 
-- 收口 [web/server_modules/admin_config_center.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/admin_config_center.py) 的运行时 getter 调用和动态取值路径
+- 收口 [web/server_modules/admin_config_center.py](../../web/server_modules/admin_config_center.py) 的运行时 getter 调用和动态取值路径
 
 ### 2. 对象存储归档失败会导致会话文档上传直接 500
 
@@ -183,7 +183,7 @@
 
 关键证据：
 
-- [release-s6-check latest progress](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/artifacts/harness-runs/stability-local/release-s6-check/latest-progress.md)
+- [release-s6-check latest progress](../../artifacts/harness-runs/stability-local/release-s6-check/latest-progress.md)
 - `python3 scripts/agent_ops.py status`
 - `python3 scripts/agent_observe.py --profile auto`
 - `python3 scripts/agent_history.py --kind harness-stability-release --limit 3`

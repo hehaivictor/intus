@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight evaluator 校准样本装载器。
+Intus evaluator 校准样本装载器。
 """
 
 from __future__ import annotations

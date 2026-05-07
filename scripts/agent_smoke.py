@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 最小回归入口。
+Intus agent 最小回归入口。
 
 目标：
 1. 把 brownfield 仓库的最小主链路回归收口成固定命令
@@ -96,7 +96,7 @@ def resolve_suite_cases(suite_name: str) -> list[SuiteCase]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 最小回归入口")
+    parser = argparse.ArgumentParser(description="Intus agent 最小回归入口")
     parser.add_argument(
         "--suite",
         default="minimal",
@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
 
     return execute_suite(
         suite_name=args.suite,
-        title="DeepInsight agent smoke",
+        title="Intus agent smoke",
         description=suite_meta["description"],
         cases=cases,
         quiet=args.quiet,

@@ -1,10 +1,10 @@
-# DeepInsight Harness 五阶段迭代计划
+# Intus Harness 五阶段迭代计划
 
 这份计划承接四阶段结果，聚焦“架构地图、任务使命、全局短记忆、修复指令、依赖硬规则、低风险园丁”六条主线，不重复记录已经落地的统一入口、task workflow、planner / contract / calibration、browser smoke、multi-executor evaluator 与 CI 收口能力。
 
 ## 目标
 
-- 为 DeepInsight 增加仓库级 `ARCHITECTURE.md`，把“代码在哪里、边界在哪里、不允许什么依赖”显式化
+- 为 Intus 增加仓库级 `ARCHITECTURE.md`，把“代码在哪里、边界在哪里、不允许什么依赖”显式化
 - 为 Planner 增加上层 `mission` 契约，让一句话需求先扩成可测试、可审计的目标定义
 - 补一层全局短记忆 `heartbeat / memory`，承接当前阶段、主入口、活跃计划和最近稳定能力
 - 让静态 guardrail 不只报错，还能输出明确的 `Action for Agent`
@@ -19,7 +19,7 @@
 - Planner / Contract / Calibration：`scripts/agent_planner.py`、`scripts/agent_contracts.py`、`scripts/agent_calibration.py`
 - 场景 evaluator：`scripts/agent_eval.py`
 - 静态架构规则：`scripts/agent_static_guardrails.py`
-- 四阶段计划与台账：已完成，见 [harness-iteration-plan-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase4.md) 与 [harness-progress-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase4.md)
+- 四阶段计划与台账：已完成，见 [harness-iteration-plan-phase4.md](../../docs/agent/harness-iteration-plan-phase4.md) 与 [harness-progress-phase4.md](../../docs/agent/harness-progress-phase4.md)
 
 ## 状态约定
 
@@ -50,7 +50,7 @@
 
 ## 每项执行要求
 
-每完成一个编号，必须同步更新 [harness-progress-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase5.md)，至少记录：
+每完成一个编号，必须同步更新 [harness-progress-phase5.md](../../docs/agent/harness-progress-phase5.md)，至少记录：
 
 - 完成日期
 - 对应编号

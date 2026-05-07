@@ -1,4 +1,4 @@
-# DeepInsight Memory Notes
+# Intus Memory Notes
 
 > 生成时间：2026-04-10T07:45:35Z
 

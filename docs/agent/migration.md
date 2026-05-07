@@ -11,12 +11,12 @@
 
 ## 主要文档与脚本
 
-- 实例隔离说明：[docs/instance-scope.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/instance-scope.md)
-- 完整迁移手册：[docs/full-data-migration-runbook.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/full-data-migration-runbook.md)
-- 外部本地数据导入指南：[docs/external-local-data-cloud-import-guide.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/external-local-data-cloud-import-guide.md)
-- 业务迁移脚本：[scripts/import_external_local_data_to_cloud.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/import_external_local_data_to_cloud.py)
-- 回滚脚本：[scripts/rollback_external_local_data_import.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/rollback_external_local_data_import.py)
-- 对象存储历史补齐：[scripts/sync_object_storage_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/sync_object_storage_history.py)
+- 实例隔离说明：[docs/instance-scope.md](../../docs/instance-scope.md)
+- 完整迁移手册：[docs/full-data-migration-runbook.md](../../docs/full-data-migration-runbook.md)
+- 外部本地数据导入指南：[docs/external-local-data-cloud-import-guide.md](../../docs/external-local-data-cloud-import-guide.md)
+- 业务迁移脚本：[scripts/import_external_local_data_to_cloud.py](../../scripts/import_external_local_data_to_cloud.py)
+- 回滚脚本：[scripts/rollback_external_local_data_import.py](../../scripts/rollback_external_local_data_import.py)
+- 对象存储历史补齐：[scripts/sync_object_storage_history.py](../../scripts/sync_object_storage_history.py)
 
 ## 先建立的心智模型
 
@@ -43,9 +43,9 @@
 
 ## 推荐验证
 
-- 配置与部署边界：先读 [docs/instance-scope.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/instance-scope.md)
-- 迁移顺序与执行命令：先读 [docs/full-data-migration-runbook.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/full-data-migration-runbook.md)
-- 迁移类型快速判断：补读 [docs/external-local-data-cloud-import-guide.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/external-local-data-cloud-import-guide.md)
+- 配置与部署边界：先读 [docs/instance-scope.md](../../docs/instance-scope.md)
+- 迁移顺序与执行命令：先读 [docs/full-data-migration-runbook.md](../../docs/full-data-migration-runbook.md)
+- 迁移类型快速判断：补读 [docs/external-local-data-cloud-import-guide.md](../../docs/external-local-data-cloud-import-guide.md)
 
 ## 常见失误
 

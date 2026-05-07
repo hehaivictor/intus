@@ -4,7 +4,7 @@
 # dependencies = ["psycopg[binary]"]
 # ///
 """
-DeepInsight License 运维脚本
+Intus License 运维脚本
 
 示例：
   python3 scripts/license_manager.py generate --count 10 \
@@ -51,13 +51,13 @@ def load_server_module():
 
 
 def resolve_auth_db_path(raw_auth_db: str) -> str:
-    env_path = os.environ.get("DEEPINSIGHT_AUTH_DB_PATH", "")
+    env_path = os.environ.get("INTUS_AUTH_DB_PATH", "")
     value = str(raw_auth_db or "").strip() or env_path
     return resolve_db_target(value, root_dir=ROOT_DIR, default_path=ROOT_DIR / "data" / "auth" / "users.db")
 
 
 def resolve_license_db_path(raw_license_db: str, auth_db_path: str) -> str:
-    env_path = os.environ.get("DEEPINSIGHT_LICENSE_DB_PATH", "")
+    env_path = os.environ.get("INTUS_LICENSE_DB_PATH", "")
     value = str(raw_license_db or "").strip() or env_path
     default_path = ROOT_DIR / "data" / "auth" / "licenses.db"
     if not value and "://" not in str(auth_db_path):
@@ -211,9 +211,9 @@ def run_enforcement_follow_default(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight License 运维脚本")
-    parser.add_argument("--auth-db", default="", help="鉴权数据库路径，默认 data/auth/users.db 或 DEEPINSIGHT_AUTH_DB_PATH")
-    parser.add_argument("--license-db", default="", help="License 数据库路径，默认 data/auth/licenses.db 或 DEEPINSIGHT_LICENSE_DB_PATH")
+    parser = argparse.ArgumentParser(description="Intus License 运维脚本")
+    parser.add_argument("--auth-db", default="", help="鉴权数据库路径，默认 data/auth/users.db 或 INTUS_AUTH_DB_PATH")
+    parser.add_argument("--license-db", default="", help="License 数据库路径，默认 data/auth/licenses.db 或 INTUS_LICENSE_DB_PATH")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出")
     subparsers = parser.add_subparsers(dest="command", required=True)
 

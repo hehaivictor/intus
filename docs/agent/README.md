@@ -1,53 +1,53 @@
-# DeepInsight Agent 文档索引
+# Intus Agent 文档索引
 
-这些文档服务于 brownfield 仓库里的 agent 入口问题：先快速建立地图，再进入对应领域细节，避免每次都从 [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md) 和超大文件里重新摸索。
+这些文档服务于 brownfield 仓库里的 agent 入口问题：先快速建立地图，再进入对应领域细节，避免每次都从 [README.md](../../README.md) 和超大文件里重新摸索。
 
 ## 推荐阅读顺序
 
-1. 先读 [AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)，确认启动方式、测试矩阵、风险边界和关键不变量。
+1. 先读 [AGENTS.md](../../AGENTS.md)，确认启动方式、测试矩阵、风险边界和关键不变量。
    如果任务已经收敛到 `web/`、`web/server_modules/`、`web/app_modules/`、`scripts/` 或 `tests/`，再继续读取对应目录下的局部 `AGENTS.md`。
-2. 再读 [heartbeat.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/heartbeat.md)，确认当前活跃阶段、稳定入口和最近 mission/plan/run 指针。
-3. 再读 [memory-notes.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/memory-notes.md)，确认最近稳定经验、推荐刷新命令和当前注意事项。
-4. 再读 [ARCHITECTURE.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/ARCHITECTURE.md)，确认代码物理地图、层级边界和禁止依赖。
+2. 再读 [heartbeat.md](../../docs/agent/heartbeat.md)，确认当前活跃阶段、稳定入口和最近 mission/plan/run 指针。
+3. 再读 [memory-notes.md](../../docs/agent/memory-notes.md)，确认最近稳定经验、推荐刷新命令和当前注意事项。
+4. 再读 [ARCHITECTURE.md](../../ARCHITECTURE.md)，确认代码物理地图、层级边界和禁止依赖。
 5. 再根据任务选择一个领域文档：
-   - 访谈与下一题逻辑：[interview.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/interview.md)
-   - 登录、绑定与账号合并：[auth-identity.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/auth-identity.md)
-   - 报告生成、方案页与分享：[report-solution.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/report-solution.md)
-   - 管理后台、运行监控与配置治理：[admin-ops.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/admin-ops.md)
-   - 第三方 SDK / API 文档检索：[context-hub.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/context-hub.md)
-   - 运行态观察、最近工件与历史回溯：[observability.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/observability.md)
-   - 场景语料库、nightly evaluator 与失败热点：[evaluator.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/evaluator.md)
-   - Harness 二阶段复盘：[harness-iteration-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan.md)
-   - Harness 二阶段执行台账：[harness-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress.md)
-   - Harness 三阶段计划：[harness-iteration-plan-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase3.md)
-   - Harness 三阶段进度台账：[harness-progress-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase3.md)
-   - Harness 四阶段计划：[harness-iteration-plan-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase4.md)
-   - Harness 四阶段进度台账：[harness-progress-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase4.md)
-   - 全局 heartbeat / 当前阶段指针：[heartbeat.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/heartbeat.md)
-   - Harness 五阶段计划：[harness-iteration-plan-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase5.md)
-   - Harness 五阶段进度台账：[harness-progress-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase5.md)
-   - Harness 六阶段计划：[harness-iteration-plan-phase6.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase6.md)
-   - Harness 六阶段进度台账：[harness-progress-phase6.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase6.md)
-   - 稳定性测试计划：[harness-stability-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-plan.md)
-   - 稳定性测试进度台账：[harness-stability-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-progress.md)
-   - 稳定性测试结果总表：[harness-stability-summary.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-summary.md)
-   - 测试体系长期维护策略：[testing-maintenance-strategy.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/testing-maintenance-strategy.md)
-   - 全局稳定经验摘要：[memory-notes.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/memory-notes.md)
-   - Planner artifact 目录：[plans/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/README.md)
-   - 第二阶段模块化拆分计划：[plans/module-split-phase2.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/plans/module-split-phase2.md)
+   - 访谈与下一题逻辑：[interview.md](../../docs/agent/interview.md)
+   - 登录、绑定与账号合并：[auth-identity.md](../../docs/agent/auth-identity.md)
+   - 报告生成、方案页与分享：[report-solution.md](../../docs/agent/report-solution.md)
+   - 管理后台、运行监控与配置治理：[admin-ops.md](../../docs/agent/admin-ops.md)
+   - 第三方 SDK / API 文档检索：[context-hub.md](../../docs/agent/context-hub.md)
+   - 运行态观察、最近工件与历史回溯：[observability.md](../../docs/agent/observability.md)
+   - 场景语料库、nightly evaluator 与失败热点：[evaluator.md](../../docs/agent/evaluator.md)
+   - Harness 二阶段复盘：[harness-iteration-plan.md](../../docs/agent/harness-iteration-plan.md)
+   - Harness 二阶段执行台账：[harness-progress.md](../../docs/agent/harness-progress.md)
+   - Harness 三阶段计划：[harness-iteration-plan-phase3.md](../../docs/agent/harness-iteration-plan-phase3.md)
+   - Harness 三阶段进度台账：[harness-progress-phase3.md](../../docs/agent/harness-progress-phase3.md)
+   - Harness 四阶段计划：[harness-iteration-plan-phase4.md](../../docs/agent/harness-iteration-plan-phase4.md)
+   - Harness 四阶段进度台账：[harness-progress-phase4.md](../../docs/agent/harness-progress-phase4.md)
+   - 全局 heartbeat / 当前阶段指针：[heartbeat.md](../../docs/agent/heartbeat.md)
+   - Harness 五阶段计划：[harness-iteration-plan-phase5.md](../../docs/agent/harness-iteration-plan-phase5.md)
+   - Harness 五阶段进度台账：[harness-progress-phase5.md](../../docs/agent/harness-progress-phase5.md)
+   - Harness 六阶段计划：[harness-iteration-plan-phase6.md](../../docs/agent/harness-iteration-plan-phase6.md)
+   - Harness 六阶段进度台账：[harness-progress-phase6.md](../../docs/agent/harness-progress-phase6.md)
+   - 稳定性测试计划：[harness-stability-plan.md](../../docs/agent/harness-stability-plan.md)
+   - 稳定性测试进度台账：[harness-stability-progress.md](../../docs/agent/harness-stability-progress.md)
+   - 稳定性测试结果总表：[harness-stability-summary.md](../../docs/agent/harness-stability-summary.md)
+   - 测试体系长期维护策略：[testing-maintenance-strategy.md](../../docs/agent/testing-maintenance-strategy.md)
+   - 全局稳定经验摘要：[memory-notes.md](../../docs/agent/memory-notes.md)
+   - Planner artifact 目录：[plans/README.md](../../docs/agent/plans/README.md)
+   - 第二阶段模块化拆分计划：[plans/module-split-phase2.md](../../docs/agent/plans/module-split-phase2.md)
    - Sprint Contract 目录：`resources/harness/contracts/*.json`
-   - Evaluator 校准样本：[evaluator-calibration.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/evaluator-calibration.md)
-   - 高频任务标准流程：[playbooks/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/README.md)
-   - 实例隔离、导入迁移与历史补齐：[migration.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/migration.md)
+   - Evaluator 校准样本：[evaluator-calibration.md](../../docs/agent/evaluator-calibration.md)
+   - 高频任务标准流程：[playbooks/README.md](../../docs/agent/playbooks/README.md)
+   - 实例隔离、导入迁移与历史补齐：[migration.md](../../docs/agent/migration.md)
 3. 真正编辑前，再补读对应测试与 runbook。
 
 ## 快速选路
 
-- 改会话创建、题目推进、证据 ledger、文档上传、访谈恢复：看 [interview.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/interview.md)
-- 改登录、手机号/微信绑定、账号冲突和合并回滚：看 [auth-identity.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/auth-identity.md)
-- 改报告模板、生成队列、方案页渲染、分享、导出、演示稿：看 [report-solution.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/report-solution.md)
-- 改 License、管理员中心、配置中心、指标、摘要缓存、归属迁移：看 [admin-ops.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/admin-ops.md)
-- 改 `INSTANCE_SCOPE_KEY`、云端导入、回滚、对象存储历史补齐：看 [migration.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/migration.md)
+- 改会话创建、题目推进、证据 ledger、文档上传、访谈恢复：看 [interview.md](../../docs/agent/interview.md)
+- 改登录、手机号/微信绑定、账号冲突和合并回滚：看 [auth-identity.md](../../docs/agent/auth-identity.md)
+- 改报告模板、生成队列、方案页渲染、分享、导出、演示稿：看 [report-solution.md](../../docs/agent/report-solution.md)
+- 改 License、管理员中心、配置中心、指标、摘要缓存、归属迁移：看 [admin-ops.md](../../docs/agent/admin-ops.md)
+- 改 `INSTANCE_SCOPE_KEY`、云端导入、回滚、对象存储历史补齐：看 [migration.md](../../docs/agent/migration.md)
 
 ## 固定入口命令
 
@@ -187,6 +187,6 @@
 
 - 优先使用仓库内现有脚本和测试，把文档、代码、验证路径保持在同一个仓库里。
 - 接第三方 SDK / API 时，先走 `scripts/context_hub.py` 获取当前文档，再决定实现，不要直接凭训练记忆猜接口。
-- 大文件不等于无边界。即使实际实现还在 [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py) 里，也要先按领域定位，再读取局部。
-- 改动前先决定验证范围。DeepInsight 当前 CI 已通过 `pr-harness.yml` 运行 `pr-smoke`、`agent-smoke` 与 `guardrails`；nightly evaluator 则负责更重的场景语料回归。
-- 执行二阶段事项时，继续维护 [harness-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress.md)；执行三阶段事项时，改维护 [harness-progress-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase3.md)；执行四阶段事项时，改维护 [harness-progress-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase4.md)；执行五阶段事项时，改维护 [harness-progress-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase5.md)。
+- 大文件不等于无边界。即使实际实现还在 [web/server.py](../../web/server.py) 里，也要先按领域定位，再读取局部。
+- 改动前先决定验证范围。Intus 当前 CI 已通过 `pr-harness.yml` 运行 `pr-smoke`、`agent-smoke` 与 `guardrails`；nightly evaluator 则负责更重的场景语料回归。
+- 执行二阶段事项时，继续维护 [harness-progress.md](../../docs/agent/harness-progress.md)；执行三阶段事项时，改维护 [harness-progress-phase3.md](../../docs/agent/harness-progress-phase3.md)；执行四阶段事项时，改维护 [harness-progress-phase4.md](../../docs/agent/harness-progress-phase4.md)；执行五阶段事项时，改维护 [harness-progress-phase5.md](../../docs/agent/harness-progress-phase5.md)。

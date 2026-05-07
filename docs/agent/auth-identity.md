@@ -10,10 +10,10 @@
 
 ## 主要代码与测试
 
-- 后端主入口：[web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- 主前端入口：[web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
-- 主接口回归：[tests/test_api_comprehensive.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_api_comprehensive.py)
-- 安全与权限回归：[tests/test_security_regression.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_security_regression.py)
+- 后端主入口：[web/server.py](../../web/server.py)
+- 主前端入口：[web/app.js](../../web/app.js)
+- 主接口回归：[tests/test_api_comprehensive.py](../../tests/test_api_comprehensive.py)
+- 安全与权限回归：[tests/test_security_regression.py](../../tests/test_security_regression.py)
 
 ## 先建立的心智模型
 

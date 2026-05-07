@@ -171,8 +171,8 @@
 
             let normalized = reportName.trim();
             normalized = normalized.replace(/\.[^.]+$/, '');
-            normalized = normalized.replace(/^deepinsight-\d{8}-/i, '');
-            normalized = normalized.replace(/^deepinsight-/i, '');
+            normalized = normalized.replace(/^intus-\d{8}-/i, '');
+            normalized = normalized.replace(/^intus-/i, '');
             normalized = normalized.replace(/[-_]+/g, ' ').trim();
 
             return normalized || reportName;
@@ -887,5 +887,5 @@
         return app;
     }
 
-    global.DeepInsightReportStateModule = { attach };
+    global.IntusReportStateModule = { attach };
 })(window);

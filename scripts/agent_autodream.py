@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness AutoDream Lite 巡检器。
+Intus harness AutoDream Lite 巡检器。
 
 目标：
 1. 只刷新 heartbeat、doc gardener 和最近稳定经验摘要
@@ -159,7 +159,7 @@ def build_best_practices_payload(
 def render_best_practices_markdown(payload: dict[str, Any]) -> str:
     active_phase = payload.get("active_phase", {}) if isinstance(payload.get("active_phase"), dict) else {}
     lines = [
-        "# DeepInsight Memory Notes",
+        "# Intus Memory Notes",
         "",
         f"> 生成时间：{payload.get('generated_at', '')}",
         "",
@@ -261,7 +261,7 @@ def build_autodream_payload(
 
 def render_autodream_markdown(payload: dict[str, Any]) -> str:
     lines = [
-        "# DeepInsight AutoDream Lite",
+        "# Intus AutoDream Lite",
         "",
         f"> 生成时间：{payload.get('generated_at', '')}",
         f"> Overall：`{payload.get('overall', '')}`",
@@ -372,7 +372,7 @@ def run_autodream_lite(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="运行 DeepInsight AutoDream Lite，只刷新 heartbeat / gardening / memory-notes")
+    parser = argparse.ArgumentParser(description="运行 Intus AutoDream Lite，只刷新 heartbeat / gardening / memory-notes")
     parser.add_argument("--doc-gardening-dir", default=str(DEFAULT_DOC_GARDENING_DIR.relative_to(ROOT_DIR)), help="文档园丁 artifact 输出目录")
     parser.add_argument("--heartbeat-artifact-dir", default=str(DEFAULT_MEMORY_DIR.relative_to(ROOT_DIR)), help="heartbeat JSON 输出目录")
     parser.add_argument("--heartbeat-markdown", default=str(DEFAULT_HEARTBEAT_PATH.relative_to(ROOT_DIR)), help="heartbeat markdown 输出路径")
@@ -417,7 +417,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
-        print("DeepInsight agent autodream lite")
+        print("Intus agent autodream lite")
         print(f"overall: {payload.get('overall', '')}")
         for title in ("doc_gardening", "heartbeat", "best_practices", "autodream"):
             for path in outputs.get(title, {}).values():

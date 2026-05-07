@@ -1,12 +1,12 @@
 # Web 局部入口
 
-这个目录承载 DeepInsight 的后端入口、前端入口和共享静态资源。
+这个目录承载 Intus 的后端入口、前端入口和共享静态资源。
 
 ## 先看什么
 
-- 仓库总入口：[../AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
-- 物理地图：[../ARCHITECTURE.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/ARCHITECTURE.md)
-- 领域索引：[../docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md)
+- 仓库总入口：[../AGENTS.md](../AGENTS.md)
+- 物理地图：[../ARCHITECTURE.md](../ARCHITECTURE.md)
+- 领域索引：[../docs/agent/README.md](../docs/agent/README.md)
 
 ## 目录职责
 
@@ -32,5 +32,5 @@
 
 ## 继续下钻
 
-- 改后端 runtime / service：看 [server_modules/AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/AGENTS.md)
-- 改前端状态 / 页面编排：看 [app_modules/AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/AGENTS.md)
+- 改后端 runtime / service：看 [server_modules/AGENTS.md](../web/server_modules/AGENTS.md)
+- 改前端状态 / 页面编排：看 [app_modules/AGENTS.md](../web/app_modules/AGENTS.md)

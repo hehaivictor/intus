@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight 浏览器级 UI smoke 入口。
+Intus 浏览器级 UI smoke 入口。
 
 目标：
 1. 用真实浏览器补静态资源、前端交互和后台入口的最小回归
@@ -181,7 +181,7 @@ def resolve_suite_scenarios(suite_name: str) -> list[BrowserScenario]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight 浏览器级 UI smoke 入口")
+    parser = argparse.ArgumentParser(description="Intus 浏览器级 UI smoke 入口")
     parser.add_argument(
         "--suite",
         default="minimal",
@@ -357,7 +357,7 @@ def run_browser_smoke(*, suite_name: str = "minimal", install_browser: bool = Fa
 
 def render_text_output(payload: dict) -> None:
     summary = payload.get("summary", {}) if isinstance(payload.get("summary", {}), dict) else {}
-    print(f"DeepInsight browser smoke | suite={payload.get('suite', '')}")
+    print(f"Intus browser smoke | suite={payload.get('suite', '')}")
     print(f"总体状态: {payload.get('overall', '')}")
     dependency_status = payload.get("dependency_status", {}) if isinstance(payload.get("dependency_status", {}), dict) else {}
     if dependency_status:

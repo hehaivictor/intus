@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 薄运营面入口。
+Intus harness 薄运营面入口。
 
 目标：
 1. 把 heartbeat、doc gardener、task 覆盖率、latest 指针收口到一个只读入口
@@ -303,7 +303,7 @@ def render_status_markdown(payload: dict[str, Any]) -> str:
     gardening = payload.get("doc_gardening", {}) if isinstance(payload.get("doc_gardening"), dict) else {}
 
     lines = [
-        "# DeepInsight Harness Ops",
+        "# Intus Harness Ops",
         "",
         f"> 生成时间：{payload.get('generated_at', '')}",
         "",
@@ -423,7 +423,7 @@ def write_artifacts(payload: dict[str, Any], *, artifact_dir: Path) -> OpsArtifa
 
 def render_phase(payload: dict[str, Any]) -> None:
     phase = payload.get("phase", {}) if isinstance(payload.get("phase"), dict) else {}
-    print("DeepInsight harness ops phase")
+    print("Intus harness ops phase")
     print(f"overall: {payload.get('overall', '')}")
     print(f"phase: {phase.get('name', '-')}")
     print(f"priority: {phase.get('current_priority', '-')}")
@@ -433,7 +433,7 @@ def render_phase(payload: dict[str, Any]) -> None:
 
 def render_task_gap(payload: dict[str, Any]) -> None:
     gap = payload.get("task_gap", {}) if isinstance(payload.get("task_gap"), dict) else {}
-    print("DeepInsight harness ops task-gap")
+    print("Intus harness ops task-gap")
     print(f"overall: {gap.get('overall', '')}")
     print(
         "coverage: "
@@ -454,7 +454,7 @@ def render_task_gap(payload: dict[str, Any]) -> None:
 
 def render_latest_runs(payload: dict[str, Any]) -> None:
     latest_runs = payload.get("latest_runs", {}) if isinstance(payload.get("latest_runs"), dict) else {}
-    print("DeepInsight harness ops latest-runs")
+    print("Intus harness ops latest-runs")
     for item in list(latest_runs.get("latest_runs", []) or []):
         if not isinstance(item, dict):
             continue
@@ -469,7 +469,7 @@ def render_latest_runs(payload: dict[str, Any]) -> None:
 
 def render_gardening_report(payload: dict[str, Any]) -> None:
     gardening = payload.get("doc_gardening", {}) if isinstance(payload.get("doc_gardening"), dict) else {}
-    print("DeepInsight harness ops gardening-report")
+    print("Intus harness ops gardening-report")
     print(f"overall: {gardening.get('overall', '')}")
     summary = gardening.get("summary", {}) if isinstance(gardening.get("summary", {}), dict) else {}
     print(
@@ -486,7 +486,7 @@ def render_status(payload: dict[str, Any]) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight harness 薄运营面入口")
+    parser = argparse.ArgumentParser(description="Intus harness 薄运营面入口")
     parser.add_argument(
         "command",
         nargs="?",

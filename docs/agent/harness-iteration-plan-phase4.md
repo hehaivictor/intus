@@ -1,10 +1,10 @@
-# DeepInsight Harness 四阶段迭代计划
+# Intus Harness 四阶段迭代计划
 
 这份计划承接三阶段结果，聚焦“显式规划、契约驱动、评估校准、架构固化”四条主线，不重复记录已经落地的统一入口、task workflow、artifact/handoff、browser smoke、multi-executor evaluator 与 CI 收口能力。
 
 ## 目标
 
-- 为 DeepInsight 增加显式的 `Planner artifact` 层，把简短需求扩成结构化计划工件
+- 为 Intus 增加显式的 `Planner artifact` 层，把简短需求扩成结构化计划工件
 - 让高风险 task 从“有 workflow”进一步升级到“有可共享的 Sprint Contract”
 - 为 Evaluator 建立持续校准机制，减少评分漂移与误放行
 - 把已经证明有效的架构与品味约束继续固化成机械规则，而不是只停留在文档里
@@ -20,7 +20,7 @@
 - task-backed playbook：`scripts/agent_playbook_sync.py`
 - 任务画像：8 个
 - evaluator 场景：16 个
-- 三阶段计划与台账：已完成，见 [harness-iteration-plan-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase3.md) 与 [harness-progress-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase3.md)
+- 三阶段计划与台账：已完成，见 [harness-iteration-plan-phase3.md](../../docs/agent/harness-iteration-plan-phase3.md) 与 [harness-progress-phase3.md](../../docs/agent/harness-progress-phase3.md)
 
 ## 状态约定
 
@@ -49,7 +49,7 @@
 
 ## 每项执行要求
 
-每完成一个编号，必须同步更新 [harness-progress-phase4.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase4.md)，至少记录：
+每完成一个编号，必须同步更新 [harness-progress-phase4.md](../../docs/agent/harness-progress-phase4.md)，至少记录：
 
 - 完成日期
 - 对应编号

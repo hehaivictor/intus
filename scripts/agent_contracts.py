@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight harness Sprint Contract 装载器。
+Intus harness Sprint Contract 装载器。
 """
 
 from __future__ import annotations

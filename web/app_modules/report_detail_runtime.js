@@ -2796,5 +2796,5 @@
         return app;
     }
 
-    global.DeepInsightReportDetailRuntimeModule = { attach };
+    global.IntusReportDetailRuntimeModule = { attach };
 })(window);

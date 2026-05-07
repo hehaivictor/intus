@@ -1,4 +1,4 @@
-# DeepInsight Harness 三阶段迭代计划
+# Intus Harness 三阶段迭代计划
 
 这份计划承接二阶段结果，聚焦“真实度、治理性、运营性”三条主线，不重复记录已经落地的统一入口、task workflow、artifact/handoff、browser smoke、evaluator、多执行器场景与 CI 收口能力。
 
@@ -51,7 +51,7 @@
 
 ## 每项执行要求
 
-每完成一个编号，必须同步更新 [harness-progress-phase3.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase3.md)，至少记录：
+每完成一个编号，必须同步更新 [harness-progress-phase3.md](../../docs/agent/harness-progress-phase3.md)，至少记录：
 
 - 完成日期
 - 对应编号

@@ -1,4 +1,4 @@
-# DeepInsight 稳定性提升测试计划 v2
+# Intus 稳定性提升测试计划 v2
 
 这份计划用于承接当前一轮“完整细致全面测试”的执行，目标是在现有 `harness / smoke / static_guardrails / browser smoke / evaluator / observe / heartbeat / ops / doc gardener` 能力之上，建立一套可重复、可量化、可阻断发布的稳定性测试方案。计划默认以本地隔离环境为主，云端联调只作为补充，不作为主 gate。
 
@@ -332,7 +332,7 @@
 
 执行本计划时，必须同步维护：
 
-- [harness-stability-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-progress.md)
+- [harness-stability-progress.md](../../docs/agent/harness-stability-progress.md)
 
 每完成一项，至少记录：
 

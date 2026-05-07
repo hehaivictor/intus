@@ -906,7 +906,7 @@ class SecurityRegressionTests(unittest.TestCase):
         )
         report_name = 'security-solution-report.md'
         report_content = (
-            '# DeepInsight 访谈报告\n\n'
+            '# Intus 访谈报告\n\n'
             '## 1. 访谈概述\n'
             '- **访谈场景** - 产品需求调研\n'
             '- **核心问题** - 报告生成后缺少直接查看方案的入口\n'
@@ -955,7 +955,7 @@ class SecurityRegressionTests(unittest.TestCase):
         )
         report_name = 'security-share-report.md'
         report_content = (
-            '# DeepInsight 访谈报告\n\n'
+            '# Intus 访谈报告\n\n'
             '## 1. 访谈概述\n'
             '- **访谈场景** - 技术方案研讨\n'
             '- **核心问题** - 需要向外部伙伴共享最终方案页\n'
@@ -1007,7 +1007,7 @@ class SecurityRegressionTests(unittest.TestCase):
 
     def test_build_solution_payload_strips_html_from_new_fields(self):
         report_content = (
-            '# DeepInsight 访谈报告\n\n'
+            '# Intus 访谈报告\n\n'
             '## 1. 访谈概述\n'
             '- **访谈场景** - 微信客服 <script>alert(1)</script> 接待\n'
             '- **核心问题** - <div>高意向客户识别慢</div>\n'
@@ -4945,7 +4945,7 @@ class SecurityRegressionTests(unittest.TestCase):
         self.assertIn("**访谈日期**: 2026-03-05", normalized)
         self.assertIn("- 访谈时间： 2026-03-05", normalized)
         self.assertIn("报告生成时间：2026年03月05日 23:58", normalized)
-        self.assertIn("报告编号：deepinsight-20260305-2358", normalized)
+        self.assertIn("报告编号：intus-20260305-2358", normalized)
         self.assertIn("生成日期：2026年03月05日 23:58", normalized)
         self.assertNotIn("2025年6月", normalized)
         self.assertNotIn("V-2024-001", normalized)

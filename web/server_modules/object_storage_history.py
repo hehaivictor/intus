@@ -157,7 +157,7 @@ class ObjectStorageHistoryService:
         normalized = str(relative_path or "").strip().replace("\\", "/")
         path_obj = Path(normalized)
         scope_key = self._normalize_object_storage_segment(self._get_active_instance_scope_key(), fallback="default")
-        prefix = self._normalize_object_storage_segment(self._object_storage_prefix, fallback="deepinsight")
+        prefix = self._normalize_object_storage_segment(self._object_storage_prefix, fallback="intus")
         parts = [prefix, scope_key, "ops-archives"]
         for segment in path_obj.parts:
             normalized_segment = self._normalize_object_storage_segment(segment, fallback="")

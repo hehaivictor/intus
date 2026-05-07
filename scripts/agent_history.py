@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 历史索引与 diff 入口。
+Intus harness 历史索引与 diff 入口。
 
 目标：
 1. 快速查看 harness / evaluator / CI artifact 最近跑了什么
@@ -279,7 +279,7 @@ def build_history_diff(
 
 
 def render_index(payload: dict[str, Any]) -> None:
-    print("DeepInsight agent history")
+    print("Intus agent history")
     print(f"仓库目录: {payload['root_dir']}")
     print("")
     for kind, collection in payload["collections"].items():
@@ -304,7 +304,7 @@ def render_index(payload: dict[str, Any]) -> None:
 
 
 def render_diff(payload: dict[str, Any]) -> None:
-    print("DeepInsight agent history diff")
+    print("Intus agent history diff")
     print(f"kind: {payload['kind']}")
     print(f"overall: {payload['overall']}")
     before = payload.get("before")
@@ -329,7 +329,7 @@ def render_diff(payload: dict[str, Any]) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight harness 历史索引与 diff")
+    parser = argparse.ArgumentParser(description="Intus harness 历史索引与 diff")
     parser.add_argument(
         "--kind",
         default="all",

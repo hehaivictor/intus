@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: deepinsight-release-version
+  group: intus-release-version
   cancel-in-progress: false
 
 jobs:

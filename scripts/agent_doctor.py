@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight agent 环境自检。
+Intus agent 环境自检。
 
 目标：
 1. 给 agent 一个稳定、只读的仓库与环境检查入口
@@ -89,7 +89,7 @@ def resolve_selected_env_file(profile: str, explicit_env_file: str, process_env:
             target = (ROOT_DIR / target).resolve()
         return target, "explicit"
 
-    process_env_file = str(process_env.get("DEEPINSIGHT_ENV_FILE", "") or "").strip()
+    process_env_file = str(process_env.get("INTUS_ENV_FILE", "") or "").strip()
     if process_env_file:
         target = Path(process_env_file).expanduser()
         if not target.is_absolute():
@@ -111,7 +111,7 @@ def build_effective_env(selected_env_file: Path | None, process_env: Mapping[str
     file_values = parse_env_file(selected_env_file) if selected_env_file else {}
     effective = dict(file_values)
     for key, value in process_env.items():
-        if key.startswith("DEEPINSIGHT_") or key in {
+        if key.startswith("INTUS_") or key in {
             "CONFIG_RESOLUTION_MODE",
             "DEBUG_MODE",
             "ENABLE_AI",
@@ -204,7 +204,7 @@ def collect_checks(
             "环境文件",
             "WARN",
             "未解析到环境文件，将只基于进程环境判断。",
-            "可通过 --env-file 指定，或设置 DEEPINSIGHT_ENV_FILE。",
+            "可通过 --env-file 指定，或设置 INTUS_ENV_FILE。",
         )
     elif not selected_env_file.exists():
         add_result(
@@ -388,12 +388,12 @@ def run_doctor(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight agent 环境自检")
+    parser = argparse.ArgumentParser(description="Intus agent 环境自检")
     parser.add_argument(
         "--profile",
         default="auto",
         choices=["auto", "local", "cloud", "production"],
-        help="检查场景；auto 会优先使用 DEEPINSIGHT_ENV_FILE，其次探测 web/.env.local 或 web/.env.cloud。",
+        help="检查场景；auto 会优先使用 INTUS_ENV_FILE，其次探测 web/.env.local 或 web/.env.cloud。",
     )
     parser.add_argument("--env-file", default="", help="显式指定环境文件路径")
     parser.add_argument("--json", action="store_true", help="以 JSON 输出检查结果")
@@ -416,7 +416,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
-        print("DeepInsight agent doctor")
+        print("Intus agent doctor")
         print(f"仓库目录: {payload['root_dir']}")
         print(f"检查场景: {payload['profile']}")
         if selected_env_file:

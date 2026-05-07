@@ -1,6 +1,6 @@
 <INSTRUCTIONS>
 
-# DeepInsight Agent 入口
+# Intus Agent 入口
 
 本文件只做导航，不承载完整领域知识。进入仓库后先看这里，再按任务跳转到对应文档。
 
@@ -102,7 +102,7 @@
 - 云端联调：`./scripts/start-cloud-dev.sh`
 - 生产启动：`./scripts/start-production.sh`
 - 生产预启动初始化：`python3 scripts/prestart_web.py`
-- 自定义环境文件：`DEEPINSIGHT_ENV_FILE=/path/to/custom.env uv run web/server.py`
+- 自定义环境文件：`INTUS_ENV_FILE=/path/to/custom.env uv run web/server.py`
 
 ## 最小测试矩阵
 

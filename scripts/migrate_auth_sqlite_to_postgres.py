@@ -297,7 +297,7 @@ def insert_license_events(conn: psycopg.Connection, rows: list[dict]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="将 DeepInsight users.db / licenses.db 迁移到 PostgreSQL")
+    parser = argparse.ArgumentParser(description="将 Intus users.db / licenses.db 迁移到 PostgreSQL")
     parser.add_argument("--users-db", default=str(DEFAULT_USERS_DB), help="users.db 路径")
     parser.add_argument("--license-db", default=str(DEFAULT_LICENSE_DB), help="licenses.db 路径")
     parser.add_argument("--target-dsn", required=True, help="PostgreSQL 连接串")

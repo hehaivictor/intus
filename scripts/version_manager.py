@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight 版本管理器
+Intus 版本管理器
 
 自动根据 Git commit message 与本次提交改动整理版本变更信息。
 默认保留传统的 version.json 直写能力，同时支持：
@@ -899,7 +899,7 @@ def update_version(
 def main() -> None:
     import argparse
 
-    parser = argparse.ArgumentParser(description="DeepInsight 版本管理器")
+    parser = argparse.ArgumentParser(description="Intus 版本管理器")
     subparsers = parser.add_subparsers(dest="command")
 
     fragment_parser = subparsers.add_parser("fragment", help="根据当前分支累计改动更新变更碎片")

@@ -1,6 +1,6 @@
-# DeepInsight 完整数据迁移操作手册
+# Intus 完整数据迁移操作手册
 
-本文档用于指导 DeepInsight 从“外部本地历史数据”迁移到“当前云端环境”的完整流程。
+本文档用于指导 Intus 从“外部本地历史数据”迁移到“当前云端环境”的完整流程。
 
 适用目标：
 
@@ -177,14 +177,14 @@
 推荐写法：
 
 ```bash
-cd /Users/hehai/Documents/开目软件/Agents/project/DeepInsight
+cd "$REPO_ROOT"
 
-export DEEPINSIGHT_ENV_FILE="web/.env.cloud"
+export INTUS_ENV_FILE="web/.env.cloud"
 ```
 
 说明：
 
-- `DEEPINSIGHT_ENV_FILE` 直接指向当前云端联调文件
+- `INTUS_ENV_FILE` 直接指向当前云端联调文件
 - 生产环境仍建议使用平台或进程环境变量注入，而不是依赖本地 env 文件
 
 ## 4. 迁移前检查清单
@@ -222,7 +222,7 @@ export DEEPINSIGHT_ENV_FILE="web/.env.cloud"
 先做 `dry-run`：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -244,7 +244,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 确认无误后正式执行：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -267,7 +267,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 先做 `dry-run`：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -279,7 +279,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 确认无误后正式执行：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -315,7 +315,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 ### 7.1 全量补全
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 \
 python3 scripts/sync_object_storage_history.py \
   --output-json /tmp/object-storage-sync.json
@@ -324,7 +324,7 @@ python3 scripts/sync_object_storage_history.py \
 ### 7.2 只补演示稿
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 \
 python3 scripts/sync_object_storage_history.py \
   --presentations \
@@ -334,7 +334,7 @@ python3 scripts/sync_object_storage_history.py \
 ### 7.3 只补运维归档
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 \
 python3 scripts/sync_object_storage_history.py \
   --ops-archives \
@@ -352,7 +352,7 @@ python3 scripts/sync_object_storage_history.py \
 示例：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 \
 python3 scripts/sync_object_storage_history.py \
   --ops-archives \
@@ -379,7 +379,7 @@ python3 scripts/sync_object_storage_history.py \
 如果业务迁移有问题，可以按 `import-apply.json` 里的 `backup.backup_dir` 回滚：
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/rollback_external_local_data_import.py \
   --backup-dir /备份目录路径 \
@@ -422,7 +422,7 @@ python3 scripts/rollback_external_local_data_import.py \
 ### 11.1 业务迁移 dry-run
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -434,7 +434,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 ### 11.2 业务迁移 apply
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/import_external_local_data_to_cloud.py \
   --source-data-dir /你的路径/data \
@@ -446,7 +446,7 @@ python3 scripts/import_external_local_data_to_cloud.py \
 ### 11.3 补全历史对象存储
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' --with boto3 \
 python3 scripts/sync_object_storage_history.py \
   --output-json /tmp/object-storage-sync.json
@@ -455,7 +455,7 @@ python3 scripts/sync_object_storage_history.py \
 ### 11.4 业务回滚
 
 ```bash
-DEEPINSIGHT_ENV_FILE="web/.env.cloud" \
+INTUS_ENV_FILE="web/.env.cloud" \
 uv run --with flask --with flask-cors --with anthropic --with requests --with reportlab --with pillow --with jdcloud-sdk --with 'psycopg[binary]' \
 python3 scripts/rollback_external_local_data_import.py \
   --backup-dir /备份目录路径 \

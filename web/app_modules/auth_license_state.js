@@ -33,7 +33,7 @@
             account: '',
             code: ''
         },
-        authAccountHistoryStorageKey: 'deepinsight_auth_account_history',
+        authAccountHistoryStorageKey: 'intus_auth_account_history',
         authAccountHistoryMaxItems: 5,
         authAccountHistory: [],
         authAccountSuggestionsOpen: false,
@@ -1250,5 +1250,5 @@
         return app;
     }
 
-    global.DeepInsightAuthLicenseStateModule = { attach };
+    global.IntusAuthLicenseStateModule = { attach };
 })(window);

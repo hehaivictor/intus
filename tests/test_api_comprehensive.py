@@ -412,7 +412,7 @@ class ComprehensiveApiTests(unittest.TestCase):
 
     def _build_scoped_report_name(self, topic, date_str="20990101", session_id=""):
         slug = self.server.normalize_topic_slug(topic)
-        parts = ["deepinsight", date_str]
+        parts = ["intus", date_str]
         tag = self.server.get_instance_scope_short_tag()
         if tag:
             parts.append(tag)
@@ -1707,7 +1707,7 @@ class ComprehensiveApiTests(unittest.TestCase):
             self.assertEqual(save_config_resp.status_code, 200, save_config_resp.get_data(as_text=True))
             config_text = config_path.read_text(encoding="utf-8")
             self.assertIn("OTHER_UNRELATED_FLAG = True", config_text)
-            self.assertIn("DEEPINSIGHT ADMIN UI MANAGED CONFIG BEGIN", config_text)
+            self.assertIn("INTUS ADMIN UI MANAGED CONFIG BEGIN", config_text)
             self.assertIn("MODEL_NAME = 'gpt-5.4'", config_text)
             self.assertIn("QUESTION_MODEL_NAME = 'gpt-5.4'", config_text)
             self.assertIn("REPORT_MODEL_NAME = 'gpt-5.4-mini'", config_text)
@@ -2506,7 +2506,7 @@ class ComprehensiveApiTests(unittest.TestCase):
         user = self._register()
         user_id = int(user["id"])
         for i in range(25):
-            report_name = f"deepinsight-20990101-report-{i:02d}.md"
+            report_name = f"intus-20990101-report-{i:02d}.md"
             report_file = self.server.REPORTS_DIR / report_name
             report_file.write_text(f"# report {i}\n", encoding="utf-8")
             self.server.set_report_owner_id(report_name, user_id)
@@ -5184,7 +5184,7 @@ class ComprehensiveApiTests(unittest.TestCase):
         content = get_report_resp.get_json().get("content", "")
         self.assertIn("访谈报告", content)
         self.assertIn("**生成日期**:", content)
-        self.assertIn("**报告编号**: deepinsight-", content)
+        self.assertIn("**报告编号**: intus-", content)
         self.assertIn("问题 1：需求是什么？", content)
         self.assertIn("】问题 1：需求是什么？", content)
         self.assertNotIn("Q1:", content)

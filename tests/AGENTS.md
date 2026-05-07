@@ -1,12 +1,12 @@
 # Tests 局部入口
 
-这个目录承载 DeepInsight 的单元回归、harness 场景语料和 evaluator 校准样本。
+这个目录承载 Intus 的单元回归、harness 场景语料和 evaluator 校准样本。
 
 ## 先看什么
 
-- 仓库总入口：[../AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
-- Harness 索引：[../docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md)
-- Evaluator 校准样本说明：[../docs/agent/evaluator-calibration.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/evaluator-calibration.md)
+- 仓库总入口：[../AGENTS.md](../AGENTS.md)
+- Harness 索引：[../docs/agent/README.md](../docs/agent/README.md)
+- Evaluator 校准样本说明：[../docs/agent/evaluator-calibration.md](../docs/agent/evaluator-calibration.md)
 
 ## 当前测试层次
 

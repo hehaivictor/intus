@@ -1,8 +1,8 @@
-# DeepInsight 三档用户级别改造实施文档
+# Intus 三档用户级别改造实施文档
 
 ## 1. 文档定位
 
-本文档是 DeepInsight 用户级别改造的唯一实施基线，用于：
+本文档是 Intus 用户级别改造的唯一实施基线，用于：
 
 - 明确三档用户级别的功能边界
 - 固化后端、前端、管理后台、测试的改造范围
@@ -800,4 +800,4 @@ USER_LEVEL_DEFINITIONS = {
 - 清理全量回归阻塞：补 `tests/conftest.py` 导入路径、统一综合/安全测试走本地元存储与本地 session 存储，并修复多条旧式测试夹具假设
 - 修复真实缺陷：`ensure_meta_index_schema()` 新增 `site_config_store` 建表，后台配置中心保存站点配置不再因缺表失败
 - 对齐测试基线：`RuntimeTokenConfigTests` 的 `load_server_module()` 同时注入 `config` 与 `web.config`，避免仓库默认配置污染覆盖类测试
-- 完成全量回归清理：`PYTHONPATH=/Users/hehai/Documents/开目软件/Agents/project/DeepInsight /tmp/dv-user-level-regression/bin/pytest -q tests -x --disable-warnings` 结果为 `314 passed, 12 warnings`
+- 完成全量回归清理：`PYTHONPATH=$REPO_ROOT /tmp/intus-user-level-regression/bin/pytest -q tests -x --disable-warnings` 结果为 `314 passed, 12 warnings`

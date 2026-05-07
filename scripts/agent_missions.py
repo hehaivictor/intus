@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight harness Mission Contract 引用与生成辅助。
+Intus harness Mission Contract 引用与生成辅助。
 """
 
 from __future__ import annotations

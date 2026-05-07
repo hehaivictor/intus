@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight agent harness 任务画像与高风险 workflow 辅助。
+Intus agent harness 任务画像与高风险 workflow 辅助。
 """
 
 from __future__ import annotations

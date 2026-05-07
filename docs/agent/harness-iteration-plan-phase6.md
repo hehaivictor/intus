@@ -1,10 +1,10 @@
-# DeepInsight Harness 六阶段迭代计划
+# Intus Harness 六阶段迭代计划
 
 这份计划承接五阶段结果，聚焦“分层 AGENTS、任务契约全覆盖、校准扩容、轻量自愈、依赖链硬化、薄运营面”六条主线，不重复记录已经落地的统一入口、planner / mission / contract、heartbeat、doc gardener、browser smoke、multi-executor evaluator 与 CI 收口能力。
 
 ## 目标
 
-- 为 DeepInsight 增加目录级 `AGENTS.md`，把高频目录的局部约束和复跑入口前移
+- 为 Intus 增加目录级 `AGENTS.md`，把高频目录的局部约束和复跑入口前移
 - 把 8 个内置 task 继续收口到更完整的 `mission / planner / contract` 契约链，而不是只覆盖少数高风险链路
 - 扩 evaluator 校准样本，把真实误判与放水案例沉淀成长期稳定标尺
 - 为 heartbeat / doc gardener 增加轻量“自愈巡检”能力，先做保守版后台刷新与汇总
@@ -24,7 +24,7 @@
 - 当前 evaluator 场景：17 个
 - 当前校准样本：1 个
 - 当前目录级 `AGENTS.md`：仅根目录 1 个
-- 五阶段计划与台账：已完成，见 [harness-iteration-plan-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-iteration-plan-phase5.md) 与 [harness-progress-phase5.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase5.md)
+- 五阶段计划与台账：已完成，见 [harness-iteration-plan-phase5.md](../../docs/agent/harness-iteration-plan-phase5.md) 与 [harness-progress-phase5.md](../../docs/agent/harness-progress-phase5.md)
 
 ## 状态约定
 
@@ -55,7 +55,7 @@
 
 ## 每项执行要求
 
-每完成一个编号，必须同步更新 [harness-progress-phase6.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-progress-phase6.md)，至少记录：
+每完成一个编号，必须同步更新 [harness-progress-phase6.md](../../docs/agent/harness-progress-phase6.md)，至少记录：
 
 - 完成日期
 - 对应编号

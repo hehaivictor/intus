@@ -1,7 +1,7 @@
-# DeepInsight 仓库收口与精简执行历史
+# Intus 仓库收口与精简执行历史
 
 > 归档时间：2026-04-09  
-> 说明：本文档保留第一阶段仓库收口与第一轮后续清理的详细执行记录，供后续追溯使用。当前活跃计划请查看 [docs/repo-cleanup-execution-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md)。
+> 说明：本文档保留第一阶段仓库收口与第一轮后续清理的详细执行记录，供后续追溯使用。当前活跃计划请查看 [docs/repo-cleanup-execution-plan.md](../../docs/repo-cleanup-execution-plan.md)。
 
 本文档用于把当前仓库结构审计后的结论，落成一份可执行、可跟踪、可验收的清理与优化计划。
 
@@ -64,17 +64,17 @@
 
 ### 3.4 涉及文件
 
-- [deploy/docker-compose.production.yml](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy/docker-compose.production.yml)
-- [deploy/Dockerfile.production](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy/Dockerfile.production)
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
-- [output/README.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/output/README.ai.md)
-- [deploy](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy)
+- [deploy/docker-compose.production.yml](../../deploy/docker-compose.production.yml)
+- [deploy/Dockerfile.production](../../deploy/Dockerfile.production)
+- [README.md](../../README.md)
+- [output/README.ai.md](../../output/README.ai.md)
+- [deploy](../../deploy)
 
 ### 3.5 验收命令
 
 ```bash
-rg -n "docker-compose.production|Dockerfile.production" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight
-docker compose -f /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy/docker-compose.production.yml config
+rg -n "docker-compose.production|Dockerfile.production" "$REPO_ROOT"
+docker compose -f ../../deploy/docker-compose.production.yml config
 ```
 
 ### 3.6 完成标准
@@ -101,17 +101,17 @@ docker compose -f /Users/hehai/Documents/开目软件/Agents/project/DeepInsight
 
 ### 4.4 建议优先审查文件
 
-- [.memory/solution-page-config-driven-implementation.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory/solution-page-config-driven-implementation.md)
-- [.memory/solution-page-config-driven-dev-spec.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory/solution-page-config-driven-dev-spec.md)
-- [.memory/task_plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory/task_plan.md)
-- [.memory/v3_remediation_plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory/v3_remediation_plan.md)
-- [.memory/notes.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory/notes.md)
+- [.memory/solution-page-config-driven-implementation.md](../../.memory/solution-page-config-driven-implementation.md)
+- [.memory/solution-page-config-driven-dev-spec.md](../../.memory/solution-page-config-driven-dev-spec.md)
+- [.memory/task_plan.md](../../.memory/task_plan.md)
+- [.memory/v3_remediation_plan.md](../../.memory/v3_remediation_plan.md)
+- [.memory/notes.md](../../.memory/notes.md)
 
 ### 4.5 验收命令
 
 ```bash
-git ls-files /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory -maxdepth 1 -type f | sort
+git ls-files ../../.memory
+find ../../.memory -maxdepth 1 -type f | sort
 ```
 
 ### 4.6 完成标准
@@ -139,14 +139,14 @@ find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory -max
 
 ### 5.4 涉及文件
 
-- [docs/full-data-migration-runbook.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/full-data-migration-runbook.md)
-- [docs/external-local-data-cloud-import-guide.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/external-local-data-cloud-import-guide.md)
-- [docs/agent/migration.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/migration.md)
+- [docs/full-data-migration-runbook.md](../../docs/full-data-migration-runbook.md)
+- [docs/external-local-data-cloud-import-guide.md](../../docs/external-local-data-cloud-import-guide.md)
+- [docs/agent/migration.md](../../docs/agent/migration.md)
 
 ### 5.5 验收命令
 
 ```bash
-rg -n "import_external_local_data_to_cloud.py|sync_object_storage_history.py|rollback_external_local_data_import.py" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs
+rg -n "import_external_local_data_to_cloud.py|sync_object_storage_history.py|rollback_external_local_data_import.py" ../../docs
 ```
 
 ### 5.6 完成标准
@@ -174,16 +174,16 @@ rg -n "import_external_local_data_to_cloud.py|sync_object_storage_history.py|rol
 
 ### 6.4 涉及文件
 
-- [web/CONFIG.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/CONFIG.md)
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
-- [web/.gitignore](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/.gitignore)
-- [/.gitignore](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.gitignore)
+- [web/CONFIG.md](../../web/CONFIG.md)
+- [README.md](../../README.md)
+- [web/.gitignore](../../web/.gitignore)
+- [/.gitignore](../../.gitignore)
 
 ### 6.5 验收命令
 
 ```bash
-rg -n "web/.env.local|web/.env.cloud|config.py|site-config.js" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/CONFIG.md
-git check-ignore -v /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/.env.local
+rg -n "web/.env.local|web/.env.cloud|config.py|site-config.js" ../../README.md ../../web/CONFIG.md
+git check-ignore -v ../../web/.env.local
 ```
 
 ### 6.6 完成标准
@@ -226,17 +226,17 @@ git check-ignore -v /Users/hehai/Documents/开目软件/Agents/project/DeepInsig
 
 ### 7.5 涉及文件
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
+- [web/server.py](../../web/server.py)
+- [web/app.js](../../web/app.js)
 - 计划新增的模块目录
 
 ### 7.6 验收命令
 
 ```bash
-python3 -m py_compile /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py
-node --check /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_guardrails.py --quiet
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_smoke.py
+python3 -m py_compile ../../web/server.py
+node --check ../../web/app.js
+python3 ../../scripts/agent_guardrails.py --quiet
+python3 ../../scripts/agent_smoke.py
 ```
 
 ### 7.7 完成标准
@@ -276,8 +276,8 @@ python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/a
 建议固定验证命令：
 
 ```bash
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_guardrails.py --quiet
-python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_smoke.py
+python3 ../../scripts/agent_guardrails.py --quiet
+python3 ../../scripts/agent_smoke.py
 ```
 
 ## 9. 进度记录模板
@@ -352,22 +352,22 @@ python3 /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/a
 
 ### 12.4 涉及文件与目录
 
-- [output/PATH.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/output/PATH.ai.md)
-- [output/README.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/output/README.ai.md)
-- [deploy/PATH.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy/PATH.ai.md)
-- [deploy/README.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/deploy/README.ai.md)
-- [memory/PATH.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory/PATH.ai.md)
-- [memory/README.ai.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory/README.ai.md)
-- [/.memory](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory)
-- [memory](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory)
-- [/.gitignore](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.gitignore)
+- [output/PATH.ai.md](../../output/PATH.ai.md)
+- [output/README.ai.md](../../output/README.ai.md)
+- [deploy/PATH.ai.md](../../deploy/PATH.ai.md)
+- [deploy/README.ai.md](../../deploy/README.ai.md)
+- [memory/PATH.ai.md](../../memory/PATH.ai.md)
+- [memory/README.ai.md](../../memory/README.ai.md)
+- [/.memory](../../.memory)
+- [memory](../../memory)
+- [/.gitignore](../../.gitignore)
 
 ### 12.5 验收命令
 
 ```bash
-rg -n "PATH\\.ai|README\\.ai|AI_GENERATED_START" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/.memory -maxdepth 2 -type f 2>/dev/null
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory -maxdepth 2 -type f 2>/dev/null
+rg -n "PATH\\.ai|README\\.ai|AI_GENERATED_START" "$REPO_ROOT"
+find ../../.memory -maxdepth 2 -type f 2>/dev/null
+find ../../memory -maxdepth 2 -type f 2>/dev/null
 ```
 
 ### 12.6 完成标准
@@ -380,7 +380,7 @@ find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory -maxd
 
 ### 13.1 目标
 
-避免 [docs/repo-cleanup-execution-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md) 继续承担“主文档”角色，同时又保留大量已完成任务与历史路径，形成新的过时真相源。
+避免 [docs/repo-cleanup-execution-plan.md](../../docs/repo-cleanup-execution-plan.md) 继续承担“主文档”角色，同时又保留大量已完成任务与历史路径，形成新的过时真相源。
 
 ### 13.2 当前问题
 
@@ -398,14 +398,14 @@ find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/memory -maxd
 
 ### 13.4 涉及文件
 
-- [docs/repo-cleanup-execution-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md)
+- [docs/repo-cleanup-execution-plan.md](../../docs/repo-cleanup-execution-plan.md)
 - 可能新增的归档文档目录，例如 `docs/archive/`
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
+- [README.md](../../README.md)
 
 ### 13.5 验收命令
 
 ```bash
-rg -n "repo-cleanup-execution-plan" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight
+rg -n "repo-cleanup-execution-plan" "$REPO_ROOT"
 ```
 
 ### 13.6 完成标准
@@ -428,7 +428,7 @@ rg -n "repo-cleanup-execution-plan" /Users/hehai/Documents/开目软件/Agents/p
   - 运维接口说明
   - 大段 agent/harness 命令索引
 - 这让它再次接近“总览文档过重”的边界
-- [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md) 已经具备承接详细命令索引的能力
+- [docs/agent/README.md](../../docs/agent/README.md) 已经具备承接详细命令索引的能力
 
 ### 14.3 具体动作
 
@@ -439,9 +439,9 @@ rg -n "repo-cleanup-execution-plan" /Users/hehai/Documents/开目软件/Agents/p
 
 ### 14.4 涉及文件
 
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
-- [docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md)
-- [AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
+- [README.md](../../README.md)
+- [docs/agent/README.md](../../docs/agent/README.md)
+- [AGENTS.md](../../AGENTS.md)
 
 ### 14.5 验收命令
 
@@ -449,12 +449,12 @@ rg -n "repo-cleanup-execution-plan" /Users/hehai/Documents/开目软件/Agents/p
 python3 - <<'PY'
 from pathlib import Path
 for p in ['README.md','docs/agent/README.md','AGENTS.md']:
-    path=Path('/Users/hehai/Documents/开目软件/Agents/project/DeepInsight')/p
+    path=Path.cwd()/p
     with path.open('r', encoding='utf-8', errors='ignore') as f:
         lines=sum(1 for _ in f)
     print(f'{p}: {lines}')
 PY
-rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md
+rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" ../../README.md ../../docs/agent/README.md ../../AGENTS.md
 ```
 
 ### 14.6 完成标准
@@ -471,8 +471,8 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 
 ### 15.2 当前问题
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py) 仍约 4.7 万行
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js) 仍约 1.1 万行
+- [web/server.py](../../web/server.py) 仍约 4.7 万行
+- [web/app.js](../../web/app.js) 仍约 1.1 万行
 - 第一批拆出的 `server_modules` / `app_modules` 主要解决了启动、配置、列表状态与登录边界
 - 还未触及最重的业务热点：
   - 访谈推进编排
@@ -493,10 +493,10 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 
 ### 15.4 涉及文件
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
-- [web/server_modules](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules)
-- [web/app_modules](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules)
+- [web/server.py](../../web/server.py)
+- [web/app.js](../../web/app.js)
+- [web/server_modules](../../web/server_modules)
+- [web/app_modules](../../web/app_modules)
 - 可新增的规划文档，例如 `docs/agent/plans/`
 
 ### 15.5 验收命令
@@ -505,13 +505,13 @@ rg -n "agent_harness.py --profile auto|agent_smoke.py|agent_guardrails.py" /User
 python3 - <<'PY'
 from pathlib import Path
 for p in ['web/server.py','web/app.js']:
-    path=Path('/Users/hehai/Documents/开目软件/Agents/project/DeepInsight')/p
+    path=Path.cwd()/p
     with path.open('r', encoding='utf-8', errors='ignore') as f:
         lines=sum(1 for _ in f)
     print(f'{p}: {lines}')
 PY
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules -maxdepth 1 -type f | sort
-find /Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules -maxdepth 1 -type f | sort
+find ../../web/server_modules -maxdepth 1 -type f | sort
+find ../../web/app_modules -maxdepth 1 -type f | sort
 ```
 
 ### 15.6 完成标准

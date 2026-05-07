@@ -12,7 +12,7 @@
 - 不同章节使用不同的信息表达器
 - Hero、对比、业务板块、系统集成、知识沉淀、数据联动、价值收束是一条连续叙事链
 
-当前 DeepInsight 方案页虽然已经从“结构化字段拼装页”升级成了“提案页骨架”，但仍然不是样例页这个级别。差距不在 10%，而是在**产品形态和实现策略**上。
+当前 Intus 方案页虽然已经从“结构化字段拼装页”升级成了“提案页骨架”，但仍然不是样例页这个级别。差距不在 10%，而是在**产品形态和实现策略**上。
 
 因此，建议明确切换方向：
 
@@ -420,9 +420,9 @@
 
 ### 7.1 当前文件
 
-- [web/solution.html](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.html)
-- [web/solution.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.js)
-- [web/solution.css](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/solution.css)
+- [web/solution.html](../web/solution.html)
+- [web/solution.js](../web/solution.js)
+- [web/solution.css](../web/solution.css)
 
 ### 7.2 不建议继续的方向
 
@@ -590,7 +590,7 @@ AI 不再负责：
 
 - **直接以样例页为母版，重建一套固定架构的高保真方案页系统**
 
-DeepInsight 负责的不是“设计新的页面类型”，而是：
+Intus 负责的不是“设计新的页面类型”，而是：
 
 - 把访谈报告自动填进这套高级提案母版里。
 

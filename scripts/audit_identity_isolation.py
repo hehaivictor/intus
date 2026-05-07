@@ -32,7 +32,7 @@ def resolve_auth_db_path(project_root: Path, raw_auth_db: str) -> Path:
         path = Path(raw_auth_db).expanduser()
         return path if path.is_absolute() else (project_root / path).resolve()
 
-    env_path = str(os.environ.get("DEEPINSIGHT_AUTH_DB_PATH", "")).strip()
+    env_path = str(os.environ.get("INTUS_AUTH_DB_PATH", "")).strip()
     if env_path:
         path = Path(env_path).expanduser()
         return path if path.is_absolute() else (project_root / path).resolve()
@@ -174,7 +174,7 @@ def audit_sessions_owner(sessions_dir: Path, valid_user_ids: set[int]) -> dict:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="审计账号隔离风险（微信映射 + 会话归属）")
-    parser.add_argument("--auth-db", default="", help="用户库路径，默认 data/auth/users.db 或 DEEPINSIGHT_AUTH_DB_PATH")
+    parser.add_argument("--auth-db", default="", help="用户库路径，默认 data/auth/users.db 或 INTUS_AUTH_DB_PATH")
     parser.add_argument("--sessions-dir", default="", help="会话目录，默认 data/sessions")
     parser.add_argument("--write-json", action="store_true", help="将审计结果写入 data/operations")
     parser.add_argument("--json-path", default="", help="自定义 JSON 输出路径（配合 --write-json）")
@@ -225,7 +225,7 @@ def main() -> int:
         "sessions": sessions_audit,
     }
 
-    print("=== DeepInsight 账号隔离审计 ===")
+    print("=== Intus 账号隔离审计 ===")
     print(f"auth_db: {auth_db_path}")
     print(f"sessions: {sessions_dir}")
     print("")

@@ -51,4 +51,4 @@ python3 scripts/agent_planner.py \
 ## 当前长期计划
 
 - [方案生成服务 v1.0](../../../../proposal-service/docs/plans/proposal-generation-service-v1.md)
-- [DeepInsight 接入方案生成服务改造方案 v1.0](deepinsight-proposal-generation-service-migration-v1.md)
+- [Intus 接入方案生成服务改造方案 v1.0](intus-proposal-generation-service-migration-v1.md)

@@ -613,7 +613,7 @@ function StickyProposalNav({
 }) {
   return (
     <nav className="proposal-nav">
-      <div className="proposal-nav__brand">DeepInsight 提案页</div>
+      <div className="proposal-nav__brand">Intus 提案页</div>
       <div className="proposal-nav__items">
         {items.map((item) => (
           <button

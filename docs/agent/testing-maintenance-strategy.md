@@ -1,14 +1,14 @@
-# DeepInsight 测试体系长期维护策略
+# Intus 测试体系长期维护策略
 
 这份文档回答的不是“要不要做测试”，而是：
 
-1. DeepInsight 现在应该长期维持什么测试结构。
+1. Intus 现在应该长期维持什么测试结构。
 2. 哪些测试是 PR 必跑，哪些是发布前必跑。
 3. 新功能和新问题最少要补到什么程度。
 
 结论先说：
 
-`DeepInsight 需要同时保留单元/回归测试、集成测试、功能测试和稳定性专项。`
+`Intus 需要同时保留单元/回归测试、集成测试、功能测试和稳定性专项。`
 
 但它们不是平铺使用，而是按层次承担不同职责。
 
@@ -24,10 +24,10 @@
 
 当前主要落点：
 
-- [tests/test_api_comprehensive.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_api_comprehensive.py)
-- [tests/test_security_regression.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_security_regression.py)
-- [tests/test_solution_payload.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_solution_payload.py)
-- [tests/test_scripts_comprehensive.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_scripts_comprehensive.py)
+- [tests/test_api_comprehensive.py](../../tests/test_api_comprehensive.py)
+- [tests/test_security_regression.py](../../tests/test_security_regression.py)
+- [tests/test_solution_payload.py](../../tests/test_solution_payload.py)
+- [tests/test_scripts_comprehensive.py](../../tests/test_scripts_comprehensive.py)
 
 适合覆盖的问题：
 
@@ -44,7 +44,7 @@
 - 锁数据库、对象存储、配置中心、鉴权、恢复链路
 - 发现“单个函数都对，但串起来会坏”的问题
 
-DeepInsight 当前最重要的集成链路：
+Intus 当前最重要的集成链路：
 
 - 登录 -> License -> 业务壳
 - 访谈 -> 下一题 -> 报告生成 -> 报告详情 -> 方案页
@@ -67,8 +67,8 @@ DeepInsight 当前最重要的集成链路：
 
 当前主要入口：
 
-- [scripts/agent_browser_smoke.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_browser_smoke.py)
-- [scripts/agent_browser_smoke_runner.mjs](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/agent_browser_smoke_runner.mjs)
+- [scripts/agent_browser_smoke.py](../../scripts/agent_browser_smoke.py)
+- [scripts/agent_browser_smoke_runner.mjs](../../scripts/agent_browser_smoke_runner.mjs)
 - `minimal / extended / live-minimal / live-extended`
 
 ### 4. 稳定性专项
@@ -82,9 +82,9 @@ DeepInsight 当前最重要的集成链路：
 
 当前主要入口：
 
-- [docs/agent/harness-stability-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-plan.md)
-- [docs/agent/harness-stability-progress.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-progress.md)
-- [docs/agent/harness-stability-summary.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/harness-stability-summary.md)
+- [docs/agent/harness-stability-plan.md](../../docs/agent/harness-stability-plan.md)
+- [docs/agent/harness-stability-progress.md](../../docs/agent/harness-stability-progress.md)
+- [docs/agent/harness-stability-summary.md](../../docs/agent/harness-stability-summary.md)
 
 ## 二、长期执行策略
 
@@ -225,7 +225,7 @@ python3 scripts/agent_history.py --kind harness-stability-release --limit 5
 
 ## 五、风险驱动优先级
 
-DeepInsight 后续测试投入应一直按下面顺序倾斜：
+Intus 后续测试投入应一直按下面顺序倾斜：
 
 ### 第一梯队
 
@@ -281,6 +281,6 @@ DeepInsight 后续测试投入应一直按下面顺序倾斜：
 
 ## 八、一句话原则
 
-DeepInsight 当前最适合的长期策略是：
+Intus 当前最适合的长期策略是：
 
 `单元锁边界，集成锁状态，功能锁真实可用，稳定性专项锁发布前质量。`

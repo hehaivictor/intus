@@ -1,11 +1,11 @@
-# DeepInsight 接入方案生成服务改造方案 v1.0
+# Intus 接入方案生成服务改造方案 v1.0
 
-本文档用于沉淀 DeepInsight 侧的正式改造方案。目标是在不改前端交互的前提下，把当前“本地生成方案页/演示文稿”的逻辑切到统一的“方案生成服务”。
+本文档用于沉淀 Intus 侧的正式改造方案。目标是在不改前端交互的前提下，把当前“本地生成方案页/演示文稿”的逻辑切到统一的“方案生成服务”。
 
 ## 当前状态
 
 - 状态：`draft`
-- 宿主项目：`DeepInsight`
+- 宿主项目：`Intus`
 - 目标服务：`方案生成服务 v1.0`
 - 前端策略：`保持现状`
 - 后端策略：`从本地生成切到 BFF/代理模式`
@@ -14,7 +14,7 @@
 
 ### 1.1 目标
 
-1. DeepInsight 后端可以为任意报告组装 `ProposalSnapshot v1`。
+1. Intus 后端可以为任意报告组装 `ProposalSnapshot v1`。
 2. 方案页接口改为调用 `方案生成服务 /v1/solutions/render`。
 3. 演示文稿接口改为调用 `方案生成服务 /v1/presentations/jobs`。
 4. 方案页页面、报告详情页和现有交互不改。
@@ -29,7 +29,7 @@
 
 ## 二、保持不变的内容
 
-以下能力继续留在 DeepInsight：
+以下能力继续留在 Intus：
 
 - 登录态与用户上下文
 - `solution.view` / `solution.share` / `presentation.generate` 等等级能力校验
@@ -70,7 +70,7 @@
 推荐暴露两个函数：
 
 - `build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0) -> dict`
-- `map_deepinsight_snapshot_to_proposal_snapshot(normalized_snapshot: dict, evidence_pack: dict, generated_at) -> dict`
+- `map_intus_snapshot_to_proposal_snapshot(normalized_snapshot: dict, evidence_pack: dict, generated_at) -> dict`
 
 ## 四、ProposalSnapshot 组装逻辑
 
@@ -134,7 +134,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
         if isinstance(session, dict):
             evidence_pack = build_report_evidence_pack(session)
 
-    return map_deepinsight_snapshot_to_proposal_snapshot(
+    return map_intus_snapshot_to_proposal_snapshot(
         normalized_snapshot=normalized_snapshot,
         evidence_pack=evidence_pack,
         generated_at=generated_at,
@@ -150,7 +150,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 
 映射明细：
 
-- `source.system` <- 固定 `deepinsight`
+- `source.system` <- 固定 `intus`
 - `source.object_type` <- 固定 `report`
 - `source.object_id` <- `report_name`
 - `source.title` <- `normalized_snapshot.topic`
@@ -209,7 +209,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 约束：
 
 - [web/solution.js](../../../web/solution.js) 不需要改协议
-- `viewer_capabilities` 仍在 DeepInsight 本地组装
+- `viewer_capabilities` 仍在 Intus 本地组装
 
 ### 5.2 演示文稿提交接口
 
@@ -243,7 +243,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 
 目标逻辑：
 
-1. DeepInsight 本地做登录、权限、owner 校验
+1. Intus 本地做登录、权限、owner 校验
 2. 查询新服务 job 状态
 3. 映射为当前前端消费的字段：
    - `exists`
@@ -261,7 +261,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 
 目标逻辑：
 
-1. DeepInsight 本地做登录、权限、owner 校验
+1. Intus 本地做登录、权限、owner 校验
 2. 从新服务或本地记录中获取 artifact
 3. 保持当前前端行为不变，继续输出跳转或下载响应
 
@@ -303,7 +303,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 
 ### 7.2 完成标准
 
-1. DeepInsight 前端无感切换。
+1. Intus 前端无感切换。
 2. 方案页 payload 结构兼容当前消费方。
 3. 演示文稿按钮、轮询、下载行为保持一致。
 4. 分享、权限和 owner 边界不退化。
@@ -326,7 +326,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 
 ## 九、文件级实施清单
 
-本节把 DeepInsight 侧改造进一步压实到仓库文件级别，便于按文件拆解实施、review 和回归。
+本节把 Intus 侧改造进一步压实到仓库文件级别，便于按文件拆解实施、review 和回归。
 
 ### 9.1 第一批新增文件
 
@@ -367,7 +367,7 @@ def build_proposal_snapshot_for_report(report_name: str, owner_user_id: int = 0)
 | `build_proposal_snapshot_for_report()` | 外部总入口 |
 | `_load_or_build_solution_snapshot()` | sidecar、绑定回补、markdown fallback 选择 |
 | `_load_report_evidence_pack()` | 按 session 读取 evidence pack |
-| `map_deepinsight_snapshot_to_proposal_snapshot()` | 标准字段映射 |
+| `map_intus_snapshot_to_proposal_snapshot()` | 标准字段映射 |
 | `_build_snapshot_source_block()` | 组装 `source` |
 | `_build_snapshot_context_block()` | 组装 `context` |
 | `_build_snapshot_content_block()` | 组装 `content` |

@@ -371,7 +371,7 @@ flowchart TD
 
 ---
 
-*此报告由 DeepInsight 深察生成*
+*此报告由 Intus 见真生成*
 
 ---
 

@@ -626,7 +626,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
                     "DEBUG_MODE=true",
                     "SMS_PROVIDER=mock",
                     "SECRET_KEY=local-dev-secret",
-                    "INSTANCE_SCOPE_KEY=deepinsight-local",
+                    "INSTANCE_SCOPE_KEY=intus-local",
                     *self._agent_doctor_env_lines("agent-doctor-local"),
                 ]
             )
@@ -663,7 +663,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
                     "SMS_LOGIN_ENABLED=false",
                     "SMS_PROVIDER=mock",
                     "SECRET_KEY=cloud-secret",
-                    "INSTANCE_SCOPE_KEY=deepinsight-cloud",
+                    "INSTANCE_SCOPE_KEY=intus-cloud",
                     *self._agent_doctor_env_lines("agent-doctor-cloud-sms-disabled"),
                 ]
             )
@@ -1451,7 +1451,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertEqual("H5-3 Global Heartbeat Memory", json_payload["active_phase"]["current_priority"])
         self.assertTrue(any(item["task"] == "report-solution" for item in json_payload["missions"]))
         self.assertTrue(any(item["kind"] == "evaluator" for item in json_payload["latest_runs"]))
-        self.assertIn("DeepInsight Heartbeat", markdown)
+        self.assertIn("Intus Heartbeat", markdown)
         self.assertIn("H5-3 Global Heartbeat Memory", markdown)
         self.assertIn("report-solution-share-fix-mission", markdown)
 
@@ -1614,7 +1614,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertEqual("autodream_lite", autodream_payload["kind"])
         self.assertEqual("HEALTHY", autodream_payload["overall"])
         notes_markdown = notes_md.read_text(encoding="utf-8")
-        self.assertIn("DeepInsight Memory Notes", notes_markdown)
+        self.assertIn("Intus Memory Notes", notes_markdown)
         self.assertIn("H6-4 AutoDream Lite", notes_markdown)
 
     def test_agent_eval_single_case_pass_does_not_emit_false_hotspot(self):
@@ -2838,7 +2838,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         markdown_path = Path(files["markdown_file"])
         self.assertTrue(json_path.exists())
         self.assertTrue(markdown_path.exists())
-        self.assertIn("# DeepInsight Doc Gardening Report", markdown_path.read_text(encoding="utf-8"))
+        self.assertIn("# Intus Doc Gardening Report", markdown_path.read_text(encoding="utf-8"))
 
     def test_agent_ops_build_status_payload(self):
         planner_base, mission_base = self._materialized_task_pointer_dirs("agent-ops-status")
@@ -2890,7 +2890,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertTrue(markdown_path.exists())
         self.assertTrue(latest_json.exists())
         self.assertTrue(latest_markdown.exists())
-        self.assertIn("# DeepInsight Harness Ops", markdown_path.read_text(encoding="utf-8"))
+        self.assertIn("# Intus Harness Ops", markdown_path.read_text(encoding="utf-8"))
         saved_payload = json.loads(latest_json.read_text(encoding="utf-8"))
         self.assertEqual("ops_status", saved_payload["kind"])
 

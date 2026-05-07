@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DeepInsight Gunicorn 启动器。
+"""Intus Gunicorn 启动器。
 
 用途：
 - 从 web/server.py 顶部读取 inline dependency metadata
@@ -70,17 +70,17 @@ def main(argv: list[str]) -> int:
         print("未找到 uv，请先安装 uv 后再启动 Gunicorn。", file=sys.stderr)
         return 1
 
-    if not str(os.environ.get("DEEPINSIGHT_ENV_FILE", "") or "").strip() and DEFAULT_PRODUCTION_ENV.exists():
-        os.environ["DEEPINSIGHT_ENV_FILE"] = str(DEFAULT_PRODUCTION_ENV.relative_to(ROOT_DIR))
+    if not str(os.environ.get("INTUS_ENV_FILE", "") or "").strip() and DEFAULT_PRODUCTION_ENV.exists():
+        os.environ["INTUS_ENV_FILE"] = str(DEFAULT_PRODUCTION_ENV.relative_to(ROOT_DIR))
 
     os.chdir(ROOT_DIR)
     prestart_cmd = build_prestart_command()
     cmd = build_command(argv[1:])
 
-    print("启动 DeepInsight 生产模式（Gunicorn）")
+    print("启动 Intus 生产模式（Gunicorn）")
     print("依赖来源: web/server.py inline dependency metadata + gunicorn")
     print(f"配置文件: {GUNICORN_CONFIG}")
-    print(f"环境文件: {os.environ.get('DEEPINSIGHT_ENV_FILE', '(未指定)')}")
+    print(f"环境文件: {os.environ.get('INTUS_ENV_FILE', '(未指定)')}")
     print("预启动初始化命令:")
     print("  " + " ".join(shlex.quote(part) for part in prestart_cmd))
     prestart_result = subprocess.run(prestart_cmd, check=False)

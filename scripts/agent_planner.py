@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness Planner artifact 生成器。
+Intus harness Planner artifact 生成器。
 
 目标：
 1. 把简短需求收口成结构化计划工件，而不是直接跳进 task workflow
@@ -329,7 +329,7 @@ def write_plan_artifact(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="生成 DeepInsight harness Planner artifact")
+    parser = argparse.ArgumentParser(description="生成 Intus harness Planner artifact")
     parser.add_argument("--task", required=True, choices=agent_profiles.list_task_names(), help="选择任务画像")
     parser.add_argument("--goal", required=True, help="用一句话描述本次要解决的问题或目标")
     parser.add_argument("--context-line", action="append", default=[], help="补充上下文，每次传入一行")
@@ -378,7 +378,7 @@ def main(argv: list[str] | None = None) -> int:
         output_markdown=args.output_markdown,
         mission_output_markdown=args.output_mission_markdown,
     )
-    print("DeepInsight agent planner")
+    print("Intus agent planner")
     if outputs.get("mission_markdown_file"):
         print(f"[WRITE] {outputs['mission_markdown_file']}")
     if outputs.get("mission_json_file"):

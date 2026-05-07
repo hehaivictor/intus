@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-DeepInsight harness 场景 evaluator。
+Intus harness 场景 evaluator。
 
 目标：
 1. 把高价值回归链路沉淀成可枚举的场景语料库
@@ -879,7 +879,7 @@ def run_eval(
 
 
 def render_text(payload: dict[str, Any]) -> None:
-    print("DeepInsight harness evaluator")
+    print("Intus harness evaluator")
     print(f"场景目录: {payload['scenarios_root']}")
     print("")
     for item in payload["results"]:
@@ -913,7 +913,7 @@ def render_text(payload: dict[str, Any]) -> None:
 
 
 def list_scenarios(scenarios: list[EvalScenario]) -> int:
-    print("DeepInsight harness scenarios")
+    print("Intus harness scenarios")
     for index, scenario in enumerate(scenarios, 1):
         print(
             f"{index}. {scenario.category}/{scenario.name} | "
@@ -924,7 +924,7 @@ def list_scenarios(scenarios: list[EvalScenario]) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="DeepInsight harness 场景 evaluator")
+    parser = argparse.ArgumentParser(description="Intus harness 场景 evaluator")
     parser.add_argument("--scenario-root", default=str(SCENARIOS_DIR), help="场景目录，默认 tests/harness_scenarios")
     parser.add_argument("--scenario", action="append", default=[], help="仅执行指定场景名，可重复传入")
     parser.add_argument("--category", action="append", default=[], help="仅执行指定分类，可重复传入")

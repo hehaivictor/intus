@@ -9,7 +9,7 @@
 # ]
 # ///
 """
-Deep-Vision 文档格式转换工具
+Intus 文档格式转换工具
 
 用途: 将 docx/xlsx/pptx 等格式转换为 Markdown 以便 AI 读取
 使用方式: uvx scripts/convert_doc.py convert <文件路径> [输出目录]
@@ -423,7 +423,7 @@ def cleanup(base_dir: Optional[str] = None) -> None:
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
-        description="Deep-Vision 文档格式转换工具",
+        description="Intus 文档格式转换工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:

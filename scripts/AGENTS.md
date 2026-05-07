@@ -1,12 +1,12 @@
 # Scripts 局部入口
 
-这个目录承载 DeepInsight 的 harness 脚本、运维脚本、迁移脚本和启动脚本。
+这个目录承载 Intus 的 harness 脚本、运维脚本、迁移脚本和启动脚本。
 
 ## 先看什么
 
-- 仓库总入口：[../AGENTS.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/AGENTS.md)
-- Harness 索引：[../docs/agent/README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/README.md)
-- 物理地图：[../ARCHITECTURE.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/ARCHITECTURE.md)
+- 仓库总入口：[../AGENTS.md](../AGENTS.md)
+- Harness 索引：[../docs/agent/README.md](../docs/agent/README.md)
+- 物理地图：[../ARCHITECTURE.md](../ARCHITECTURE.md)
 
 ## 目录职责
 

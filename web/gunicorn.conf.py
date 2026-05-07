@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight Gunicorn 生产配置。
+Intus Gunicorn 生产配置。
 
 可通过环境变量覆盖：
 - GUNICORN_WORKERS

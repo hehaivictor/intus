@@ -65,7 +65,7 @@ tag 约定：
 
 校准样本位于 `tests/harness_calibration/*.json`，用于记录“哪些应该判 FAIL，哪些只是 WARN”的真实尺度。
 
-当前第一条样本是 [`report-solution-wording-drift.json`](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/harness_calibration/report-solution-wording-drift.json)，对应 `report-solution-preview` 的真实误判案例：方案页标题文案轻微变化时，不应继续使用逐字比较导致 nightly 误红。
+当前第一条样本是 [`report-solution-wording-drift.json`](../../tests/harness_calibration/report-solution-wording-drift.json)，对应 `report-solution-preview` 的真实误判案例：方案页标题文案轻微变化时，不应继续使用逐字比较导致 nightly 误红。
 
 当前约定：
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DeepInsight Web 预启动初始化。
+"""Intus Web 预启动初始化。
 
 用途：
 - 在 Web 进程真正开始接收请求前，显式完成必须自动执行的数据库初始化

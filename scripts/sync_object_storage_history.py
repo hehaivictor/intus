@@ -39,7 +39,7 @@ def resolve_env_chain(args: argparse.Namespace) -> str:
                 env_path = (ROOT_DIR / env_path).resolve()
             normalized.append(str(env_path))
         return os.pathsep.join(normalized)
-    return str(os.environ.get("DEEPINSIGHT_ENV_FILE") or "").strip()
+    return str(os.environ.get("INTUS_ENV_FILE") or "").strip()
 
 
 def write_json_if_needed(output_json: str, payload: dict) -> None:
@@ -55,7 +55,7 @@ def main() -> None:
     args = parse_args()
     env_chain = resolve_env_chain(args)
     if env_chain:
-        os.environ["DEEPINSIGHT_ENV_FILE"] = env_chain
+        os.environ["INTUS_ENV_FILE"] = env_chain
 
     os.chdir(ROOT_DIR)
 

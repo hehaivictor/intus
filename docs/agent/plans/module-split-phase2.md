@@ -7,19 +7,19 @@
 第一批已完成拆分：
 
 - 后端：
-  - [web/server_modules/runtime_bootstrap.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/runtime_bootstrap.py)
-  - [web/server_modules/object_storage_history.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/object_storage_history.py)
-  - [web/server_modules/admin_config_center.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/admin_config_center.py)
-  - [web/server_modules/ownership_admin_flow.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server_modules/ownership_admin_flow.py)
+  - [web/server_modules/runtime_bootstrap.py](../../../web/server_modules/runtime_bootstrap.py)
+  - [web/server_modules/object_storage_history.py](../../../web/server_modules/object_storage_history.py)
+  - [web/server_modules/admin_config_center.py](../../../web/server_modules/admin_config_center.py)
+  - [web/server_modules/ownership_admin_flow.py](../../../web/server_modules/ownership_admin_flow.py)
 - 前端：
-  - [web/app_modules/session_list_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/session_list_state.js)
-  - [web/app_modules/report_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/report_state.js)
-  - [web/app_modules/auth_license_state.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app_modules/auth_license_state.js)
+  - [web/app_modules/session_list_state.js](../../../web/app_modules/session_list_state.js)
+  - [web/app_modules/report_state.js](../../../web/app_modules/report_state.js)
+  - [web/app_modules/auth_license_state.js](../../../web/app_modules/auth_license_state.js)
 
 当前主文件体量：
 
-- [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)：约 `43502` 行
-- [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)：约 `7361` 行
+- [web/server.py](../../../web/server.py)：约 `43502` 行
+- [web/app.js](../../../web/app.js)：约 `7361` 行
 
 说明：
 
@@ -50,12 +50,12 @@
 
 核心函数：
 
-- [generate_report_v3_pipeline](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L26499)
-- [run_report_generation_job](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L33921)
-- [generate_report](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L34992)
-- [build_report_prompt_with_options](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L21184)
-- [build_report_evidence_pack](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L21789)
-- [compute_report_quality_meta_v3](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L25148)
+- [generate_report_v3_pipeline](../../../web/server.py#L26499)
+- [run_report_generation_job](../../../web/server.py#L33921)
+- [generate_report](../../../web/server.py#L34992)
+- [build_report_prompt_with_options](../../../web/server.py#L21184)
+- [build_report_evidence_pack](../../../web/server.py#L21789)
+- [compute_report_quality_meta_v3](../../../web/server.py#L25148)
 
 适合先拆的原因：
 
@@ -99,15 +99,15 @@
 
 核心函数：
 
-- [build_interview_prompt](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L20256)
-- [_select_question_generation_runtime_profile](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L30510)
-- [get_next_question](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L31557)
-- [submit_answer](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L32442)
-- [generate_question_with_tiered_strategy](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L31333)
+- [build_interview_prompt](../../../web/server.py#L20256)
+- [_select_question_generation_runtime_profile](../../../web/server.py#L30510)
+- [get_next_question](../../../web/server.py#L31557)
+- [submit_answer](../../../web/server.py#L32442)
+- [generate_question_with_tiered_strategy](../../../web/server.py#L31333)
 
 适合拆分的原因：
 
-- 是 DeepInsight 主链路中最常改、最易感知的业务热点
+- 是 Intus 主链路中最常改、最易感知的业务热点
 - 已经具备稳定的入口函数和明确的超时恢复逻辑
 
 暂不放第一优先的原因：
@@ -146,9 +146,9 @@
 
 核心函数：
 
-- [build_solution_render_model](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L41345)
-- [build_solution_proposal_brief](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L43463)
-- [build_solution_chapter_copy](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py#L43897)
+- [build_solution_render_model](../../../web/server.py#L41345)
+- [build_solution_proposal_brief](../../../web/server.py#L43463)
+- [build_solution_chapter_copy](../../../web/server.py#L43897)
 
 适合拆分的原因：
 
@@ -171,9 +171,9 @@
 
 核心方法：
 
-- [generateReport](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L6546)
-- [viewReport](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L6608)
-- [startPresentationGeneration](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L7432)
+- [generateReport](../../../web/app.js#L6546)
+- [viewReport](../../../web/app.js#L6608)
+- [startPresentationGeneration](../../../web/app.js#L7432)
 
 适合先拆的原因：
 
@@ -212,9 +212,9 @@
 
 核心方法：
 
-- [openSession](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L4238)
-- [fetchNextQuestion](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L4724)
-- [submitAnswer](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L5630)
+- [openSession](../../../web/app.js#L4238)
+- [fetchNextQuestion](../../../web/app.js#L4724)
+- [submitAnswer](../../../web/app.js#L5630)
 
 适合拆分的原因：
 
@@ -258,8 +258,8 @@
 
 核心方法与状态：
 
-- [switchView](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L10187)
-- [loadAdminConfigCenter](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js#L2219)
+- [switchView](../../../web/app.js#L10187)
+- [loadAdminConfigCenter](../../../web/app.js#L2219)
 - 管理员中心相关状态：`adminConfig*`、`adminLicense*`、`adminOwnership*`
 
 适合拆分的原因：
@@ -343,8 +343,8 @@ python3 scripts/agent_browser_smoke.py --suite extended
 
 当前不建议继续机械推进“第三批系统性拆分”。更合理的下一步是：
 
-1. 先按活跃计划完成 [web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py) 中 report / interview 两条链路的过渡残留清理
-2. 再按需收口 [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js) 与现有 `app_modules` 的边界重复定义
+1. 先按活跃计划完成 [web/server.py](../../../web/server.py) 中 report / interview 两条链路的过渡残留清理
+2. 再按需收口 [web/app.js](../../../web/app.js) 与现有 `app_modules` 的边界重复定义
 3. 只有在方案页或管理员 License 子链路重新进入高频改动时，才启动新一轮热点拆分
 
 第三批拆分决策门：
@@ -372,4 +372,4 @@ python3 scripts/agent_browser_smoke.py --suite extended
 
 后续跟踪以活跃计划文档为准：
 
-- [docs/repo-cleanup-execution-plan.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/repo-cleanup-execution-plan.md)
+- [docs/repo-cleanup-execution-plan.md](../../../docs/repo-cleanup-execution-plan.md)

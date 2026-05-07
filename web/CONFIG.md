@@ -1,6 +1,6 @@
-# DeepInsight 前端配置说明
+# Intus 前端配置说明
 
-本文档只说明 [site-config.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/site-config.js) 的前端展示配置。
+本文档只说明 [site-config.js](../web/site-config.js) 的前端展示配置。
 
 如果你要修改的是：
 
@@ -16,9 +16,9 @@
 
 请直接查看：
 
-- [README.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/README.md)
-- [web/.env.example](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/.env.example)
-- [web/config.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/config.py)
+- [README.md](../README.md)
+- [web/.env.example](../web/.env.example)
+- [web/config.py](../web/config.py)
 
 ## 配置文件位置
 

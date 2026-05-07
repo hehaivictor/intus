@@ -6,14 +6,14 @@
 
 以下文档由 `python3 scripts/agent_playbook_sync.py` 基于 `resources/harness/tasks/*.json` 自动生成。修改 task 画像后，优先重新同步，不要手工改生成段落。
 
-- 报告与方案页问题排查：[report-debug.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/report-debug.md)
-- 导出与演示稿链路核对：[presentation-export.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/presentation-export.md)
-- 账号绑定与合并核对：[account-merge-verify.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/account-merge-verify.md)
-- 归属迁移预演与执行前确认：[migration-preview.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/migration-preview.md)
-- License 审计与开关核对：[license-audit.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/license-audit.md)
-- License 管理与批量操作核对：[license-admin.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/license-admin.md)
-- 配置中心变更前核对：[config-center-verify.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/config-center-verify.md)
-- 云端导入预演与回滚准备：[cloud-import-verify.md](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/docs/agent/playbooks/cloud-import-verify.md)
+- 报告与方案页问题排查：[report-debug.md](../../../docs/agent/playbooks/report-debug.md)
+- 导出与演示稿链路核对：[presentation-export.md](../../../docs/agent/playbooks/presentation-export.md)
+- 账号绑定与合并核对：[account-merge-verify.md](../../../docs/agent/playbooks/account-merge-verify.md)
+- 归属迁移预演与执行前确认：[migration-preview.md](../../../docs/agent/playbooks/migration-preview.md)
+- License 审计与开关核对：[license-audit.md](../../../docs/agent/playbooks/license-audit.md)
+- License 管理与批量操作核对：[license-admin.md](../../../docs/agent/playbooks/license-admin.md)
+- 配置中心变更前核对：[config-center-verify.md](../../../docs/agent/playbooks/config-center-verify.md)
+- 云端导入预演与回滚准备：[cloud-import-verify.md](../../../docs/agent/playbooks/cloud-import-verify.md)
 
 ## 使用原则
 

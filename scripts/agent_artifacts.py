@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepInsight agent harness 工件辅助函数。
+Intus agent harness 工件辅助函数。
 """
 
 from __future__ import annotations

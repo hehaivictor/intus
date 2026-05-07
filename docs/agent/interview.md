@@ -11,12 +11,12 @@
 
 ## 主要代码与测试
 
-- 后端主入口：[web/server.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/server.py)
-- 前端访谈页：[web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js)
-- API 综合回归：[tests/test_api_comprehensive.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_api_comprehensive.py)
-- 提问策略与性能分流：[tests/test_question_fast_strategy.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_question_fast_strategy.py)
-- 安全边界：[tests/test_security_regression.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/tests/test_security_regression.py)
-- 预检离线诊断脚本：[scripts/replay_preflight_diagnostics.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/replay_preflight_diagnostics.py)
+- 后端主入口：[web/server.py](../../web/server.py)
+- 前端访谈页：[web/app.js](../../web/app.js)
+- API 综合回归：[tests/test_api_comprehensive.py](../../tests/test_api_comprehensive.py)
+- 提问策略与性能分流：[tests/test_question_fast_strategy.py](../../tests/test_question_fast_strategy.py)
+- 安全边界：[tests/test_security_regression.py](../../tests/test_security_regression.py)
+- 预检离线诊断脚本：[scripts/replay_preflight_diagnostics.py](../../scripts/replay_preflight_diagnostics.py)
 
 ## 先建立的心智模型
 
@@ -28,8 +28,8 @@
 ## 进入代码前先看什么
 
 - 如果改的是 API 行为，先搜索 `/api/sessions` 相关路由，再看对应测试。
-- 如果改的是“为什么这里会追问 / 不追问 / 被预检打断”，先读 [scripts/replay_preflight_diagnostics.py](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/scripts/replay_preflight_diagnostics.py) 和相关安全回归测试。
-- 如果改的是前端体验，例如加载态、超时看门狗、恢复逻辑，先在 [web/app.js](/Users/hehai/Documents/开目软件/Agents/project/DeepInsight/web/app.js) 搜索 `nextQuestion`、`preflight`、`submitAnswer` 等关键词。
+- 如果改的是“为什么这里会追问 / 不追问 / 被预检打断”，先读 [scripts/replay_preflight_diagnostics.py](../../scripts/replay_preflight_diagnostics.py) 和相关安全回归测试。
+- 如果改的是前端体验，例如加载态、超时看门狗、恢复逻辑，先在 [web/app.js](../../web/app.js) 搜索 `nextQuestion`、`preflight`、`submitAnswer` 等关键词。
 
 ## 不变量
 

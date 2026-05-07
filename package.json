@@ -1,5 +1,5 @@
 {
-  "name": "deepinsight-browser-smoke",
+  "name": "intus-browser-smoke",
   "private": true,
   "devDependencies": {
     "playwright": "1.59.1",

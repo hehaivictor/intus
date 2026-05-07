@@ -666,5 +666,5 @@
         return app;
     }
 
-    global.DeepInsightSessionListStateModule = { attach };
+    global.IntusSessionListStateModule = { attach };
 })(window);

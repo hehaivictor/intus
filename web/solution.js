@@ -1984,10 +1984,10 @@ function solutionBuildProposalModel(payload) {
     const model = {
         mode: 'proposal',
         hasProposal: Boolean(solutionTabs.length || options.length || valueItems.length || proposalPage),
-        brandTitle: solutionShortText(brief?.meta?.topic || payload?.title || 'DeepInsight 企业提案', 48),
+        brandTitle: solutionShortText(brief?.meta?.topic || payload?.title || 'Intus 企业提案', 48),
         navItems: solutionNormalizeList(proposalPage?.navItems).length ? proposalPage.navItems : SOLUTION_NAV_ITEMS,
         overview: {
-            eyebrow: chapterHero?.eyebrow || 'DeepInsight 企业级提案方案',
+            eyebrow: chapterHero?.eyebrow || 'Intus 企业级提案方案',
             title: solutionBusinessHeading(
                 chapterHero?.title || thesis.headline || payload?.title || '生成企业级解决方案',
                 `先把「${recommendedFocus}」和「${secondaryFocus}」打稳，再让「${topicFocus}」进入可复制推进`,
@@ -2404,7 +2404,7 @@ function solutionRenderHeroSection(section) {
                         <div class="proposal-hero-top">
                             <span class="proposal-eyebrow">${solutionEscapeHtml(section.eyebrow)}</span>
                             ${solutionRenderAudienceBadge(section.audience)}
-                            <span class="proposal-year-tag">DeepInsight ${new Date().getFullYear()}</span>
+                            <span class="proposal-year-tag">Intus ${new Date().getFullYear()}</span>
                         </div>
                         <div class="proposal-hero-copy-stack">
                             <h1 class="proposal-hero-title">${solutionEscapeHtml(title)}</h1>
@@ -3223,7 +3223,7 @@ function solutionRenderSchemaExperience(payload) {
             <div class="proposal-hero-grid">
                 <div class="proposal-hero-copy">
                     <div class="proposal-hero-top">
-                        <span class="proposal-eyebrow">${solutionEscapeHtml(hero.eyebrow || 'DeepInsight 结构化方案')}</span>
+                        <span class="proposal-eyebrow">${solutionEscapeHtml(hero.eyebrow || 'Intus 结构化方案')}</span>
                         <span class="proposal-year-tag">${solutionEscapeHtml(SOLUTION_SOURCE_MODE_LABELS[payload?.source_mode] || '方案')}</span>
                     </div>
                     <h1 class="proposal-hero-title">${solutionEscapeHtml(payload?.title || hero?.title || '查看方案')}</h1>
@@ -3603,7 +3603,7 @@ function solutionRender(payload) {
                 })).filter((item) => item.id)
         }
         : model;
-    document.title = `${model?.overview?.title || payload?.title || '查看方案'} | DeepInsight`;
+    document.title = `${model?.overview?.title || payload?.title || '查看方案'} | Intus`;
     const shell = document.getElementById('solution-shell');
     const state = document.getElementById('solution-state-card');
     if (!shell || !state) return;

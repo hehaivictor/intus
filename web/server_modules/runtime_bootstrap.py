@@ -35,8 +35,8 @@ def parse_env_assignment(line: str) -> Optional[tuple[str, str]]:
 
 
 def load_env_files(project_dir: Path) -> dict[str, Any]:
-    explicit_env_file = os.environ.get("DEEPINSIGHT_ENV_FILE", "").strip()
-    override_existing = str(os.environ.get("DEEPINSIGHT_ENV_OVERRIDE", "")).strip().lower() in {"1", "true", "yes", "on", "y"}
+    explicit_env_file = os.environ.get("INTUS_ENV_FILE", "").strip()
+    override_existing = str(os.environ.get("INTUS_ENV_OVERRIDE", "")).strip().lower() in {"1", "true", "yes", "on", "y"}
     preexisting_env_keys = set(os.environ.keys())
 
     candidates: list[Path] = []

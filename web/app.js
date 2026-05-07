@@ -120,6 +120,11 @@ function intusApp() {
         globalSearchQuery: '',
         globalSearchLoading: false,
         globalSearchLoadRequestId: 0,
+        librarySearchQuery: '',
+        libraryTypeFilter: 'all',
+        librarySortOrder: 'newest',
+        libraryLoading: false,
+        libraryLoadRequestId: 0,
         dialogFocusWatchRegistered: false,
         dialogFocusReturnTargets: {},
         dialogTabTrapRegistered: false,
@@ -457,6 +462,8 @@ function intusApp() {
             if (normalized === 'admin') return 'admin';
             if (normalized === 'reports') return 'reports';
             if (normalized === 'interview') return 'interview';
+            if (normalized === 'library') return 'library';
+            if (normalized === 'agents') return 'agents';
             return 'sessions';
         },
 
@@ -1316,6 +1323,197 @@ function intusApp() {
             }
             if (action === 'solution' && reportName) {
                 this.openSolutionPage(reportName);
+            }
+        },
+
+        async ensureLibraryData() {
+            if (!this.authReady || this.licenseGateActive) return;
+            if (this.sessionsLoaded && this.reportsLoaded) return;
+            if (this.libraryLoading) return;
+
+            const requestId = this.libraryLoadRequestId + 1;
+            this.libraryLoadRequestId = requestId;
+            this.libraryLoading = true;
+            try {
+                const tasks = [];
+                if (!this.sessionsLoaded && typeof this.loadSessions === 'function') {
+                    tasks.push(this.loadSessions({
+                        silent: true,
+                        preserveListState: true,
+                        suppressErrorToast: true
+                    }));
+                }
+                if (!this.reportsLoaded && typeof this.loadReports === 'function') {
+                    tasks.push(this.loadReports({ suppressErrorToast: true }));
+                }
+                await Promise.all(tasks);
+            } finally {
+                if (this.libraryLoadRequestId === requestId) {
+                    this.libraryLoading = false;
+                }
+            }
+        },
+
+        getLibraryTypeOptions() {
+            return [
+                { key: 'all', label: '全部' },
+                { key: 'session', label: '会话' },
+                { key: 'report', label: '报告' },
+                { key: 'solution', label: '方案' },
+                { key: 'document', label: '资料' }
+            ];
+        },
+
+        getLibraryTypeLabel(type = '') {
+            const option = this.getLibraryTypeOptions().find(item => item.key === type);
+            return option?.label || '资源';
+        },
+
+        getLibraryTypeCount(type = 'all') {
+            const normalizedType = String(type || 'all').trim();
+            const items = this.buildLibraryItems();
+            if (normalizedType === 'all') return items.length;
+            return items.filter(item => item.type === normalizedType).length;
+        },
+
+        buildLibraryDocumentItems() {
+            const items = [];
+            const seen = new Set();
+            const sessions = Array.isArray(this.sessions) ? this.sessions : [];
+            const addDocument = (doc, session) => {
+                if (!doc || typeof doc !== 'object') return;
+                const title = String(doc.name || doc.filename || doc.title || '').trim();
+                if (!title) return;
+                const sessionId = String(session?.session_id || '').trim();
+                const key = `${sessionId}:${title}`;
+                if (seen.has(key)) return;
+                seen.add(key);
+                const updatedAt = doc.updated_at || doc.created_at || session?.updated_at || session?.created_at || '';
+                items.push({
+                    id: `document:${key}`,
+                    type: 'document',
+                    category: '资料',
+                    title,
+                    description: String(session?.topic || '参考资料').trim(),
+                    meta: updatedAt && typeof this.formatDate === 'function' ? this.formatDate(updatedAt) : '资料',
+                    updatedAt,
+                    action: 'session',
+                    sessionId,
+                    keywords: [title, session?.topic, session?.description, '资料', '参考资料', '导入']
+                });
+            };
+
+            sessions.forEach((session) => {
+                const docs = Array.isArray(session?.reference_materials) ? session.reference_materials : [];
+                docs.forEach(doc => addDocument(doc, session));
+            });
+
+            const currentDocs = Array.isArray(this.currentSession?.reference_materials)
+                ? this.currentSession.reference_materials
+                : [];
+            currentDocs.forEach(doc => addDocument(doc, this.currentSession));
+            return items;
+        },
+
+        buildLibraryItems() {
+            const sessionItems = this.buildGlobalSearchSessionEntries().map(item => ({
+                ...item,
+                type: 'session',
+                category: '会话',
+                actionLabel: '继续'
+            }));
+            const reportAndSolutionItems = this.buildGlobalSearchReportEntries().map(item => ({
+                ...item,
+                type: item.action === 'solution' ? 'solution' : 'report',
+                actionLabel: item.action === 'solution' ? '打开方案' : '查看报告'
+            }));
+            const documentItems = this.buildLibraryDocumentItems().map(item => ({
+                ...item,
+                actionLabel: '打开会话'
+            }));
+            const importItem = {
+                id: 'document:import',
+                type: 'document',
+                category: '资料',
+                title: '导入资料',
+                description: '新建访谈后上传参考资料，让 AI 基于上下文追问。',
+                meta: '资料入口',
+                updatedAt: '',
+                action: 'import-docs',
+                actionLabel: '导入',
+                keywords: ['导入', '资料', '文档', '参考资料']
+            };
+
+            return [
+                ...sessionItems,
+                ...reportAndSolutionItems,
+                ...documentItems,
+                importItem
+            ];
+        },
+
+        getLibraryItems() {
+            const typeFilter = String(this.libraryTypeFilter || 'all').trim();
+            const queryTerms = this.normalizeGlobalSearchValue(this.librarySearchQuery)
+                .split(/\s+/)
+                .filter(Boolean);
+
+            let items = this.buildLibraryItems();
+            if (typeFilter !== 'all') {
+                items = items.filter(item => item.type === typeFilter);
+            }
+            if (queryTerms.length > 0) {
+                items = items.filter(item => this.globalSearchEntryMatches(item, queryTerms));
+            }
+
+            const typeRank = { session: 1, report: 2, solution: 3, document: 4 };
+            return items.sort((a, b) => {
+                if (this.librarySortOrder === 'type') {
+                    const rankDelta = (typeRank[a.type] || 99) - (typeRank[b.type] || 99);
+                    if (rankDelta !== 0) return rankDelta;
+                }
+                const aTime = this.parseValidTimestamp?.(a.updatedAt) || 0;
+                const bTime = this.parseValidTimestamp?.(b.updatedAt) || 0;
+                if (this.librarySortOrder === 'oldest') {
+                    return aTime - bTime;
+                }
+                return bTime - aTime;
+            });
+        },
+
+        getLibrarySummaryText() {
+            const sessions = this.getLibraryTypeCount('session');
+            const reports = this.getLibraryTypeCount('report');
+            const solutions = this.getLibraryTypeCount('solution');
+            const documents = this.getLibraryTypeCount('document');
+            return `会话 ${sessions} · 报告 ${reports} · 方案 ${solutions} · 资料 ${documents}`;
+        },
+
+        clearLibrarySearch() {
+            this.librarySearchQuery = '';
+        },
+
+        async activateLibraryItem(item) {
+            if (!item || !item.action) return;
+            const action = String(item.action || '').trim();
+            const sessionId = String(item.sessionId || '').trim();
+            const reportName = String(item.reportName || '').trim();
+
+            if (action === 'session' && sessionId) {
+                await this.openSession(sessionId);
+                return;
+            }
+            if (action === 'report' && reportName) {
+                this.switchView('reports');
+                await this.viewReport(reportName, { forceReload: false });
+                return;
+            }
+            if (action === 'solution' && reportName) {
+                this.openSolutionPage(reportName);
+                return;
+            }
+            if (action === 'import-docs') {
+                this.openWorkbenchSessionComposer('documents');
             }
         },
 
@@ -6163,6 +6361,9 @@ function intusApp() {
             } else if (view === 'reports') {
                 this.replaceAppEntryRoute({ view: 'reports' });
                 this.refreshReportsView();
+            } else if (view === 'library') {
+                this.replaceAppEntryRoute();
+                void this.ensureLibraryData();
             } else if (view === 'admin') {
                 this.replaceAppEntryRoute();
                 void this.ensureAdminDataForTab(this.adminTab || 'overview');

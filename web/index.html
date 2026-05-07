@@ -727,22 +727,31 @@
                     </button>
                     <div class="dv-header-nav-links flex items-center gap-2 md:gap-3">
                         <button @click="switchView('sessions')"
+                                aria-label="会话"
                                 :class="getHeaderNavClass(isSessionViewActive())"
-                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
                             <span class="hidden sm:inline">会话</span>
-                            <span class="sm:hidden">会话</span>
+                            <span class="sm:hidden">会</span>
+                        </button>
+                        <button @click="switchView('library')"
+                                aria-label="库"
+                                :class="getHeaderNavClass(currentView === 'library')"
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
+                            <span>库</span>
                         </button>
                         <button @click="switchView('reports')"
+                                aria-label="报告"
                                 :class="getHeaderNavClass(currentView === 'reports')"
-                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
                             <span class="hidden sm:inline">报告</span>
-                            <span class="sm:hidden">报告</span>
+                            <span class="sm:hidden">报</span>
                         </button>
                         <button @click="window.location.href='help.html'"
+                                aria-label="帮助"
                                 :class="getHeaderNavClass(false)"
-                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium">
+                                class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
                             <span class="hidden sm:inline">帮助</span>
-                            <span class="sm:hidden">帮助</span>
+                            <span class="sm:hidden">助</span>
                         </button>
                     </div>
                     <div class="relative" @keydown.escape.window="showAccountMenu = false">
@@ -1508,15 +1517,96 @@
             </template>
 
             <template x-if="currentView === 'library'">
-                <div class="dv-shell-placeholder">
-                    <div>
-                        <h2>库</h2>
-                        <p>会话、报告、资料和方案会在这里汇总。</p>
-                    </div>
-                    <div class="dv-shell-placeholder-actions">
-                        <button type="button" class="btn-sage-blue text-white" @click="openWorkbenchSessionComposer()">新建访谈</button>
-                        <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
-                    </div>
+                <div class="dv-library-shell" x-init="ensureLibraryData()">
+                    <section class="dv-library-hero">
+                        <div class="min-w-0">
+                            <p class="dv-library-kicker">Library</p>
+                            <h2>库</h2>
+                            <p>会话、报告、资料和方案集中在一个低噪声列表里。</p>
+                            <span class="dv-library-summary" x-text="getLibrarySummaryText()"></span>
+                        </div>
+                        <div class="dv-library-actions">
+                            <button type="button" class="btn-sage-blue text-white" @click="openWorkbenchSessionComposer()">新建访谈</button>
+                            <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
+                            <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
+                        </div>
+                    </section>
+
+                    <section class="dv-library-toolbar" aria-label="库筛选">
+                        <div class="dv-library-search">
+                            <svg class="w-4 h-4 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
+                            </svg>
+                            <input type="text"
+                                   x-model="librarySearchQuery"
+                                   placeholder="搜索会话、报告、方案或资料..."
+                                   class="dv-library-search-input">
+                            <button type="button"
+                                    x-show="librarySearchQuery"
+                                    x-cloak
+                                    @click="clearLibrarySearch()"
+                                    aria-label="清空库搜索">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="dv-library-filter-row">
+                            <div class="dv-library-segment" role="tablist" aria-label="资源类型">
+                                <template x-for="option in getLibraryTypeOptions()" :key="`library-filter-${option.key}`">
+                                    <button type="button"
+                                            role="tab"
+                                            @click="libraryTypeFilter = option.key"
+                                            :aria-selected="(libraryTypeFilter === option.key).toString()"
+                                            :class="{ 'is-active': libraryTypeFilter === option.key }">
+                                        <span x-text="option.label"></span>
+                                        <span x-text="getLibraryTypeCount(option.key)"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="dv-library-segment dv-library-segment--sort" role="group" aria-label="排序方式">
+                                <button type="button" @click="librarySortOrder = 'newest'" :class="{ 'is-active': librarySortOrder === 'newest' }">最新</button>
+                                <button type="button" @click="librarySortOrder = 'oldest'" :class="{ 'is-active': librarySortOrder === 'oldest' }">最早</button>
+                                <button type="button" @click="librarySortOrder = 'type'" :class="{ 'is-active': librarySortOrder === 'type' }">类型</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dv-library-list" aria-label="库资源">
+                        <div class="dv-global-search-status" x-show="libraryLoading" x-cloak>
+                            <span class="dv-global-search-dot" aria-hidden="true"></span>
+                            <span>正在同步库内容</span>
+                        </div>
+                        <template x-if="!libraryLoading && getLibraryItems().length === 0">
+                            <div class="dv-library-empty">
+                                <div class="dv-library-empty-mark" aria-hidden="true">□</div>
+                                <div>
+                                    <h3>暂无匹配资源</h3>
+                                    <p>清空搜索或新建访谈后，相关报告、方案和资料会进入库。</p>
+                                </div>
+                                <button type="button" class="btn-sage-blue text-white" @click="librarySearchQuery ? clearLibrarySearch() : openWorkbenchSessionComposer()">
+                                    <span x-text="librarySearchQuery ? '清空搜索' : '新建访谈'"></span>
+                                </button>
+                            </div>
+                        </template>
+                        <template x-if="getLibraryItems().length > 0">
+                            <div class="dv-library-items">
+                                <template x-for="item in getLibraryItems()" :key="item.id">
+                                    <button type="button" class="dv-library-item" @click="activateLibraryItem(item)">
+                                        <span class="dv-library-type" x-text="item.category"></span>
+                                        <span class="dv-library-main">
+                                            <span class="dv-library-title" x-text="item.title"></span>
+                                            <span class="dv-library-desc" x-text="item.description"></span>
+                                        </span>
+                                        <span class="dv-library-meta">
+                                            <span x-text="item.meta"></span>
+                                            <span class="dv-library-action" x-text="item.actionLabel"></span>
+                                        </span>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                    </section>
                 </div>
             </template>
 

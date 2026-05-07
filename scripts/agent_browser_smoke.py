@@ -51,6 +51,11 @@ MINIMAL_SCENARIOS = [
         "确认 solution.html 在 mock API 下可渲染，并能打开分享面板。",
     ),
     BrowserScenario(
+        "workbench-composer-entry",
+        "工作台新建访谈弹框入口",
+        "确认工作台首屏不显示旧标题，主题占位文案不带“例如”，并从开始访谈打开新建访谈弹框。",
+    ),
+    BrowserScenario(
         "admin-config-entry",
         "设置菜单管理员入口",
         "确认管理员账号可从侧栏设置菜单进入管理员中心。",
@@ -150,7 +155,7 @@ LIVE_EXTENDED_SCENARIOS = [
 
 SUITES = {
     "minimal": {
-        "description": "帮助页 + 方案页分享 + 管理后台配置入口",
+        "description": "帮助页 + 方案页分享 + 工作台新建访谈入口 + 管理后台配置入口",
         "scenarios": MINIMAL_SCENARIOS,
     },
     "extended": {

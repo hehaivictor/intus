@@ -6730,14 +6730,14 @@ function intusApp() {
         // 获取当前场景的主题提示文案
         getTopicPlaceholder() {
             const scenarioId = this.selectedScenario?.id;
+            let placeholder = this.scenarioPlaceholders['default'].topic;
             if (scenarioId && this.scenarioPlaceholders[scenarioId]) {
-                return this.scenarioPlaceholders[scenarioId].topic;
+                placeholder = this.scenarioPlaceholders[scenarioId].topic;
+            } else if (this.selectedScenario?.custom && this.selectedScenario?.name) {
+                // 自定义场景：根据场景名称生成提示
+                placeholder = `${this.selectedScenario.name}相关的访谈主题`;
             }
-            // 自定义场景：根据场景名称生成提示
-            if (this.selectedScenario?.custom && this.selectedScenario?.name) {
-                return `例如：${this.selectedScenario.name}相关的访谈主题`;
-            }
-            return this.scenarioPlaceholders['default'].topic;
+            return String(placeholder || '').replace(/^例如[:：]\s*/, '');
         },
 
         // 获取当前场景的描述提示文案

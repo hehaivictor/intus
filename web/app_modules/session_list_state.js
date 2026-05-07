@@ -133,8 +133,18 @@
             });
         },
 
-        openWorkbenchSessionComposer(_intent = '') {
+        openWorkbenchSessionComposer(_intent = '', options = {}) {
+            const preserveTopic = Boolean(options?.preserveTopic);
+            const workbenchTopic = preserveTopic ? String(this.newSessionTopic || '').trim() : '';
+            if (preserveTopic && !workbenchTopic) {
+                this.focusWorkbenchTaskInput();
+                return;
+            }
             this.resetScenarioSelection();
+            if (preserveTopic) {
+                this.newSessionTopic = workbenchTopic;
+                this.newSessionDescription = '';
+            }
             this.showNewSessionModal = true;
             this.$nextTick(() => {
                 const input = document.querySelector('[data-guide="guide-topic"]');

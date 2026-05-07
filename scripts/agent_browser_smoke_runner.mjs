@@ -1659,6 +1659,41 @@ async function scenarioSolutionShare(browser, baseUrl) {
   return '方案页成功渲染，分享面板可打开并写入匿名只读链接';
 }
 
+async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
+  await runWithPage(
+    browser,
+    baseUrl,
+    () => {
+      localStorage.setItem('intus_intro_seen', 'true');
+    },
+    async (page) => {
+      await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
+      const taskInput = page.locator('[data-workbench-task-input]');
+      await taskInput.waitFor({ timeout: 15000 });
+
+      const legacyTitleCount = await page.locator('h2:has-text("访谈会话")').count();
+      if (legacyTitleCount > 0) {
+        throw new Error('工作台首屏不应继续显示“访谈会话”旧标题');
+      }
+
+      const placeholder = await taskInput.getAttribute('placeholder');
+      if (String(placeholder || '').includes('例如')) {
+        throw new Error(`工作台主题占位文案不应包含“例如”: ${placeholder}`);
+      }
+
+      const topic = '数字化营销战略';
+      await taskInput.fill(topic);
+      await page.getByRole('button', { name: '开始访谈', exact: true }).click({ timeout: 15000 });
+      await page.waitForSelector('[data-guide="guide-modal"]:visible', { timeout: 15000 });
+      const modalTopic = await page.locator('[data-guide="guide-topic"]').inputValue();
+      if (modalTopic !== topic) {
+        throw new Error(`新建访谈弹框未带入工作台主题: ${modalTopic}`);
+      }
+    },
+  );
+  return '工作台开始访谈会打开新建访谈弹框，并自动带入主题';
+}
+
 async function openAdminCenterFromAccountMenu(page) {
   await page.locator('button[aria-label="账号与外观设置"]:visible').first().click({ timeout: 15000 });
   await page.locator('.account-menu:visible button:has-text("管理员中心")').first().click({ timeout: 15000 });
@@ -1920,7 +1955,6 @@ async function scenarioLicenseActivateSuccess(browser, baseUrl) {
       await page.waitForSelector('#license-code-input', { timeout: 15000 });
       await page.fill('#license-code-input', 'LIC-ACTIVATED-001');
       await page.getByRole('button', { name: '绑定 License', exact: true }).click({ timeout: 15000 });
-      await page.waitForSelector('h2:has-text("访谈会话")', { timeout: 15000 });
       await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
       await page.getByRole('button', { name: '开始访谈', exact: true }).waitFor({ timeout: 15000 });
       const gateStillVisible = await page.locator('h2:has-text("请输入 License 继续使用")').count();
@@ -1977,9 +2011,9 @@ async function scenarioLicenseActivateRefresh(browser, baseUrl) {
       await page.waitForSelector('#license-code-input', { timeout: 15000 });
       await page.fill('#license-code-input', 'LIC-ACTIVATED-REFRESH-001');
       await page.getByRole('button', { name: '绑定 License', exact: true }).click({ timeout: 15000 });
-      await page.waitForSelector('h2:has-text("访谈会话")', { timeout: 15000 });
+      await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('h2:has-text("访谈会话")', { timeout: 15000 });
+      await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
       const gateStillVisible = await page.locator('h2:has-text("请输入 License 继续使用")').count();
       if (gateStillVisible > 0) {
         throw new Error('License 绑定成功后刷新不应重新回到 License gate');
@@ -2373,6 +2407,8 @@ async function executeScenario(browser, baseUrl, scenario, runtimeContext = {}) 
       detail = await scenarioHelpDocs(browser, baseUrl);
     } else if (scenario.id === 'solution-share') {
       detail = await scenarioSolutionShare(browser, baseUrl);
+    } else if (scenario.id === 'workbench-composer-entry') {
+      detail = await scenarioWorkbenchComposerEntry(browser, baseUrl);
     } else if (scenario.id === 'admin-config-entry') {
       detail = await scenarioAdminConfigEntry(browser, baseUrl);
     } else if (scenario.id === 'solution-public-readonly') {
@@ -2437,10 +2473,11 @@ function resolveSuite(name) {
     return {
       name: 'minimal',
       mode: 'mock',
-      description: '帮助页 + 方案页分享 + 管理后台配置入口',
+      description: '帮助页 + 方案页分享 + 工作台新建访谈入口 + 管理后台配置入口',
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
+        { id: 'workbench-composer-entry', label: '工作台新建访谈弹框入口' },
         { id: 'admin-config-entry', label: '设置菜单管理员入口' },
       ],
     };
@@ -2453,6 +2490,7 @@ function resolveSuite(name) {
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
+        { id: 'workbench-composer-entry', label: '工作台新建访谈弹框入口' },
         { id: 'admin-config-entry', label: '设置菜单管理员入口' },
         { id: 'solution-public-readonly', label: '方案页公开分享只读' },
         { id: 'solution-public-readonly-refresh', label: '方案页公开分享刷新保持只读' },

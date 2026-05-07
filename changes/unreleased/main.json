@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "5daaa1e",
+  "committedAt": "2026-05-08T00:12:09+08:00",
+  "versionType": "major",
+  "title": "精简侧栏与库页冗余展示",
+  "changes": [
+    "界面：移除侧栏搜索和账号卡片，保留低噪声导航",
+    "界面：移除库页与 Agents 顶部说明区，删除库页搜索框",
+    "样式：放大设置入口图标，增加分隔线和 Powered 文案",
+    "样式：下调工作台主文案字号，改善首屏比例",
+    "测试：补充侧栏、库页和 Agents 精简 browser smoke 场景"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke.py",
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/index.html",
+    "web/styles.css"
+  ]
+}

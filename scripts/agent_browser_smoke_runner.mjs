@@ -1694,6 +1694,55 @@ async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
   return '工作台开始访谈会打开新建访谈弹框，并自动带入主题';
 }
 
+async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
+  await runWithPage(
+    browser,
+    baseUrl,
+    () => {
+      localStorage.setItem('intus_intro_seen', 'true');
+    },
+    async (page) => {
+      await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
+
+      const sidebarSearchCount = await page.locator('.dv-app-sidebar .dv-sidebar-search:visible').count();
+      if (sidebarSearchCount > 0) {
+        throw new Error('侧栏不应继续显示搜索入口');
+      }
+
+      const sidebarAccountCount = await page.locator('.dv-app-sidebar .dv-sidebar-account:visible').count();
+      if (sidebarAccountCount > 0) {
+        throw new Error('侧栏不应继续显示账号卡片');
+      }
+
+      await page.locator('.dv-app-sidebar:visible').getByText('Powered By Intus Team', { exact: true }).waitFor({ timeout: 15000 });
+      const settingsIconBox = await page.locator('button[aria-label="账号与外观设置"]:visible svg').first().boundingBox();
+      if (!settingsIconBox || settingsIconBox.width < 19 || settingsIconBox.height < 19) {
+        throw new Error(`侧栏设置 icon 尺寸偏小: ${JSON.stringify(settingsIconBox)}`);
+      }
+
+      await page.locator('.dv-side-nav button:has-text("库")').click({ timeout: 15000 });
+      await page.waitForSelector('.dv-library-shell', { timeout: 15000 });
+      const libraryHeroCount = await page.locator('.dv-library-hero:visible').count();
+      if (libraryHeroCount > 0) {
+        throw new Error('库页不应继续显示顶部 hero 区');
+      }
+      const librarySearchCount = await page.locator('.dv-library-search:visible').count();
+      if (librarySearchCount > 0) {
+        throw new Error('库页不应继续显示搜索框');
+      }
+
+      await page.locator('.dv-side-nav button:has-text("Agents")').click({ timeout: 15000 });
+      await page.waitForSelector('.dv-agents-shell', { timeout: 15000 });
+      const agentsHeroCount = await page.locator('.dv-agents-hero:visible').count();
+      if (agentsHeroCount > 0) {
+        throw new Error('Agents 页不应继续显示顶部 hero 区');
+      }
+    },
+  );
+  return '侧栏、库页和 Agents 页冗余展示已收敛';
+}
+
 async function openAdminCenterFromAccountMenu(page) {
   await page.locator('button[aria-label="账号与外观设置"]:visible').first().click({ timeout: 15000 });
   await page.locator('.account-menu:visible button:has-text("管理员中心")').first().click({ timeout: 15000 });
@@ -2409,6 +2458,8 @@ async function executeScenario(browser, baseUrl, scenario, runtimeContext = {}) 
       detail = await scenarioSolutionShare(browser, baseUrl);
     } else if (scenario.id === 'workbench-composer-entry') {
       detail = await scenarioWorkbenchComposerEntry(browser, baseUrl);
+    } else if (scenario.id === 'sidebar-library-agents-trim') {
+      detail = await scenarioSidebarLibraryAgentsTrim(browser, baseUrl);
     } else if (scenario.id === 'admin-config-entry') {
       detail = await scenarioAdminConfigEntry(browser, baseUrl);
     } else if (scenario.id === 'solution-public-readonly') {
@@ -2473,11 +2524,12 @@ function resolveSuite(name) {
     return {
       name: 'minimal',
       mode: 'mock',
-      description: '帮助页 + 方案页分享 + 工作台新建访谈入口 + 管理后台配置入口',
+      description: '帮助页 + 方案页分享 + 工作台新建访谈入口 + 侧栏与库页精简 + 管理后台配置入口',
       scenarios: [
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
         { id: 'workbench-composer-entry', label: '工作台新建访谈弹框入口' },
+        { id: 'sidebar-library-agents-trim', label: '侧栏与库页 Agents 精简' },
         { id: 'admin-config-entry', label: '设置菜单管理员入口' },
       ],
     };
@@ -2491,6 +2543,7 @@ function resolveSuite(name) {
         { id: 'help-docs', label: '帮助文档静态页' },
         { id: 'solution-share', label: '方案页分享面板' },
         { id: 'workbench-composer-entry', label: '工作台新建访谈弹框入口' },
+        { id: 'sidebar-library-agents-trim', label: '侧栏与库页 Agents 精简' },
         { id: 'admin-config-entry', label: '设置菜单管理员入口' },
         { id: 'solution-public-readonly', label: '方案页公开分享只读' },
         { id: 'solution-public-readonly-refresh', label: '方案页公开分享刷新保持只读' },

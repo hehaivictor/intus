@@ -1036,12 +1036,6 @@
         <template x-if="!authChecking && authReady && !licenseChecking && !licenseGateActive">
             <div class="dv-app-shell">
                 <aside class="dv-app-sidebar" aria-label="主导航">
-                    <button type="button" class="dv-sidebar-search" @click="openGlobalSearch()">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
-                        </svg>
-                        <span>搜索</span>
-                    </button>
                     <nav class="dv-side-nav">
                         <button type="button" @click="switchView('sessions')" class="dv-side-nav-item" :class="{ 'is-active': isSessionViewActive() }">
                             <span class="dv-side-nav-icon" aria-hidden="true">⌘</span>
@@ -1064,13 +1058,6 @@
                             <span>帮助</span>
                         </button>
                     </nav>
-                    <div class="dv-sidebar-section">
-                        <div class="dv-sidebar-section-title">账号</div>
-                        <div class="dv-sidebar-account">
-                            <span class="dv-sidebar-account-name" x-text="currentUser?.account || currentUser?.name || currentUser?.phone || '当前用户'"></span>
-                            <span class="dv-sidebar-account-meta" x-text="currentLevelInfo?.name || getLicenseStatusLabel()"></span>
-                        </div>
-                    </div>
                     <div class="dv-sidebar-section" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
                         <div class="dv-sidebar-section-title">最近</div>
                         <div class="dv-sidebar-recent-list">
@@ -1085,16 +1072,17 @@
                         <button type="button"
                                 @click="showAccountMenu = !showAccountMenu"
                                 :class="getHeaderNavClass(false)"
-                                class="theme-toggle-trigger w-10 h-10 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
+                                class="theme-toggle-trigger w-11 h-11 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
                                 aria-label="账号与外观设置"
                                 aria-haspopup="menu"
                                 :aria-expanded="showAccountMenu.toString()">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h3m4 0h9M4 16h9m4 0h3"/>
                                 <circle cx="9" cy="8" r="2" stroke-width="2"/>
                                 <circle cx="15" cy="16" r="2" stroke-width="2"/>
                             </svg>
                         </button>
+                        <span class="dv-sidebar-powered">Powered By Intus Team</span>
                         <div x-cloak
                              x-show="showAccountMenu"
                              x-transition:enter="transition ease-out duration-200"
@@ -1509,39 +1497,7 @@
 
             <template x-if="currentView === 'library'">
                 <div class="dv-library-shell" x-init="ensureLibraryData()">
-                    <section class="dv-library-hero">
-                        <div class="min-w-0">
-                            <p class="dv-library-kicker">Library</p>
-                            <h2>库</h2>
-                            <p>会话、报告和资料集中在一个低噪声列表里。</p>
-                            <span class="dv-library-summary" x-text="getLibrarySummaryText()"></span>
-                        </div>
-                        <div class="dv-library-actions">
-                            <button type="button" class="btn-sage-blue text-white" @click="openWorkbenchSessionComposer()">新建访谈</button>
-                            <button type="button" class="dv-workbench-chip" @click="openWorkbenchSessionComposer('documents')">导入资料</button>
-                            <button type="button" class="dv-workbench-chip" @click="switchView('reports')">查看报告</button>
-                        </div>
-                    </section>
-
                     <section class="dv-library-toolbar" aria-label="库筛选">
-                        <div class="dv-library-search">
-                            <svg class="w-4 h-4 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-5.15a6.25 6.25 0 11-12.5 0 6.25 6.25 0 0112.5 0z"/>
-                            </svg>
-                            <input type="text"
-                                   x-model="librarySearchQuery"
-                                   placeholder="搜索会话、报告或资料..."
-                                   class="dv-library-search-input">
-                            <button type="button"
-                                    x-show="librarySearchQuery"
-                                    x-cloak
-                                    @click="clearLibrarySearch()"
-                                    aria-label="清空库搜索">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
                         <div class="dv-library-filter-row">
                             <div class="dv-library-segment" role="tablist" aria-label="资源类型">
                                 <template x-for="option in getLibraryTypeOptions()" :key="`library-filter-${option.key}`">
@@ -1603,19 +1559,6 @@
 
             <template x-if="currentView === 'agents'">
                 <div class="dv-agents-shell">
-                    <section class="dv-agents-hero">
-                        <div class="dv-agents-mark" aria-hidden="true">✦</div>
-                        <div>
-                            <p class="dv-library-kicker">Agents</p>
-                            <h2>Intus Agents</h2>
-                            <p>把 Intus 的真实能力按任务入口组织起来。</p>
-                        </div>
-                        <div class="dv-library-actions">
-                            <button type="button" class="btn-sage-blue text-white" @click="switchView('sessions'); focusWorkbenchTaskInput()">开始访谈</button>
-                            <button type="button" class="dv-workbench-chip" @click="switchView('library')">打开库</button>
-                        </div>
-                    </section>
-
                     <section class="dv-agents-grid" aria-label="Agents 能力">
                         <template x-for="agent in getAgentCapabilityCards()" :key="agent.key">
                             <button type="button" class="dv-agent-card" @click="activateAgentCapability(agent.key)">

@@ -236,8 +236,7 @@ body {
     padding: 1rem 0 1.5rem;
 }
 
-.dv-global-search-trigger,
-.dv-sidebar-search {
+.dv-global-search-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -261,21 +260,13 @@ body {
     padding: 0 0.75rem;
 }
 
-.dv-sidebar-search {
-    justify-content: flex-start;
-    width: 100%;
-    padding: 0 0.75rem;
-}
-
-.dv-global-search-trigger:hover,
-.dv-sidebar-search:hover {
+.dv-global-search-trigger:hover {
     border-color: #D4D4D8;
     background: #FAFAFA;
     color: var(--dv-color-text-primary);
 }
 
-.dv-global-search-trigger:focus-visible,
-.dv-sidebar-search:focus-visible {
+.dv-global-search-trigger:focus-visible {
     outline: none;
     border-color: var(--dv-focus-border-color);
     box-shadow: var(--dv-shadow-focus);
@@ -329,8 +320,13 @@ body {
 }
 
 .dv-sidebar-settings {
-    width: fit-content;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
     margin-top: auto;
+    border-top: 1px solid var(--dv-color-border);
+    padding-top: 0.9rem;
 }
 
 .dv-sidebar-settings .account-menu {
@@ -351,6 +347,14 @@ body {
     font-size: 0.72rem;
     font-weight: 650;
     margin-bottom: 0.5rem;
+}
+
+.dv-sidebar-powered {
+    color: var(--dv-color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 560;
+    line-height: 1.35;
+    white-space: nowrap;
 }
 
 .dv-sidebar-account {
@@ -1198,7 +1202,7 @@ body {
     margin: 0;
     color: var(--dv-color-text-primary);
     font-family: var(--dv-font-display);
-    font-size: 3.25rem;
+    font-size: 2.85rem;
     line-height: 1.08;
     font-weight: 500;
     letter-spacing: 0;
@@ -1413,7 +1417,7 @@ body {
     }
 
     .dv-workbench-subtitle {
-        font-size: 2.5rem;
+        font-size: 2.25rem;
     }
 }
 
@@ -1424,7 +1428,7 @@ body {
     }
 
     .dv-workbench-subtitle {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
 
     .dv-workbench-command {

@@ -707,7 +707,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         scenarios = agent_browser_smoke.resolve_suite_scenarios("minimal")
         scenario_ids = [item.scenario_id for item in scenarios]
         self.assertEqual(
-            ["help-docs", "solution-share", "workbench-composer-entry", "admin-config-entry"],
+            ["help-docs", "solution-share", "workbench-composer-entry", "sidebar-library-agents-trim", "admin-config-entry"],
             scenario_ids,
         )
 
@@ -718,6 +718,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
                 "help-docs",
                 "solution-share",
                 "workbench-composer-entry",
+                "sidebar-library-agents-trim",
                 "admin-config-entry",
                 "solution-public-readonly",
                 "solution-public-readonly-refresh",

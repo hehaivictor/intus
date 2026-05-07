@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "f7198ce",
+  "committedAt": "2026-05-07T12:28:40+08:00",
+  "versionType": "patch",
+  "title": "修复演示文稿进度展示失真",
+  "changes": [
+    "修复：Paper2Slides 状态桥接透传真实页数进度。",
+    "前端：只在进度可信时显示按钮百分比或页数。",
+    "验证：保留演示文稿在线打开与文件名逻辑。"
+  ],
+  "changedFiles": [
+    "web/app_modules/report_detail_runtime.js",
+    "web/index.html",
+    "web/server.py"
+  ]
+}

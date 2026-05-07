@@ -32962,11 +32962,16 @@ def _paper2slides_stage_output(status_payload: dict) -> list[dict]:
 
 
 def build_paper2slides_status_payload(status_payload: dict, result_payload: Optional[dict] = None) -> dict:
+    data = {
+        "status": str(status_payload.get("status") or "pending"),
+        "output": _paper2slides_stage_output(status_payload),
+    }
+    for key in ("progress", "generated_pages", "total_pages", "page_progress", "output_dir", "pdf_exists"):
+        value = status_payload.get(key)
+        if value is not None:
+            data[key] = value
     return {
-        "data": {
-            "status": str(status_payload.get("status") or "pending"),
-            "output": _paper2slides_stage_output(status_payload),
-        },
+        "data": data,
         "paper2slides_status": status_payload,
         "paper2slides_result": result_payload or {},
     }
@@ -33132,6 +33137,12 @@ def check_paper2slides_status(filename: str, execution_id: str) -> tuple[dict, i
     status_payload = client.get_status(execution_id)
     result_payload, ready = client.get_result(execution_id)
     normalized_status = str(status_payload.get("status") or "").strip().lower()
+    status_bridge_payload = build_paper2slides_status_payload(status_payload, result_payload)
+    progress_fields = {
+        key: status_payload.get(key)
+        for key in ("progress", "generated_pages", "total_pages", "page_progress")
+        if status_payload.get(key) is not None
+    }
 
     if normalized_status == "failed":
         return build_paper2slides_failure_response(
@@ -33149,10 +33160,11 @@ def check_paper2slides_status(filename: str, execution_id: str) -> tuple[dict, i
         return {
             "processing": True,
             "execution_id": execution_id,
-            "refly_status": build_paper2slides_status_payload(status_payload, result_payload),
-            "refly_response": build_paper2slides_status_payload(status_payload, result_payload),
+            "refly_status": status_bridge_payload,
+            "refly_response": status_bridge_payload,
             "paper2slides_status": status_payload,
             "paper2slides_result": result_payload or {},
+            **progress_fields,
         }, 200
 
     pdf_url = select_primary_artifact_url(result_payload or {})
@@ -33171,6 +33183,7 @@ def check_paper2slides_status(filename: str, execution_id: str) -> tuple[dict, i
         None,
         pdf_url=pdf_url,
         metadata={
+            "filename": build_presentation_pdf_filename(filename),
             "provider": "paper2slides",
             "paper2slides_job_id": execution_id,
         },
@@ -33178,10 +33191,11 @@ def check_paper2slides_status(filename: str, execution_id: str) -> tuple[dict, i
     return {
         "execution_id": execution_id,
         "pdf_url": pdf_url,
-        "refly_status": build_paper2slides_status_payload(status_payload, result_payload),
-        "refly_response": build_paper2slides_status_payload(status_payload, result_payload),
+        "refly_status": status_bridge_payload,
+        "refly_response": status_bridge_payload,
         "paper2slides_status": status_payload,
         "paper2slides_result": result_payload or {},
+        **progress_fields,
     }, 200
 
 
@@ -33560,6 +33574,39 @@ def sanitize_filename(name: str) -> str:
     return safe
 
 
+def build_presentation_pdf_filename(report_filename: str, record: Optional[dict] = None) -> str:
+    """Build a user-facing PDF filename from the report title."""
+    candidates: list[str] = []
+    report_content = _load_report_content(report_filename)
+    for line in report_content.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("#"):
+            title = stripped.lstrip("#").strip()
+            if title:
+                candidates.append(title)
+            break
+        candidates.append(stripped)
+        break
+
+    if record:
+        existing_name = str(record.get("filename") or "").strip()
+        if existing_name and existing_name.lower() != "slides.pdf":
+            candidates.append(Path(existing_name).stem)
+
+    fallback_stem = Path(normalize_presentation_report_filename(report_filename) or "presentation").stem
+    candidates.append(fallback_stem)
+
+    for candidate in candidates:
+        safe_name = sanitize_filename(re.sub(r"\s+", " ", str(candidate or "").strip()))
+        if safe_name:
+            if safe_name.lower().endswith(".pdf"):
+                return safe_name
+            return f"{safe_name}.pdf"
+    return "presentation.pdf"
+
+
 def ensure_unique_path(directory: Path, filename: str) -> Path:
     path = directory / filename
     if not path.exists():
@@ -33690,6 +33737,22 @@ def get_report_presentation(filename):
     record = get_presentation_record(filename)
     if not record:
         return jsonify({"error": "演示文稿不存在"}), 404
+    pdf_url = str(record.get("pdf_url") or "").strip()
+    if pdf_url:
+        try:
+            response = requests.get(pdf_url, timeout=60)
+            response.raise_for_status()
+            pdf_name = build_presentation_pdf_filename(filename, record)
+            return send_file(
+                BytesIO(response.content),
+                mimetype="application/pdf",
+                as_attachment=False,
+                download_name=pdf_name,
+            )
+        except Exception as exc:
+            if ENABLE_DEBUG_LOG:
+                print(f"⚠️ 演示文稿 PDF 代理失败: {exc}")
+            return jsonify({"error": "演示文稿不存在"}), 404
     object_key = str(record.get("object_key") or "").strip()
     if object_key:
         try:
@@ -33743,7 +33806,10 @@ def get_report_presentation_status(filename):
         return jsonify({"exists": False})
 
     pdf_url = record.get("pdf_url")
-    execution_id = record.get("execution_id")
+    is_paper2slides_record = str(record.get("provider") or "").strip() == "paper2slides"
+    execution_id = str(record.get("execution_id") or "").strip()
+    if is_paper2slides_record and not execution_id:
+        execution_id = str(record.get("paper2slides_job_id") or "").strip()
     stopped_at = record.get("stopped_at")
 
     if execution_id:
@@ -33770,6 +33836,29 @@ def get_report_presentation_status(filename):
             file_exists = True
 
     processing = bool(execution_id and not pdf_url and not stopped_at)
+    if is_paper2slides_record and execution_id and not pdf_url and not stopped_at:
+        try:
+            payload, _status_code = check_paper2slides_status(filename, execution_id)
+            pdf_url = payload.get("pdf_url") or ""
+            processing = bool(payload.get("processing")) and not pdf_url
+            if payload.get("failed"):
+                processing = False
+        except Exception:
+            processing = True
+        return jsonify({
+            "exists": bool(pdf_url),
+            "pdf_url": pdf_url,
+            "presentation_local_url": "",
+            "execution_id": "" if pdf_url else execution_id,
+            "processing": processing,
+            "stopped": False,
+            "progress": payload.get("progress"),
+            "generated_pages": payload.get("generated_pages"),
+            "total_pages": payload.get("total_pages"),
+            "page_progress": payload.get("page_progress"),
+            "paper2slides_status": payload.get("paper2slides_status") or {},
+        })
+
     if processing:
         try:
             output_response = fetch_refly_output(execution_id)
@@ -33816,10 +33905,10 @@ def get_report_presentation_link(filename):
     record = get_presentation_record(filename)
     if not record:
         return jsonify({"error": "演示文稿不存在"}), 404
-    pdf_url = record.get("pdf_url")
-    if not pdf_url:
+    pdf_url = str(record.get("pdf_url") or "").strip()
+    if not pdf_url and not record.get("path") and not record.get("object_key"):
         return jsonify({"error": "演示文稿不存在"}), 404
-    return redirect(pdf_url, code=302)
+    return redirect(f"/api/reports/{quote(filename)}/presentation", code=302)
 
 
 # ============ 报告 API ============
@@ -43505,6 +43594,31 @@ def send_report_to_refly(filename):
 
     if not is_presentation_service_configured():
         return jsonify({"error": "演示文稿服务未配置"}), 400
+
+    current_record = get_presentation_record(filename) or {}
+    current_execution_id = str(current_record.get("execution_id") or "").strip()
+    if (
+        get_presentation_provider() == "paper2slides"
+        and current_execution_id
+        and str(current_record.get("provider") or "").strip() == "paper2slides"
+        and not is_presentation_execution_stopped(filename, current_execution_id)
+    ):
+        try:
+            payload, status_code = check_paper2slides_status(filename, current_execution_id)
+            if payload.get("processing"):
+                return jsonify(payload), status_code
+            if not payload.get("failed") and not payload.get("pdf_url"):
+                return jsonify({
+                    "processing": True,
+                    "execution_id": current_execution_id,
+                    "message": "已有演示文稿生成任务正在运行",
+                }), 202
+        except requests.RequestException:
+            return jsonify({
+                "processing": True,
+                "execution_id": current_execution_id,
+                "message": "已有演示文稿生成任务正在运行，请稍后查看状态",
+            }), 202
 
     clear_presentation_stopped(filename)
     execution_id = ""

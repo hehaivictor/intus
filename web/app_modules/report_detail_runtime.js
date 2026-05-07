@@ -40,6 +40,8 @@
         presentationPollingReportName: '',
         presentationProgress: 0,
         presentationRawProgress: 0,
+        presentationProgressReliable: false,
+        presentationProgressLabel: '',
         presentationStageIndex: 0,
         presentationTotalStages: 4,
         presentationStageStatus: 'pending',
@@ -954,12 +956,137 @@
             return profile?.expectedMs || 120000;
         },
 
+        getPaper2SlidesStatusPayload(result = {}) {
+            const candidates = [
+                result?.paper2slides_status,
+                result?.refly_status?.paper2slides_status,
+                result?.refly_response?.paper2slides_status,
+                result?.refly_status?.data?.paper2slides_status,
+                result?.refly_response?.data?.paper2slides_status
+            ];
+            const matched = candidates.find((item) => item && typeof item === 'object');
+            if (matched) return matched;
+            if (result?.paper2slides_response || result?.paper2slides_result) {
+                return { status: result?.processing ? 'running' : 'pending', stages: {} };
+            }
+            return null;
+        },
+
+        normalizePaper2SlidesProgressInfo(result = {}, statusPayload = null) {
+            const status = statusPayload || this.getPaper2SlidesStatusPayload(result) || {};
+            const data = result?.refly_status?.data || result?.refly_response?.data || {};
+            const pageProgress = result?.page_progress || status?.page_progress || data?.page_progress || {};
+            const generatedPages = Number(
+                result?.generated_pages
+                ?? status?.generated_pages
+                ?? data?.generated_pages
+                ?? pageProgress?.current
+            );
+            const totalPages = Number(
+                result?.total_pages
+                ?? status?.total_pages
+                ?? data?.total_pages
+                ?? pageProgress?.total
+            );
+
+            if (Number.isFinite(generatedPages) && Number.isFinite(totalPages) && totalPages > 0) {
+                const current = Math.max(0, Math.min(totalPages, Math.round(generatedPages)));
+                const total = Math.max(1, Math.round(totalPages));
+                return {
+                    reliable: true,
+                    progress: Math.max(0, Math.min(100, Math.round((current / total) * 100))),
+                    label: `${current}/${total} 页`
+                };
+            }
+
+            const rawProgress = Number(result?.progress ?? status?.progress ?? data?.progress);
+            if (Number.isFinite(rawProgress)) {
+                const progress = Math.max(0, Math.min(100, Math.round(rawProgress)));
+                return {
+                    reliable: true,
+                    progress,
+                    label: `${progress}%`
+                };
+            }
+
+            return {
+                reliable: false,
+                progress: 0,
+                label: ''
+            };
+        },
+
+        estimatePresentationProgressFromPaper2Slides(result = {}, statusPayload = null) {
+            const status = statusPayload || this.getPaper2SlidesStatusPayload(result) || {};
+            const progressInfo = this.normalizePaper2SlidesProgressInfo(result, status);
+            const stageOrder = ['rag', 'summary', 'plan', 'generate'];
+            const stages = status?.stages && typeof status.stages === 'object' ? status.stages : {};
+            const normalizedStages = stageOrder.map((key) => this.normalizeReflyStageStatus(stages[key]));
+            const failedIndex = normalizedStages.findIndex((item) => item === 'failed');
+            const runningIndex = normalizedStages.findIndex((item) => item === 'running');
+            const pendingIndex = normalizedStages.findIndex((item) => item === 'pending');
+            const completedCount = normalizedStages.filter((item) => item === 'finished').length;
+            const statusText = String(status?.status || result?.status || '').trim().toLowerCase();
+            const overallState = this.normalizeReflyStageStatus(statusText);
+            const isProcessing = Boolean(result?.processing) || overallState === 'running';
+
+            if (result?.pdf_url || overallState === 'finished') {
+                return {
+                    progress: 100,
+                    progressReliable: true,
+                    progressText: progressInfo.label || '100%',
+                    stageIndex: stageOrder.length - 1,
+                    totalStages: stageOrder.length,
+                    stageStatus: 'finished',
+                    state: 'completed'
+                };
+            }
+
+            let stageIndex = 0;
+            let stageStatus = 'pending';
+            if (failedIndex >= 0) {
+                stageIndex = failedIndex;
+                stageStatus = 'failed';
+            } else if (runningIndex >= 0) {
+                stageIndex = runningIndex;
+                stageStatus = 'running';
+            } else if (pendingIndex >= 0) {
+                stageIndex = pendingIndex;
+                stageStatus = 'pending';
+            } else if (completedCount > 0) {
+                stageIndex = Math.min(stageOrder.length - 1, completedCount - 1);
+                stageStatus = 'finished';
+            }
+
+            const stageProgress = Math.max(0, Math.min(95, Math.round((completedCount / stageOrder.length) * 100)));
+            const progress = progressInfo.reliable
+                ? progressInfo.progress
+                : (isProcessing ? Math.max(5, stageProgress) : stageProgress);
+
+            return {
+                progress: Math.max(0, Math.min(isProcessing ? 99 : 100, progress)),
+                progressReliable: progressInfo.reliable,
+                progressText: progressInfo.label,
+                stageIndex,
+                totalStages: stageOrder.length,
+                stageStatus,
+                state: statusText || (isProcessing ? 'executing' : 'idle')
+            };
+        },
+
         estimatePresentationProgressFromRefly(result) {
+            const paper2slidesStatus = this.getPaper2SlidesStatusPayload(result || {});
+            if (paper2slidesStatus) {
+                return this.estimatePresentationProgressFromPaper2Slides(result || {}, paper2slidesStatus);
+            }
+
             const profiles = this.getPresentationStageProfiles();
             const totalStages = profiles.length;
             if (totalStages === 0) {
                 return {
                     progress: result?.pdf_url ? 100 : 0,
+                    progressReliable: true,
+                    progressText: result?.pdf_url ? '100%' : '',
                     stageIndex: 0,
                     totalStages: 0,
                     stageStatus: result?.pdf_url ? 'finished' : 'pending',
@@ -970,6 +1097,8 @@
             if (result?.pdf_url) {
                 return {
                     progress: 100,
+                    progressReliable: true,
+                    progressText: '100%',
                     stageIndex: totalStages - 1,
                     totalStages,
                     stageStatus: 'finished',
@@ -1077,6 +1206,8 @@
 
             return {
                 progress: Math.max(0, Math.min(100, progress)),
+                progressReliable: true,
+                progressText: `${Math.max(0, Math.min(100, progress))}%`,
                 stageIndex,
                 totalStages,
                 stageStatus,
@@ -1112,6 +1243,8 @@
             this.presentationStageIndex = nextStageIndex;
             this.presentationStageStatus = estimate.stageStatus || this.presentationStageStatus || 'pending';
             this.presentationState = estimate.state || this.presentationState || 'idle';
+            this.presentationProgressReliable = Boolean(estimate.progressReliable);
+            this.presentationProgressLabel = String(estimate.progressText || '').trim();
 
             if (stageChanged || !this.presentationPhaseStartedAt) {
                 this.presentationPhaseStartedAt = Date.now();
@@ -1120,6 +1253,8 @@
             if (result?.pdf_url) {
                 this.presentationRawProgress = 100;
                 this.presentationProgress = 100;
+                this.presentationProgressReliable = true;
+                this.presentationProgressLabel = estimate.progressText || '100%';
                 this.presentationState = 'completed';
                 this.presentationStageStatus = 'finished';
                 this.stopPresentationProgressSmoothing();
@@ -1197,6 +1332,8 @@
             this.stopPresentationProgressSmoothing();
             this.presentationProgress = 0;
             this.presentationRawProgress = 0;
+            this.presentationProgressReliable = false;
+            this.presentationProgressLabel = '';
             this.presentationStageIndex = 0;
             this.presentationTotalStages = 4;
             this.presentationStageStatus = 'pending';
@@ -1204,20 +1341,38 @@
             this.presentationPhaseStartedAt = 0;
         },
 
+        isPresentationGenerationProgressReliable() {
+            return Boolean(this.presentationProgressReliable);
+        },
+
         getPresentationGenerationButtonProgressText() {
+            if (this.presentationProgressLabel) {
+                return this.presentationProgressLabel;
+            }
+            if (!this.isPresentationGenerationProgressReliable()) {
+                return '';
+            }
             const progress = Math.max(0, Math.min(100, Math.round(this.presentationProgress || 0)));
             return `${progress}%`;
         },
 
         getPresentationGenerationButtonProgressStyle() {
-            return `width: ${this.getPresentationGenerationButtonProgressText()};`;
+            if (!this.isPresentationGenerationProgressReliable()) {
+                return 'width: 0%;';
+            }
+            const progress = Math.max(0, Math.min(100, Math.round(this.presentationProgress || 0)));
+            return `width: ${progress}%;`;
         },
 
         getPresentationGenerationButtonText() {
             if (!this.isPresentationGeneratingCurrentReport()) {
                 return '生成演示文稿';
             }
-            return `正在生成演示文稿...${this.getPresentationGenerationButtonProgressText()}（点击停止）`;
+            const progressText = this.getPresentationGenerationButtonProgressText();
+            if (!progressText) {
+                return '正在生成演示文稿（点击停止）';
+            }
+            return `正在生成演示文稿...${progressText}（点击停止）`;
         },
 
         isRetriablePresentationPollingError(error) {
@@ -1309,6 +1464,8 @@
             this.presentationPhaseStartedAt = this.presentationPhaseStartedAt || Date.now();
             this.presentationRawProgress = Math.max(this.presentationRawProgress || 0, 5);
             this.presentationProgress = Math.max(this.presentationProgress || 0, 5);
+            this.presentationProgressReliable = false;
+            this.presentationProgressLabel = '';
             this.startPresentationProgressSmoothing();
             let attempts = 0;
             const maxAttempts = 200;
@@ -1403,6 +1560,8 @@
             this.stopPresentationProgressSmoothing();
             this.presentationProgress = 0;
             this.presentationRawProgress = 0;
+            this.presentationProgressReliable = false;
+            this.presentationProgressLabel = '';
             this.presentationStageIndex = 0;
             this.presentationStageStatus = 'pending';
             this.presentationPhaseStartedAt = 0;
@@ -1434,6 +1593,8 @@
                 this.presentationState = 'stopped';
                 this.presentationProgress = 0;
                 this.presentationRawProgress = 0;
+                this.presentationProgressReliable = false;
+                this.presentationProgressLabel = '';
                 this.presentationStageIndex = 0;
                 this.presentationStageStatus = 'pending';
                 this.presentationPhaseStartedAt = 0;
@@ -1595,6 +1756,8 @@
             this.presentationPhaseStartedAt = Date.now();
             this.presentationProgress = 5;
             this.presentationRawProgress = 5;
+            this.presentationProgressReliable = false;
+            this.presentationProgressLabel = '';
             this.startPresentationProgressSmoothing();
             try {
                 const result = await this.apiCall(

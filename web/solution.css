@@ -358,6 +358,12 @@ a {
     box-shadow: none;
 }
 
+.solution-brand-mark img {
+    width: 28px;
+    height: 28px;
+    display: block;
+}
+
 .solution-brand-copy {
     min-width: 0;
 }

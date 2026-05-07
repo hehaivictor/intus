@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "5f4209f",
+  "committedAt": "2026-05-07T17:19:43+08:00",
+  "versionType": "patch",
+  "title": "落地 Intus 见真品牌标识",
+  "changes": [
+    "品牌视觉：替换轻色、深色与 favicon 标识资源。",
+    "页面引用：统一首页、帮助页、介绍页和方案页的 logo 使用方式。",
+    "文案同步：将顶部与介绍页标题标语更新为见微知著，真见本质。"
+  ],
+  "changedFiles": [
+    "web/favicon.svg",
+    "web/help.html",
+    "web/index.html",
+    "web/intro.html",
+    "web/logo-dark.svg",
+    "web/logo-light.svg",
+    "web/solution.css",
+    "web/solution.js"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "branch": "codex/manus-style-workbench",
+  "baseRef": "origin/main",
+  "sourceCommit": "8015291",
+  "committedAt": "2026-05-07T18:33:05+08:00",
+  "versionType": "patch",
+  "title": "忽略本地视觉生成产物",
+  "changes": [
+    "配置忽略 logo smoke 截图目录。",
+    "配置忽略 imagegen 与浏览器截图输出目录。"
+  ],
+  "changedFiles": [
+    ".gitignore"
+  ]
+}

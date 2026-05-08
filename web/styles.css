@@ -651,18 +651,6 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
     line-height: 1.35;
 }
 
-.dv-sidebar-powered a {
-    color: var(--dv-color-text-secondary);
-    text-decoration: none;
-}
-
-.dv-sidebar-powered a:hover,
-.dv-sidebar-powered a:focus-visible {
-    color: var(--dv-color-text-primary);
-    text-decoration: underline;
-    outline: none;
-}
-
 .dv-sidebar-powered-separator {
     color: #D4D4D8;
 }

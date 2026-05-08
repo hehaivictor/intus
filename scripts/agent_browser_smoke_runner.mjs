@@ -1872,11 +1872,23 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
 
       await page.locator('.dv-app-sidebar:visible').getByText('© Intus 见真', { exact: true }).waitFor({ timeout: 15000 });
       await page.locator('.dv-app-sidebar:visible').getByText(/^v\d+\.\d+\.\d+$/).waitFor({ timeout: 15000 });
-      await page.locator('.dv-app-sidebar:visible').getByRole('link', { name: '产品反馈', exact: true }).waitFor({ timeout: 15000 });
+      const poweredFeedbackCount = await page.locator('.dv-sidebar-powered:visible').getByRole('link', { name: '产品反馈', exact: true }).count();
+      if (poweredFeedbackCount > 0) {
+        throw new Error('产品反馈不应继续显示在侧栏底部版权行');
+      }
       const settingsIconBox = await page.locator('button[aria-label="账号与外观设置"]:visible svg').first().boundingBox();
       if (!settingsIconBox || settingsIconBox.width < 19 || settingsIconBox.height < 19) {
         throw new Error(`侧栏设置 icon 尺寸偏小: ${JSON.stringify(settingsIconBox)}`);
       }
+      await page.locator('.dv-app-sidebar button[aria-label="账号与外观设置"]:visible').click({ timeout: 15000 });
+      const sidebarAccountMenu = page.locator('.dv-app-sidebar .account-menu:visible').first();
+      await sidebarAccountMenu.getByRole('button', { name: '管理员中心', exact: true }).waitFor({ timeout: 15000 });
+      const adminCenterBox = await sidebarAccountMenu.getByRole('button', { name: '管理员中心', exact: true }).boundingBox();
+      const feedbackBox = await sidebarAccountMenu.getByRole('link', { name: '产品反馈', exact: true }).boundingBox();
+      if (!adminCenterBox || !feedbackBox || feedbackBox.y <= adminCenterBox.y) {
+        throw new Error('产品反馈应显示在账号菜单的管理员中心下方');
+      }
+      await page.keyboard.press('Escape');
 
       await page.locator('.dv-side-nav button:has-text("库")').click({ timeout: 15000 });
       await page.waitForSelector('.dv-library-shell', { timeout: 15000 });

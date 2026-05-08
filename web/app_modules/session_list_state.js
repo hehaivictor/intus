@@ -14,6 +14,8 @@
         sessionStatusFilter: 'all',
         sessionSortOrder: 'newest',
         sessionGroupBy: 'none',
+        showSessionListOptions: false,
+        activeSessionActionsMenu: null,
         filteredSessions: [],
         currentPage: 1,
         pageSize: 10,
@@ -189,6 +191,40 @@
                 suppressErrorToast: hasCachedSessions,
                 ...options,
             });
+        },
+
+        toggleSessionListOptions() {
+            this.showSessionListOptions = !this.showSessionListOptions;
+            this.activeSessionActionsMenu = null;
+        },
+
+        closeSessionListOptions() {
+            this.showSessionListOptions = false;
+        },
+
+        setSessionGroupBy(groupBy) {
+            const nextGroupBy = String(groupBy || 'none');
+            this.sessionGroupBy = ['none', 'scenario', 'date', 'status'].includes(nextGroupBy)
+                ? nextGroupBy
+                : 'none';
+            this.filterSessions();
+        },
+
+        setSessionSortOrder(sortOrder) {
+            const nextSortOrder = String(sortOrder || 'newest');
+            this.sessionSortOrder = nextSortOrder === 'oldest' ? 'oldest' : 'newest';
+            this.filterSessions();
+        },
+
+        toggleSessionActionsMenu(sessionId) {
+            const normalizedId = String(sessionId || '').trim();
+            if (!normalizedId) return;
+            this.activeSessionActionsMenu = this.activeSessionActionsMenu === normalizedId ? null : normalizedId;
+            this.showSessionListOptions = false;
+        },
+
+        closeSessionActionsMenu() {
+            this.activeSessionActionsMenu = null;
         },
 
         enterSessionBatchMode() {
@@ -664,6 +700,27 @@
                 return this.groupedSessions.map(group => ({
                     ...group,
                     showHeader: true
+                }));
+            }
+        },
+        sidebarSessionDisplayGroups: {
+            enumerable: true,
+            configurable: true,
+            get() {
+                if (this.sessionGroupBy === 'none') {
+                    return [{
+                        key: 'sidebar-group-all',
+                        label: '',
+                        showHeader: false,
+                        sessions: this.filteredSessions,
+                    }];
+                }
+
+                return this.groupedSessions.map(group => ({
+                    key: `sidebar-${group.key}`,
+                    label: group.label,
+                    showHeader: true,
+                    sessions: group.sessions,
                 }));
             }
         },

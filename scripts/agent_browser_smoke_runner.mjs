@@ -1827,9 +1827,12 @@ async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
         throw new Error(`工作台主题占位文案不应包含“例如”: ${placeholder}`);
       }
 
-      const activeGroupButton = page.getByRole('button', { name: '不分组', exact: true }).first();
+      await page.getByText('所有会话', { exact: true }).waitFor({ timeout: 15000 });
+      const sessionListOptionsButton = page.getByRole('button', { name: '会话显示与排序', exact: true });
+      await sessionListOptionsButton.click({ timeout: 15000 });
+      const activeGroupButton = page.locator('.dv-sidebar-session-options button', { hasText: '不分组' }).first();
       await activeGroupButton.waitFor({ timeout: 15000 });
-      await expectNeutralControl(activeGroupButton, '工作台显示方式选中按钮', { expectDark: true });
+      await expectNeutralControl(activeGroupButton, '侧栏会话显示方式选中按钮');
 
       const topic = '数字化营销战略';
       await taskInput.fill(topic);
@@ -1854,6 +1857,8 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
+      await page.getByText('所有会话', { exact: true }).waitFor({ timeout: 15000 });
+      await page.locator('.dv-sidebar-session-item', { hasText: '售后回访试点会话' }).first().waitFor({ timeout: 15000 });
 
       const sidebarSearchCount = await page.locator('.dv-app-sidebar .dv-sidebar-search:visible').count();
       if (sidebarSearchCount > 0) {
@@ -2393,9 +2398,9 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-      const sessionCard = page.locator('.session-card-glow', { hasText: '售后回访试点会话' }).first();
-      await sessionCard.waitFor({ timeout: 15000 });
-      await sessionCard.click({ timeout: 15000 });
+      const sessionItem = page.locator('.dv-sidebar-session-item', { hasText: '售后回访试点会话' }).first();
+      await sessionItem.waitFor({ timeout: 15000 });
+      await sessionItem.click({ timeout: 15000 });
       await page.waitForSelector('text=目前最影响售后回访闭环效率的环节是什么？', { timeout: 15000 });
       await page.getByRole('button', { name: '下一题', exact: true }).waitFor({ timeout: 15000 });
       await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页初始态');
@@ -2431,9 +2436,9 @@ async function scenarioReportGenerationRefresh(browser, baseUrl) {
     },
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-      const sessionCard = page.locator('.session-card-glow', { hasText: '报告生成恢复验证会话' }).first();
-      await sessionCard.waitFor({ timeout: 15000 });
-      await sessionCard.click({ timeout: 15000 });
+      const sessionItem = page.locator('.dv-sidebar-session-item', { hasText: '报告生成恢复验证会话' }).first();
+      await sessionItem.waitFor({ timeout: 15000 });
+      await sessionItem.click({ timeout: 15000 });
       try {
         await page.waitForSelector('text=需求摘要确认', { timeout: 15000 });
       } catch (error) {

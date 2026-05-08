@@ -214,7 +214,7 @@ body {
 
 .dv-app-shell {
     display: grid;
-    grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+    grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr);
     gap: 1.25rem;
     width: min(100%, 96rem);
     margin: 0 auto;
@@ -360,6 +360,277 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
     font-size: 0.72rem;
     font-weight: 650;
     margin-bottom: 0.5rem;
+}
+
+.dv-sidebar-section-title--button {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+}
+
+.dv-sidebar-session-section {
+    position: relative;
+    display: grid;
+    gap: 0.45rem;
+    min-height: 0;
+}
+
+.dv-sidebar-session-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 1.75rem;
+}
+
+.dv-sidebar-session-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid transparent;
+    border-radius: var(--dv-radius-sm);
+    color: var(--dv-color-text-muted);
+    cursor: pointer;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-sidebar-session-filter:hover,
+.dv-sidebar-session-filter:focus-visible {
+    outline: none;
+    border-color: var(--dv-color-border);
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-sidebar-session-options {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    z-index: var(--dv-z-dropdown);
+    width: 12.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    box-shadow: 0 14px 32px rgba(9, 9, 11, 0.14);
+    padding: 0.45rem;
+}
+
+.dv-sidebar-session-options-group {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.2rem 0 0.35rem;
+}
+
+.dv-sidebar-session-options-group--sort {
+    border-top: 1px solid var(--dv-color-border);
+    padding-top: 0.5rem;
+}
+
+.dv-sidebar-session-options-label {
+    color: var(--dv-color-text-muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+    padding: 0.25rem 0.45rem;
+}
+
+.dv-sidebar-session-options button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 2rem;
+    border: 0;
+    border-radius: var(--dv-radius-sm);
+    background: transparent;
+    color: var(--dv-color-text-secondary);
+    font-size: 0.8rem;
+    font-weight: 560;
+    padding: 0 0.55rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dv-sidebar-session-options button:hover,
+.dv-sidebar-session-options button.is-active {
+    background: #F4F4F5;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-sidebar-session-options button.is-active::after {
+    content: "";
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: var(--dv-color-text-primary);
+}
+
+.dv-sidebar-session-list {
+    display: grid;
+    gap: 0.35rem;
+    max-height: calc(100vh - 19.5rem);
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+}
+
+.dv-sidebar-session-group {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.dv-sidebar-session-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--dv-color-text-muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+    padding: 0.45rem 0.45rem 0.2rem;
+}
+
+.dv-sidebar-session-row {
+    position: relative;
+}
+
+.dv-sidebar-session-item {
+    display: grid;
+    grid-template-columns: 0.7rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 2.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--dv-radius-sm);
+    background: transparent;
+    color: var(--dv-color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 520;
+    line-height: 1.35;
+    padding: 0.42rem 2rem 0.42rem 0.55rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        border-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-sidebar-session-item:hover,
+.dv-sidebar-session-item:focus-visible,
+.dv-sidebar-session-item.is-active {
+    outline: none;
+    border-color: var(--dv-color-border);
+    background: #ffffff;
+    color: var(--dv-color-text-primary);
+}
+
+.dv-sidebar-session-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-sidebar-status-dot {
+    width: 0.48rem;
+    height: 0.48rem;
+    box-shadow: none;
+}
+
+.dv-sidebar-session-more {
+    position: absolute;
+    top: 50%;
+    right: 0.35rem;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid transparent;
+    border-radius: var(--dv-radius-sm);
+    background: transparent;
+    color: var(--dv-color-text-muted);
+    cursor: pointer;
+    transition:
+        opacity var(--dv-duration-fast) var(--dv-ease-standard),
+        background-color var(--dv-duration-base) var(--dv-ease-standard),
+        color var(--dv-duration-base) var(--dv-ease-standard);
+}
+
+.dv-sidebar-session-more:hover,
+.dv-sidebar-session-more:focus-visible {
+    outline: none;
+    background: #F4F4F5;
+    color: var(--dv-color-text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .dv-sidebar-session-more {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .dv-sidebar-session-row:hover .dv-sidebar-session-more,
+    .dv-sidebar-session-row:focus-within .dv-sidebar-session-more {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.session-actions-menu {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0.15rem;
+    z-index: var(--dv-z-dropdown);
+    min-width: 7.5rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    background: #ffffff;
+    box-shadow: 0 14px 32px rgba(9, 9, 11, 0.14);
+    padding: 0.35rem;
+}
+
+.session-actions-delete {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 2rem;
+    border: 0;
+    border-radius: calc(var(--dv-radius-sm) - 0.15rem);
+    background: transparent;
+    color: #DC2626;
+    font-size: 0.8125rem;
+    font-weight: 620;
+    padding: 0 0.55rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.session-actions-delete:hover,
+.session-actions-delete:focus-visible {
+    outline: none;
+    background: #FEF2F2;
+}
+
+.dv-sidebar-session-empty {
+    border: 1px dashed var(--dv-color-border);
+    border-radius: var(--dv-radius-sm);
+    color: var(--dv-color-text-muted);
+    font-size: 0.75rem;
+    padding: 0.65rem;
 }
 
 .dv-sidebar-powered {
@@ -3931,6 +4202,7 @@ textarea {
     box-shadow:
         0 0 0 2px rgba(255, 255, 255, 0.72),
         0 0 12px rgba(217, 119, 6, 0.5);
+    animation: none;
 }
 
 .session-status-dot--completed {
@@ -4198,7 +4470,9 @@ html[data-theme="dark"] .dv-library-list,
 html[data-theme="dark"] .dv-agent-card,
 html[data-theme="dark"] .dv-workbench-command,
 html[data-theme="dark"] .dv-workbench-side,
-html[data-theme="dark"] .dv-sidebar-account {
+html[data-theme="dark"] .dv-sidebar-account,
+html[data-theme="dark"] .dv-sidebar-session-options,
+html[data-theme="dark"] .session-actions-menu {
     background: rgba(24, 24, 27, 0.96);
     border-color: #3f3f46;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
@@ -4218,7 +4492,13 @@ html[data-theme="dark"] .dv-library-empty,
 html[data-theme="dark"] .dv-workbench-recent,
 html[data-theme="dark"] .dv-workbench-chip,
 html[data-theme="dark"] .dv-workbench-new-btn,
-html[data-theme="dark"] .dv-sidebar-recent:hover {
+html[data-theme="dark"] .dv-sidebar-recent:hover,
+html[data-theme="dark"] .dv-sidebar-session-item:hover,
+html[data-theme="dark"] .dv-sidebar-session-item:focus-visible,
+html[data-theme="dark"] .dv-sidebar-session-item.is-active,
+html[data-theme="dark"] .dv-sidebar-session-options button:hover,
+html[data-theme="dark"] .dv-sidebar-session-options button.is-active,
+html[data-theme="dark"] .dv-sidebar-session-more:hover {
     background: #1f1f23;
     border-color: #3f3f46;
 }

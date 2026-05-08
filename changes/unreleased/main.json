@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "4c249f0",
+  "committedAt": "2026-05-08T15:41:32+08:00",
+  "versionType": "minor",
+  "title": "优化左侧所有会话入口",
+  "changes": [
+    "前端：将会话列表迁移到左侧导航，新增所有会话入口和排序弹窗。",
+    "交互：移除会话批量管理入口，改为单条三点菜单删除。",
+    "样式：精简会话条目内容，按状态显示蓝绿橙圆灯。",
+    "测试：更新浏览器 smoke 和静态回归，覆盖左侧会话入口。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/app_modules/session_list_state.js",
+    "web/index.html",
+    "web/styles.css"
+  ]
+}

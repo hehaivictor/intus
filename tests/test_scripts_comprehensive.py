@@ -752,6 +752,20 @@ class ComprehensiveScriptTests(unittest.TestCase):
             live_extended_ids,
         )
 
+    def test_index_moves_session_list_to_sidebar(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn("所有会话", index_html)
+        self.assertIn("dv-sidebar-session-list", index_html)
+        self.assertIn("toggleSessionListOptions()", index_html)
+        self.assertIn("显示方式", index_html)
+        self.assertIn("排序", index_html)
+        self.assertIn("session-actions-menu", index_html)
+        self.assertIn("confirmDeleteSession(session.session_id)", index_html)
+        self.assertNotIn("enterSessionBatchMode()", index_html)
+        self.assertNotIn("openBatchDeleteModal('sessions')", index_html)
+        self.assertNotIn(">会话列表</h3>", index_html)
+
     def test_agent_guardrails_suite_definitions_cover_core_invariants(self):
         minimal_cases = agent_guardrails.resolve_suite_cases("minimal")
         minimal_ids = [item.test_id for item in minimal_cases]

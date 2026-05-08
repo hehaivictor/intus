@@ -1058,15 +1058,107 @@
                             <span>帮助</span>
                         </button>
                     </nav>
-                    <div class="dv-sidebar-section" x-show="getWorkbenchRecentSessions().length > 0" x-cloak>
-                        <div class="dv-sidebar-section-title">最近</div>
-                        <div class="dv-sidebar-recent-list">
-                            <template x-for="session in getWorkbenchRecentSessions(3)" :key="`sidebar-recent-${session.session_id}`">
-                                <button type="button" class="dv-sidebar-recent" @click="openSession(session.session_id)">
-                                    <span x-text="session.topic"></span>
-                                </button>
+                    <div class="dv-sidebar-section dv-sidebar-session-section"
+                         @keydown.escape.window="closeSessionListOptions(); closeSessionActionsMenu()">
+                        <div class="dv-sidebar-session-head">
+                            <button type="button"
+                                    class="dv-sidebar-section-title dv-sidebar-section-title--button"
+                                    @click="switchView('sessions')">
+                                所有会话
+                            </button>
+                            <button type="button"
+                                    class="dv-sidebar-session-filter"
+                                    @click.stop="toggleSessionListOptions()"
+                                    aria-label="会话显示与排序"
+                                    aria-haspopup="menu"
+                                    :aria-expanded="showSessionListOptions.toString()">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h10m4 0h2M4 17h2m4 0h10"/>
+                                    <circle cx="16" cy="7" r="2" stroke-width="2"/>
+                                    <circle cx="8" cy="17" r="2" stroke-width="2"/>
+                                </svg>
+                            </button>
+                            <div x-cloak
+                                 x-show="showSessionListOptions"
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                 @click.outside="closeSessionListOptions()"
+                                 class="dv-sidebar-session-options"
+                                 role="menu"
+                                 aria-label="会话显示与排序">
+                                <div class="dv-sidebar-session-options-group">
+                                    <div class="dv-sidebar-session-options-label">显示方式</div>
+                                    <button type="button" @click="setSessionGroupBy('none')" :class="{ 'is-active': sessionGroupBy === 'none' }">不分组</button>
+                                    <button type="button" @click="setSessionGroupBy('scenario')" :class="{ 'is-active': sessionGroupBy === 'scenario' }">按场景</button>
+                                    <button type="button" @click="setSessionGroupBy('date')" :class="{ 'is-active': sessionGroupBy === 'date' }">按日期</button>
+                                    <button type="button" @click="setSessionGroupBy('status')" :class="{ 'is-active': sessionGroupBy === 'status' }">按状态</button>
+                                </div>
+                                <div class="dv-sidebar-session-options-group dv-sidebar-session-options-group--sort">
+                                    <div class="dv-sidebar-session-options-label">排序</div>
+                                    <button type="button" @click="setSessionSortOrder('newest')" :class="{ 'is-active': sessionSortOrder === 'newest' }">最新</button>
+                                    <button type="button" @click="setSessionSortOrder('oldest')" :class="{ 'is-active': sessionSortOrder === 'oldest' }">最早</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dv-sidebar-session-list custom-scrollbar" x-show="sessionsLoaded && filteredSessions.length > 0" x-cloak>
+                            <template x-for="group in sidebarSessionDisplayGroups" :key="group.key">
+                                <section class="dv-sidebar-session-group">
+                                    <div x-show="group.showHeader" x-cloak class="dv-sidebar-session-group-title">
+                                        <span x-text="group.label"></span>
+                                        <span x-text="group.sessions.length"></span>
+                                    </div>
+                                    <template x-for="session in group.sessions" :key="`sidebar-session-${group.key}-${session.session_id}`">
+                                        <div class="dv-sidebar-session-row">
+                                            <button type="button"
+                                                    class="dv-sidebar-session-item"
+                                                    :class="{ 'is-active': currentSession?.session_id === session.session_id && currentView === 'interview' }"
+                                                    @click="closeSessionActionsMenu(); openSession(session.session_id)">
+                                                <span class="session-status-dot dv-sidebar-status-dot"
+                                                      :class="getSessionStatusDotClass(getEffectiveSessionStatus(session))"
+                                                      :title="getStatusText(getEffectiveSessionStatus(session))"
+                                                      aria-hidden="true"></span>
+                                                <span class="dv-sidebar-session-title"
+                                                      :title="session.topic || '未命名会话'"
+                                                      x-text="session.topic || '未命名会话'"></span>
+                                            </button>
+                                            <button type="button"
+                                                    class="dv-sidebar-session-more"
+                                                    @click.stop="toggleSessionActionsMenu(session.session_id)"
+                                                    aria-label="会话操作"
+                                                    aria-haspopup="menu"
+                                                    :aria-expanded="(activeSessionActionsMenu === session.session_id).toString()">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M12 12h.01M12 18h.01"/>
+                                                </svg>
+                                            </button>
+                                            <div x-cloak
+                                                 x-show="activeSessionActionsMenu === session.session_id"
+                                                 x-transition:enter="transition ease-out duration-150"
+                                                 x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                                 x-transition:leave="transition ease-in duration-100"
+                                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                                 x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                                 @click.outside="activeSessionActionsMenu === session.session_id && closeSessionActionsMenu()"
+                                                 class="session-actions-menu"
+                                                 role="menu">
+                                                <button type="button"
+                                                        class="session-actions-delete"
+                                                        @click.stop="closeSessionActionsMenu(); confirmDeleteSession(session.session_id)">
+                                                    删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </section>
                             </template>
                         </div>
+                        <div class="dv-sidebar-session-empty" x-show="sessionsLoaded && sessions.length === 0" x-cloak>暂无会话</div>
+                        <div class="dv-sidebar-session-empty" x-show="sessionsLoaded && sessions.length > 0 && filteredSessions.length === 0" x-cloak>暂无匹配会话</div>
                     </div>
                     <div class="relative dv-sidebar-settings" @keydown.escape.window="showAccountMenu = false">
                         <button type="button"
@@ -1204,275 +1296,6 @@
                         </div>
                     </section>
 
-                    <!-- 筛选栏 -->
-                    <section class="dv-workbench-list-head" x-show="!selectedReport">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div>
-                                <h3 class="text-base font-semibold text-primary">会话列表</h3>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- 加载状态 -->
-                    <template x-if="loading">
-                        <div class="text-center py-12">
-                            <svg class="w-8 h-8 mx-auto text-primary animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                            </svg>
-                            <p class="text-muted mt-2">加载中...</p>
-                        </div>
-                    </template>
-
-                    <!-- 会话列表 -->
-                    <template x-if="!loading">
-                        <div class="space-y-4">
-                            <!-- 结果统计 -->
-                            <div class="flex items-center gap-2 text-sm text-muted" x-show="filteredSessions.length > 0 || sessionBatchMode">
-                                <template x-if="useVirtualList && sessionGroupBy === 'none'">
-                                    <span>共 <span x-text="filteredSessions.length"></span> 条</span>
-                                </template>
-                                <template x-if="!useVirtualList || sessionGroupBy !== 'none'">
-                                    <span>显示 <span x-text="paginationStart"></span>-<span x-text="paginationEnd"></span> / 共 <span x-text="filteredSessions.length"></span> 条</span>
-                                </template>
-                                <template x-if="sessionGroupBy !== 'none'">
-                                    <span class="ml-2">· 共 <span x-text="groupedSessions.length"></span> 组</span>
-                                </template>
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-                                 x-show="filteredSessions.length > 0 || sessionBatchMode"
-                                 x-cloak>
-                                <div class="flex flex-wrap items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5 w-fit max-w-full">
-                                    <span class="text-xs text-muted px-1">显示方式</span>
-                                    <button @click="sessionGroupBy = 'none'; filterSessions()"
-                                            :class="sessionGroupBy === 'none' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        不分组
-                                    </button>
-                                    <button @click="sessionGroupBy = 'scenario'; filterSessions()"
-                                            :class="sessionGroupBy === 'scenario' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        按场景
-                                    </button>
-                                    <button @click="sessionGroupBy = 'date'; filterSessions()"
-                                            :class="sessionGroupBy === 'date' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        按日期
-                                    </button>
-                                    <button @click="sessionGroupBy = 'status'; filterSessions()"
-                                            :class="sessionGroupBy === 'status' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        按状态
-                                    </button>
-                                    <span class="w-px h-4 bg-gray-200 mx-0.5"></span>
-                                    <span class="text-xs text-muted px-1">排序</span>
-                                    <button @click="sessionSortOrder = 'newest'; filterSessions()"
-                                            :class="sessionSortOrder === 'newest' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        最新
-                                    </button>
-                                    <button @click="sessionSortOrder = 'oldest'; filterSessions()"
-                                            :class="sessionSortOrder === 'oldest' ? 'dv-filter-active' : 'bg-gray-100 text-secondary hover:bg-gray-200'"
-                                            class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap">
-                                        最早
-                                    </button>
-                                </div>
-
-                                <div class="flex items-center gap-2 self-end sm:self-auto">
-                                    <button x-show="!sessionBatchMode"
-                                            @click="enterSessionBatchMode()"
-                                            class="px-3 py-1.5 rounded-md border border-gray-200 text-secondary hover:bg-gray-50 transition-colors duration-200 text-xs font-medium cursor-pointer inline-flex items-center gap-1.5">
-                                        <svg class="w-3.5 h-3.5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h11M8 12h11M8 17h11"/>
-                                            <circle cx="4" cy="7" r="1.3" fill="currentColor" stroke="none"/>
-                                            <circle cx="4" cy="12" r="1.3" fill="currentColor" stroke="none"/>
-                                            <circle cx="4" cy="17" r="1.3" fill="currentColor" stroke="none"/>
-                                        </svg>
-                                        <span>批量管理</span>
-                                    </button>
-                                    <div x-show="sessionBatchMode" class="flex items-center gap-2">
-                                        <span class="text-xs text-secondary">已选 <span class="font-semibold text-primary" x-text="selectedSessionIds.length"></span> 条</span>
-                                        <button @click="toggleSelectAllSessions()"
-                                                class="batch-select-toggle-btn px-2.5 py-1.5 rounded-md border border-gray-200 text-secondary hover:bg-gray-50 transition-colors text-xs font-medium cursor-pointer">
-                                            <span x-text="areAllFilteredSessionsSelected() ? '取消全选' : '全选当前筛选'"></span>
-                                        </button>
-                                        <button @click="openBatchDeleteModal('sessions')"
-                                                :disabled="selectedSessionIds.length === 0"
-                                                :class="selectedSessionIds.length === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-red-700'"
-                                                class="batch-delete-btn px-2.5 py-1.5 bg-danger text-white rounded-md text-xs font-medium transition-colors">
-                                            批量删除
-                                        </button>
-                                        <button @click="exitSessionBatchMode()"
-                                                class="batch-cancel-btn px-2.5 py-1.5 rounded-md border border-gray-200 text-secondary hover:bg-gray-50 transition-colors text-xs font-medium cursor-pointer">
-                                            取消
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 会话卡片列表 -->
-                            <div x-ref="sessionListScroller" class="space-y-4">
-                                <div :style="sessionGroupBy === 'none' && useVirtualList ? `height: ${virtualPaddingTop}px;` : ''"></div>
-
-                                <template x-for="group in sessionDisplayGroups" :key="group.key">
-                                    <section class="space-y-2">
-                                        <div x-show="group.showHeader" x-cloak class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1 pt-1">
-                                            <div class="flex items-center gap-2 min-w-0">
-                                                <h3 class="text-sm font-semibold text-primary truncate" x-text="group.label"></h3>
-                                                <span class="text-[11px] text-muted px-1.5 py-0.5 rounded bg-gray-100" x-text="`${group.sessions.length} 条`"></span>
-                                            </div>
-                                            <div class="flex items-center gap-3 text-[11px] text-muted">
-                                                <span x-show="group.statusCounts.in_progress > 0">进行中 <span class="font-semibold text-[#1d4ed8]" x-text="group.statusCounts.in_progress"></span></span>
-                                                <span x-show="group.statusCounts.pending_review > 0">待确认 <span class="font-semibold text-[#b45309]" x-text="group.statusCounts.pending_review"></span></span>
-                                                <span x-show="group.statusCounts.completed > 0">已完成 <span class="font-semibold text-[#047857]" x-text="group.statusCounts.completed"></span></span>
-                                                <span x-show="group.statusCounts.paused > 0">已暂停 <span class="font-semibold text-gray-600" x-text="group.statusCounts.paused"></span></span>
-                                                <span x-show="group.statusCounts.other > 0">其他 <span class="font-semibold" x-text="group.statusCounts.other"></span></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <template x-for="session in group.sessions" :key="`${group.key}-${session.session_id}`">
-                                                <div class="group session-card-glow bg-surface border border-border rounded-xl transition-all duration-200 p-4 cursor-pointer h-32 overflow-hidden relative"
-                                                     :class="sessionBatchMode && isSessionSelected(session.session_id) ? 'ring-2 ring-primary/50 border-primary/50' : ''"
-                                                     @click="sessionBatchMode ? toggleSessionSelection(session.session_id) : openSession(session.session_id)">
-                                                <div x-show="sessionBatchMode" class="absolute top-3 left-3 z-10">
-                                                    <input type="checkbox"
-                                                           :checked="isSessionSelected(session.session_id)"
-                                                           @click.stop="toggleSessionSelection(session.session_id)"
-                                                           class="batch-checkbox w-4 h-4 border-gray-300 rounded focus:ring-primary/30 cursor-pointer">
-                                                </div>
-                                                <div class="absolute top-3 right-3 z-10">
-                                                    <span class="session-status-badge"
-                                                          :class="[getSessionStatusBadgeClass(getEffectiveSessionStatus(session)), sessionBatchMode ? 'session-status-badge--batch' : '']">
-                                                        <span class="session-status-dot"
-                                                              :class="getSessionStatusDotClass(getEffectiveSessionStatus(session))"
-                                                              aria-hidden="true"></span>
-                                                        <span x-text="getSessionStatusBadgeText(session)"></span>
-                                                    </span>
-                                                </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_230px] gap-x-3 gap-y-2 h-full items-center">
-                                                    <!-- 左侧：标题 + 摘要 + 元信息 -->
-                                                    <div class="min-w-0 flex flex-col justify-start pr-24 sm:pr-0" :class="sessionBatchMode ? 'pl-7' : ''">
-                                                        <h3 class="text-lg font-semibold text-primary line-clamp-1 transition-colors duration-200 group-hover:text-primary-hover"
-                                                            :title="session.topic"
-                                                            x-text="session.topic"></h3>
-                                                        <span x-show="session.scenario_config?.name"
-                                                              class="mt-2 tag-pill w-fit self-start shrink-0"
-                                                              :title="session.scenario_config?.name || ''"
-                                                              x-text="session.scenario_config?.name || ''"></span>
-                                                        <template x-if="session.description">
-                                                            <p class="text-sm text-secondary line-clamp-2 mt-1"
-                                                               :title="session.description"
-                                                               x-text="session.description"></p>
-                                                        </template>
-                                                    </div>
-
-                                                    <!-- 右侧：操作 -->
-                                                    <div class="flex items-start justify-end w-full pt-7">
-                                                            <button @click.stop="confirmDeleteSession(session.session_id)"
-                                                                    x-show="!sessionBatchMode"
-                                                                    class="p-1.5 text-gray-400 hover:text-danger hover:bg-red-50 rounded-md transition-colors cursor-pointer sm:opacity-0 sm:pointer-events-none sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto"
-                                                                    aria-label="删除会话">
-                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                                </svg>
-                                                            </button>
-                                                    </div>
-
-                                                    <!-- 底部行：元信息 + 进度（同一水平线） -->
-                                                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_230px] gap-2 sm:col-span-2 mt-1">
-                                                        <div class="flex items-center gap-x-2 text-[12px] text-muted min-w-0 whitespace-nowrap overflow-hidden transition-colors duration-200 group-hover:text-secondary">
-                                                            <span class="truncate">创建: <span x-text="formatDate(session.created_at)"></span></span>
-                                                            <span class="hidden sm:inline shrink-0">·</span>
-                                                            <span class="shrink-0">问答: <span x-text="session.interview_count || 0"></span> 条</span>
-                                                        </div>
-                                                        <div class="grid grid-cols-[32px_minmax(0,1fr)_36px] items-center gap-2 w-full">
-                                                            <span class="text-[12px] text-muted">进度</span>
-                                                            <div class="h-1.5 bg-gray-200/80 rounded-full overflow-hidden">
-                                                                <div class="h-full rounded-full transition-all duration-500"
-                                                                     :style="getProgressBarStyle(getSessionTotalProgress(session))"></div>
-                                                            </div>
-                                                            <span class="text-[12px] text-muted text-right" x-text="getSessionTotalProgress(session) + '%'"></span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            </template>
-                                        </div>
-                                    </section>
-                                </template>
-
-                                <div :style="sessionGroupBy === 'none' && useVirtualList ? `height: ${virtualPaddingBottom}px;` : ''"></div>
-                            </div>
-
-                            <!-- 空状态：无搜索结果 -->
-                            <template x-if="filteredSessions.length === 0 && sessions.length > 0">
-                                <div class="text-center py-12 bg-surface border border-border rounded-xl">
-                                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                    </svg>
-                                    <h3 class="text-lg font-medium text-gray-600 mb-2">未找到匹配的会话</h3>
-                                    <p class="text-muted mb-4">尝试调整筛选条件</p>
-                                    <button @click="sessionSearchQuery = ''; sessionStatusFilter = 'all'; sessionSortOrder = 'newest'; sessionGroupBy = 'none'; filterSessions()"
-                                            class="text-primary hover:text-primary/80 text-sm font-medium cursor-pointer">
-                                        清除筛选条件
-                                    </button>
-                                </div>
-                            </template>
-
-                            <!-- 空状态：无会话 -->
-                            <template x-if="sessions.length === 0">
-                                <div class="text-center py-16 bg-surface border border-border rounded-xl">
-                                    <svg class="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                    <h3 class="text-lg font-medium text-gray-600 mb-2">暂无访谈会话</h3>
-                                    <p class="text-muted mb-6">点击"新建访谈"开始您的第一次智能访谈</p>
-                                    <button @click="resetScenarioSelection(); showNewSessionModal = true"
-                                            class="btn-sage-blue text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200 cursor-pointer">
-                                        新建访谈
-                                    </button>
-                                </div>
-                            </template>
-
-                            <!-- 分页控件 -->
-                            <template x-if="sessionGroupBy === 'none' && !useVirtualList && totalPages > 1">
-                                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                                    <div class="flex items-center gap-2">
-                                        <button @click="goToPage(currentPage - 1)"
-                                                :disabled="currentPage === 1"
-                                                :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'"
-                                                class="p-2 rounded-lg border border-gray-200 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                            </svg>
-                                        </button>
-
-                                        <template x-for="page in visiblePages" :key="page">
-                                            <button @click="page !== '...' && goToPage(page)"
-                                                    :class="page === currentPage ? 'bg-blue-700 text-white' : (page === '...' ? 'cursor-default' : 'hover:bg-gray-100 cursor-pointer')"
-                                                    class="min-w-[36px] h-9 px-3 rounded-lg border border-gray-200 text-sm font-medium transition-colors"
-                                                    x-text="page">
-                                            </button>
-                                        </template>
-
-                                        <button @click="goToPage(currentPage + 1)"
-                                                :disabled="currentPage === totalPages"
-                                                :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'"
-                                                class="p-2 rounded-lg border border-gray-200 transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-
-                        </div>
-                    </template>
                 </div>
             </template>
 

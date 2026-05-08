@@ -866,6 +866,15 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("返回工作台", help_html)
         self.assertNotIn("top-actions", help_html)
 
+    def test_interview_header_removes_exit_button(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
+
+        self.assertNotIn("@click=\"exitInterview()\"", index_html)
+        self.assertNotIn("<span class=\"hidden sm:inline\">退出</span>", index_html)
+        self.assertIn("exitInterview()", app_js)
+        self.assertIn("this.exitInterview();", app_js)
+
     def test_delete_current_session_returns_to_session_home(self):
         if not shutil.which("node"):
             self.skipTest("node runtime is required for frontend state regression")

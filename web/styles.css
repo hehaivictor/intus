@@ -341,8 +341,8 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
 .dv-sidebar-settings {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 0.35rem;
+    justify-content: space-between;
+    gap: 0.75rem;
     width: 100%;
     margin-top: auto;
     border-top: 1px solid var(--dv-color-border);
@@ -649,15 +649,17 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
 .dv-sidebar-powered {
     display: inline-flex;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
     gap: 0.18rem 0.38rem;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
+    margin-left: auto;
     min-width: 0;
     color: var(--dv-color-text-muted);
     font-size: 0.68rem;
     font-weight: 560;
     line-height: 1.35;
-    text-align: left;
+    text-align: right;
     white-space: nowrap;
 }
 

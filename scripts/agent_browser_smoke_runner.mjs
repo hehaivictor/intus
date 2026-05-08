@@ -1877,14 +1877,21 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
         throw new Error('产品反馈不应继续显示在侧栏底部版权行');
       }
       const sidebarSettingsButton = page.locator('.dv-app-sidebar button[aria-label="账号与外观设置"]:visible').first();
+      const settingsRowBox = await page.locator('.dv-sidebar-settings:visible').first().boundingBox();
       const settingsButtonBox = await sidebarSettingsButton.boundingBox();
       const settingsIconBox = await sidebarSettingsButton.locator('svg').first().boundingBox();
       if (!settingsIconBox || settingsIconBox.width < 19 || settingsIconBox.height < 19) {
         throw new Error(`侧栏设置 icon 尺寸偏小: ${JSON.stringify(settingsIconBox)}`);
       }
       const poweredBox = await page.locator('.dv-sidebar-powered:visible').first().boundingBox();
-      if (!settingsButtonBox || !poweredBox || poweredBox.x > settingsButtonBox.x + settingsButtonBox.width + 8) {
-        throw new Error('侧栏版权版本应紧贴设置菜单右侧展示');
+      const poweredFirstTextBox = await page.locator('.dv-sidebar-powered:visible > span').first().boundingBox();
+      const poweredLastTextBox = await page.locator('.dv-sidebar-powered:visible > span').last().boundingBox();
+      if (!settingsRowBox || !settingsButtonBox || !poweredBox || !poweredFirstTextBox || !poweredLastTextBox) {
+        throw new Error('无法读取侧栏底部版权版本布局');
+      }
+      const poweredContentRightGap = settingsRowBox.x + settingsRowBox.width - poweredLastTextBox.x - poweredLastTextBox.width;
+      if (poweredFirstTextBox.x <= settingsButtonBox.x + settingsButtonBox.width + 16 || poweredContentRightGap > 4) {
+        throw new Error('侧栏版权版本应贴菜单栏右侧展示，并与左侧设置按钮分布均衡');
       }
       await sidebarSettingsButton.click({ timeout: 15000 });
       const sidebarAccountMenu = page.locator('.dv-app-sidebar .account-menu:visible').first();

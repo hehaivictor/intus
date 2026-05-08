@@ -778,8 +778,10 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("Powered By Intus Team", index_html)
         self.assertNotIn("M12 3v3m0 12v3m9-9h-3", index_html)
         self.assertNotIn("<footer class=\"bg-white border-t border-gray-200 py-4 mt-auto\">", index_html)
-        self.assertIn("justify-content: flex-start;", styles_css)
+        self.assertIn("justify-content: space-between;", styles_css)
         self.assertIn(".dv-sidebar-settings .theme-toggle-trigger", styles_css)
+        self.assertIn("margin-left: auto;", styles_css)
+        self.assertIn("justify-content: flex-end;", styles_css)
         self.assertIn("white-space: nowrap;", styles_css)
 
     def test_delete_current_session_returns_to_session_home(self):

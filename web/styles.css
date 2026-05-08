@@ -341,11 +341,18 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
 .dv-sidebar-settings {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    justify-content: flex-start;
+    gap: 0.35rem;
     width: 100%;
     margin-top: auto;
     border-top: 1px solid var(--dv-color-border);
     padding-top: 0.9rem;
+}
+
+.dv-sidebar-settings .theme-toggle-trigger {
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
 }
 
 .dv-sidebar-settings .account-menu {
@@ -644,11 +651,14 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
     align-items: center;
     flex-wrap: wrap;
     gap: 0.18rem 0.38rem;
+    flex: 0 1 auto;
     min-width: 0;
     color: var(--dv-color-text-muted);
     font-size: 0.68rem;
     font-weight: 560;
     line-height: 1.35;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .dv-sidebar-powered-separator {

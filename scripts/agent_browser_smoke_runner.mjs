@@ -1876,11 +1876,17 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
       if (poweredFeedbackCount > 0) {
         throw new Error('产品反馈不应继续显示在侧栏底部版权行');
       }
-      const settingsIconBox = await page.locator('button[aria-label="账号与外观设置"]:visible svg').first().boundingBox();
+      const sidebarSettingsButton = page.locator('.dv-app-sidebar button[aria-label="账号与外观设置"]:visible').first();
+      const settingsButtonBox = await sidebarSettingsButton.boundingBox();
+      const settingsIconBox = await sidebarSettingsButton.locator('svg').first().boundingBox();
       if (!settingsIconBox || settingsIconBox.width < 19 || settingsIconBox.height < 19) {
         throw new Error(`侧栏设置 icon 尺寸偏小: ${JSON.stringify(settingsIconBox)}`);
       }
-      await page.locator('.dv-app-sidebar button[aria-label="账号与外观设置"]:visible').click({ timeout: 15000 });
+      const poweredBox = await page.locator('.dv-sidebar-powered:visible').first().boundingBox();
+      if (!settingsButtonBox || !poweredBox || poweredBox.x > settingsButtonBox.x + settingsButtonBox.width + 8) {
+        throw new Error('侧栏版权版本应紧贴设置菜单右侧展示');
+      }
+      await sidebarSettingsButton.click({ timeout: 15000 });
       const sidebarAccountMenu = page.locator('.dv-app-sidebar .account-menu:visible').first();
       await sidebarAccountMenu.getByRole('button', { name: '管理员中心', exact: true }).waitFor({ timeout: 15000 });
       const adminCenterBox = await sidebarAccountMenu.getByRole('button', { name: '管理员中心', exact: true }).boundingBox();

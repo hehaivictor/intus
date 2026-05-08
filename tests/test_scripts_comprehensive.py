@@ -755,6 +755,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
 
     def test_index_moves_session_list_to_sidebar(self):
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
 
         self.assertIn("所有会话", index_html)
         self.assertIn("dv-sidebar-session-list", index_html)
@@ -777,6 +778,9 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("Powered By Intus Team", index_html)
         self.assertNotIn("M12 3v3m0 12v3m9-9h-3", index_html)
         self.assertNotIn("<footer class=\"bg-white border-t border-gray-200 py-4 mt-auto\">", index_html)
+        self.assertIn("justify-content: flex-start;", styles_css)
+        self.assertIn(".dv-sidebar-settings .theme-toggle-trigger", styles_css)
+        self.assertIn("white-space: nowrap;", styles_css)
 
     def test_delete_current_session_returns_to_session_home(self):
         if not shutil.which("node"):

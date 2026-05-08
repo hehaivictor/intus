@@ -2424,10 +2424,20 @@ async function scenarioReportDetailFlow(browser, baseUrl) {
       if (solutionButtonCount > 0) {
         throw new Error('报告详情不应继续展示查看方案入口');
       }
-      await page.getByRole('button', { name: '返回报告列表', exact: true }).waitFor({ timeout: 15000 });
+      const sidebarBox = await page.locator('.dv-report-sidebar-card:visible').first().boundingBox();
+      const headerBox = await page.locator('.dv-report-header:visible').first().boundingBox();
+      if (sidebarBox && headerBox && Math.abs(sidebarBox.y - headerBox.y) > 4) {
+        throw new Error(`报告详情目录应与报告头顶部齐平: sidebar=${JSON.stringify(sidebarBox)} header=${JSON.stringify(headerBox)}`);
+      }
+      const redundantBackButtonCount = await page.getByRole('button', { name: '返回报告列表', exact: true }).count();
+      if (redundantBackButtonCount > 0) {
+        throw new Error('报告详情不应展示冗余的返回报告列表按钮');
+      }
+      await page.getByRole('button', { name: '报告', exact: true }).click({ timeout: 15000 });
+      await page.waitForSelector('[data-report-key="demo-report"]:visible', { timeout: 15000 });
     },
   );
-  return '可从报告列表进入报告详情，且不再展示查看方案入口';
+  return '可从报告列表进入报告详情，不展示冗余返回按钮，并可通过侧栏报告入口回到列表';
 }
 
 async function scenarioReportDetailRefresh(browser, baseUrl) {

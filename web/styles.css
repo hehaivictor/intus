@@ -2950,12 +2950,12 @@ html[data-theme="light"] .dv-library-type {
 
 .dv-report-sidebar {
     position: sticky;
-    top: 84px;
+    top: 48px;
     align-self: start;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: calc(100vh - 108px);
+    max-height: calc(100vh - 72px);
     min-height: 0;
 }
 
@@ -2979,7 +2979,7 @@ html[data-theme="light"] .dv-library-type {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-height: calc(100vh - 108px);
+    max-height: calc(100vh - 72px);
     overflow: hidden;
 }
 
@@ -3160,10 +3160,6 @@ html[data-theme="light"] .dv-library-type {
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-}
-
-.dv-report-back-btn {
-    flex: 0 0 auto;
 }
 
 .dv-report-toolbar {

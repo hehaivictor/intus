@@ -815,6 +815,23 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("justify-content: flex-end;", styles_css)
         self.assertIn("white-space: nowrap;", styles_css)
 
+    def test_report_sidebar_aligns_with_report_header(self):
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
+
+        self.assertIn(".dv-report-sidebar", styles_css)
+        self.assertIn("top: 48px;", styles_css)
+        self.assertIn("max-height: calc(100vh - 72px);", styles_css)
+        self.assertNotIn("top: 84px;", styles_css)
+        self.assertNotIn("max-height: calc(100vh - 108px);", styles_css)
+
+    def test_report_detail_removes_redundant_back_button(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
+
+        self.assertNotIn("返回报告列表", index_html)
+        self.assertNotIn("dv-report-back-btn", index_html)
+        self.assertNotIn(".dv-report-back-btn", styles_css)
+
     def test_delete_current_session_returns_to_session_home(self):
         if not shutil.which("node"):
             self.skipTest("node runtime is required for frontend state regression")

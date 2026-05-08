@@ -3567,12 +3567,20 @@ function intusApp() {
         async deleteSession() {
             if (!this.sessionToDelete) return;
 
+            const deletedSessionId = this.normalizeComparableId(this.sessionToDelete);
+            const deletedCurrentSession = deletedSessionId
+                && this.normalizeComparableId(this.currentSession?.session_id) === deletedSessionId;
+
             try {
                 await this.apiCall(`/sessions/${this.sessionToDelete}`, { method: 'DELETE' });
-                this.sessions = this.sessions.filter(s => s.session_id !== this.sessionToDelete);
+                this.sessions = this.sessions.filter(s => this.normalizeComparableId(s?.session_id) !== deletedSessionId);
                 this.filterSessions();  // 刷新筛选列表
                 this.showDeleteModal = false;
                 this.sessionToDelete = null;
+                if (deletedCurrentSession) {
+                    this.exitInterview();
+                    this.scheduleAppShellSnapshotPersist();
+                }
                 this.showToast('会话已删除', 'success');
             } catch (error) {
                 this.showToast('删除会话失败', 'error');

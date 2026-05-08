@@ -1,5 +1,6 @@
 import json
 import io
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -765,6 +766,140 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("enterSessionBatchMode()", index_html)
         self.assertNotIn("openBatchDeleteModal('sessions')", index_html)
         self.assertNotIn(">会话列表</h3>", index_html)
+
+    def test_delete_current_session_returns_to_session_home(self):
+        if not shutil.which("node"):
+            self.skipTest("node runtime is required for frontend state regression")
+
+        script = f"""
+const fs = require('fs');
+const vm = require('vm');
+
+const appCode = fs.readFileSync({json.dumps(str(ROOT_DIR / "web" / "app.js"))}, 'utf8');
+const context = {{
+  console,
+  setTimeout,
+  clearTimeout,
+  URLSearchParams,
+  SITE_CONFIG: {{ visualPresets: {{ default: 'rational' }} }},
+  window: {{
+    location: {{
+      origin: 'http://127.0.0.1:5002',
+      pathname: '/index.html',
+      search: '?view=interview&session=s-current',
+      hash: '',
+    }},
+    history: {{
+      replaced: [],
+      replaceState(_state, _title, url) {{
+        this.replaced.push(url);
+        context.window.location.search = url.includes('?') ? url.slice(url.indexOf('?')) : '';
+      }},
+    }},
+  }},
+}};
+context.globalThis = context;
+vm.createContext(context);
+vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
+
+(async () => {{
+  const app = context.__intusApp();
+  app.authReady = true;
+  app.sessions = [
+    {{ session_id: 's-current', topic: '当前会话' }},
+    {{ session_id: 's-other', topic: '其他会话' }},
+  ];
+  app.filteredSessions = app.sessions.slice();
+  app.currentView = 'interview';
+  app.currentSession = {{ session_id: 's-current', topic: '当前会话' }};
+  app.sessionToDelete = 's-current';
+  app.showDeleteModal = true;
+  app.apiCall = async (path, options = {{}}) => {{
+    if (path !== '/sessions/s-current' || options.method !== 'DELETE') {{
+      throw new Error(`unexpected api call: ${{path}} ${{options.method || ''}}`);
+    }}
+    return {{ success: true }};
+  }};
+  app.filterSessions = function () {{
+    this.filteredSessions = this.sessions.slice();
+  }};
+  app.refreshSessionsView = function () {{
+    this.refreshSessionsCalled = true;
+  }};
+  app.showToast = function (message, type) {{
+    this.lastToast = {{ message, type }};
+  }};
+  app.clearInterviewLoadingState = function () {{
+    this.clearInterviewLoadingStateCalled = true;
+  }};
+  app.resetReportGenerationFeedback = function () {{
+    this.resetReportGenerationFeedbackCalled = true;
+  }};
+  app.abortQuestionRequest = function () {{
+    this.abortQuestionRequestCalled = true;
+  }};
+  app.stopQuestionRequestGuard = function () {{
+    this.stopQuestionRequestGuardCalled = true;
+  }};
+  app.stopThinkingPolling = function () {{
+    this.stopThinkingPollingCalled = true;
+  }};
+  app.stopWebSearchPolling = function () {{
+    this.stopWebSearchPollingCalled = true;
+  }};
+  app.scheduleAppShellSnapshotPersist = function () {{
+    this.snapshotScheduled = true;
+  }};
+
+  await app.deleteSession();
+
+  const result = {{
+    currentView: app.currentView,
+    currentSession: app.currentSession,
+    sessionIds: app.sessions.map(session => session.session_id),
+    showDeleteModal: app.showDeleteModal,
+    sessionToDelete: app.sessionToDelete,
+    route: context.window.history.replaced.at(-1) || '',
+    refreshSessionsCalled: Boolean(app.refreshSessionsCalled),
+    clearInterviewLoadingStateCalled: Boolean(app.clearInterviewLoadingStateCalled),
+    resetReportGenerationFeedbackCalled: Boolean(app.resetReportGenerationFeedbackCalled),
+    snapshotScheduled: Boolean(app.snapshotScheduled),
+    lastToast: app.lastToast,
+  }};
+
+  if (
+    result.currentView !== 'sessions'
+    || result.currentSession !== null
+    || result.sessionIds.includes('s-current')
+    || result.showDeleteModal !== false
+    || result.sessionToDelete !== null
+    || result.route.includes('session=')
+    || !result.refreshSessionsCalled
+    || !result.clearInterviewLoadingStateCalled
+    || !result.resetReportGenerationFeedbackCalled
+    || !result.snapshotScheduled
+    || result.lastToast?.type !== 'success'
+  ) {{
+    throw new Error(JSON.stringify(result));
+  }}
+}})().catch(error => {{
+  console.error(error && error.stack ? error.stack : error);
+  process.exit(1);
+}});
+"""
+        completed = subprocess.run(
+            ["node", "-e", script],
+            cwd=ROOT_DIR,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        self.assertEqual(
+            completed.returncode,
+            0,
+            msg=f"stdout:\\n{completed.stdout}\\nstderr:\\n{completed.stderr}",
+        )
 
     def test_agent_guardrails_suite_definitions_cover_core_invariants(self):
         minimal_cases = agent_guardrails.resolve_suite_cases("minimal")

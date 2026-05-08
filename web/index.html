@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260508-workbench-quote-carousel-v3">
+    <link rel="stylesheet" href="styles.css?v=20260509-workbench-manus-composer-v3">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -1316,28 +1316,36 @@
                     <section class="dv-workbench-launcher">
                         <div class="dv-workbench-main">
                             <div class="dv-workbench-heading">
-                                <p class="dv-workbench-subtitle">把一个业务问题交给 Intus</p>
+                                <p class="dv-workbench-subtitle">和 Intus 一起好好谈谈</p>
                             </div>
                             <form class="dv-workbench-command" @submit.prevent="openWorkbenchSessionComposer('', { preserveTopic: true })">
                                 <div class="dv-workbench-command-input">
-                                    <input type="text"
-                                           data-workbench-task-input
-                                           x-model="newSessionTopic"
-                                           @input="onTopicInput()"
-                                           :placeholder="getTopicPlaceholder()"
-                                           class="dv-workbench-task-input"
-                                           autocomplete="off">
+                                    <textarea rows="2"
+                                              data-workbench-task-input
+                                              x-model="newSessionTopic"
+                                              @input="onTopicInput()"
+                                              @keydown.enter.exact.prevent="newSessionTopic.trim() && !loading && openWorkbenchSessionComposer('', { preserveTopic: true })"
+                                              :placeholder="getTopicPlaceholder()"
+                                              class="dv-workbench-task-input"
+                                              autocomplete="off"></textarea>
                                 </div>
-                                <button type="submit"
-                                        :disabled="!newSessionTopic.trim() || loading"
-                                        :class="newSessionTopic.trim() && !loading ? 'btn-sage-blue text-white cursor-pointer' : 'report-action-disabled cursor-not-allowed'"
-                                        class="dv-workbench-submit">
-                                    <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
-                                        <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
-                                    </svg>
-                                    <span x-text="loading ? '创建中...' : '开始访谈'"></span>
-                                </button>
+                                <div class="dv-workbench-command-toolbar" aria-label="访谈操作">
+                                    <span class="dv-workbench-command-spacer" aria-hidden="true"></span>
+                                    <button type="submit"
+                                            :disabled="!newSessionTopic.trim() || loading"
+                                            :aria-label="loading ? '创建中' : '开始访谈'"
+                                            :class="newSessionTopic.trim() && !loading ? 'btn-sage-blue text-white cursor-pointer' : 'report-action-disabled cursor-not-allowed'"
+                                            class="dv-workbench-submit dv-workbench-submit-icon">
+                                        <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+                                            <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
+                                        </svg>
+                                        <svg x-show="!loading" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0-6 6m6-6 6 6"/>
+                                        </svg>
+                                        <span class="sr-only" x-text="loading ? '创建中' : '开始访谈'"></span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </section>

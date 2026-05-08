@@ -761,11 +761,18 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("toggleSessionListOptions()", index_html)
         self.assertIn("显示方式", index_html)
         self.assertIn("排序", index_html)
+        self.assertIn("M5 7h14M5 12h10M5 17h6", index_html)
         self.assertIn("session-actions-menu", index_html)
         self.assertIn("confirmDeleteSession(session.session_id)", index_html)
+        self.assertIn("dv-sidebar-powered", index_html)
+        self.assertIn("© Intus 见真", index_html)
+        self.assertIn("产品反馈", index_html)
         self.assertNotIn("enterSessionBatchMode()", index_html)
         self.assertNotIn("openBatchDeleteModal('sessions')", index_html)
         self.assertNotIn(">会话列表</h3>", index_html)
+        self.assertNotIn("Powered By Intus Team", index_html)
+        self.assertNotIn("M12 3v3m0 12v3m9-9h-3", index_html)
+        self.assertNotIn("<footer class=\"bg-white border-t border-gray-200 py-4 mt-auto\">", index_html)
 
     def test_delete_current_session_returns_to_session_home(self):
         if not shutil.which("node"):

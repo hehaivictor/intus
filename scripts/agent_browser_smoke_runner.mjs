@@ -1870,7 +1870,9 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
         throw new Error('侧栏不应继续显示账号卡片');
       }
 
-      await page.locator('.dv-app-sidebar:visible').getByText('Powered By Intus Team', { exact: true }).waitFor({ timeout: 15000 });
+      await page.locator('.dv-app-sidebar:visible').getByText('© Intus 见真', { exact: true }).waitFor({ timeout: 15000 });
+      await page.locator('.dv-app-sidebar:visible').getByText(/^v\d+\.\d+\.\d+$/).waitFor({ timeout: 15000 });
+      await page.locator('.dv-app-sidebar:visible').getByRole('link', { name: '产品反馈', exact: true }).waitFor({ timeout: 15000 });
       const settingsIconBox = await page.locator('button[aria-label="账号与外观设置"]:visible svg').first().boundingBox();
       if (!settingsIconBox || settingsIconBox.width < 19 || settingsIconBox.height < 19) {
         throw new Error(`侧栏设置 icon 尺寸偏小: ${JSON.stringify(settingsIconBox)}`);

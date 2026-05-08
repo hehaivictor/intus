@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "c016877",
+  "committedAt": "2026-05-08T16:11:33+08:00",
+  "versionType": "patch",
+  "title": "调整首页视觉布局",
+  "changes": [
+    "样式：将工作台启动区整体下移居中，移除输入框前缀图标。",
+    "交互：将会话显示排序按钮改为三条收窄横线图标。",
+    "页面：把版权版本和产品反馈迁移到侧栏底部，移除主区域底部 footer。",
+    "测试：更新静态断言和浏览器 smoke 对侧栏底部信息的检查。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/index.html",
+    "web/styles.css"
+  ]
+}

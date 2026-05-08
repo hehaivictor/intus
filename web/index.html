@@ -1073,9 +1073,7 @@
                                     aria-haspopup="menu"
                                     :aria-expanded="showSessionListOptions.toString()">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h10m4 0h2M4 17h2m4 0h10"/>
-                                    <circle cx="16" cy="7" r="2" stroke-width="2"/>
-                                    <circle cx="8" cy="17" r="2" stroke-width="2"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14M5 12h10M5 17h6"/>
                                 </svg>
                             </button>
                             <div x-cloak
@@ -1174,7 +1172,17 @@
                                 <circle cx="15" cy="16" r="2" stroke-width="2"/>
                             </svg>
                         </button>
-                        <span class="dv-sidebar-powered">Powered By Intus Team</span>
+                        <span class="dv-sidebar-powered">
+                            <span>© Intus 见真</span>
+                            <span class="dv-sidebar-powered-separator">|</span>
+                            <span x-text="`v${appVersion}`"></span>
+                            <span class="dv-sidebar-powered-separator">|</span>
+                            <a href="https://ncn0qgc0e3lv.feishu.cn/share/base/form/shrcnlnObpoyYMbFW1YMasLbZad"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                产品反馈
+                            </a>
+                        </span>
                         <div x-cloak
                              x-show="showAccountMenu"
                              x-transition:enter="transition ease-out duration-200"
@@ -1271,9 +1279,6 @@
                             </div>
                             <form class="dv-workbench-command" @submit.prevent="openWorkbenchSessionComposer('', { preserveTopic: true })">
                                 <div class="dv-workbench-command-input">
-                                    <svg class="w-5 h-5 text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636"/>
-                                    </svg>
                                     <input type="text"
                                            data-workbench-task-input
                                            x-model="newSessionTopic"
@@ -6630,22 +6635,6 @@
                 </template>
             </div>
         </div>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
-            <div class="max-w-7xl mx-auto px-4 text-center text-xs sm:text-sm text-muted">
-                <span>© Intus 见真</span>
-                <span class="mx-2">|</span>
-                <span x-text="`v${appVersion}`"></span>
-                <span class="mx-2">|</span>
-                <a href="https://ncn0qgc0e3lv.feishu.cn/share/base/form/shrcnlnObpoyYMbFW1YMasLbZad"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="text-primary hover:underline cursor-pointer">
-                    <span>产品反馈</span>
-                </a>
-            </div>
-        </footer>
     </div>
 
     <!-- 前端配置文件 -->

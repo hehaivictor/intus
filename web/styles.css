@@ -210,6 +210,11 @@ body {
 
 .dv-workbench-shell {
     width: 100%;
+    min-height: calc(100vh - 9rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: clamp(5rem, 12vh, 9rem);
 }
 
 .dv-app-shell {
@@ -634,11 +639,31 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
 }
 
 .dv-sidebar-powered {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.18rem 0.38rem;
+    min-width: 0;
     color: var(--dv-color-text-muted);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 560;
     line-height: 1.35;
-    white-space: nowrap;
+}
+
+.dv-sidebar-powered a {
+    color: var(--dv-color-text-secondary);
+    text-decoration: none;
+}
+
+.dv-sidebar-powered a:hover,
+.dv-sidebar-powered a:focus-visible {
+    color: var(--dv-color-text-primary);
+    text-decoration: underline;
+    outline: none;
+}
+
+.dv-sidebar-powered-separator {
+    color: #D4D4D8;
 }
 
 .dv-sidebar-account {
@@ -1518,6 +1543,7 @@ html[data-theme="light"] .dv-library-type {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
 .dv-workbench-main {
@@ -1526,7 +1552,7 @@ html[data-theme="light"] .dv-library-type {
     align-items: center;
     justify-content: center;
     width: min(100%, 64rem);
-    min-height: 19rem;
+    min-height: 22rem;
     padding: 2.25rem 0;
     text-align: center;
 }
@@ -1576,7 +1602,6 @@ html[data-theme="light"] .dv-library-type {
 .dv-workbench-command-input {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     min-width: 0;
     padding-left: 0.75rem;
 }
@@ -1753,6 +1778,11 @@ html[data-theme="light"] .dv-library-type {
 }
 
 @media (max-width: 900px) {
+    .dv-workbench-shell {
+        min-height: calc(100vh - 8rem);
+        padding-bottom: clamp(3rem, 8vh, 6rem);
+    }
+
     .dv-workbench-side {
         align-self: stretch;
     }
@@ -1768,6 +1798,12 @@ html[data-theme="light"] .dv-library-type {
 }
 
 @media (max-width: 640px) {
+    .dv-workbench-shell {
+        min-height: auto;
+        justify-content: flex-start;
+        padding-bottom: 2rem;
+    }
+
     .dv-workbench-main {
         min-height: auto;
         padding-top: 0.5rem;

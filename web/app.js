@@ -152,94 +152,6 @@ function intusApp() {
         ],
         systemThemeMedia: null,
         systemThemeListener: null,
-        showGuide: false,
-        guideStepIndex: 0,
-        hasSeenGuide: false,
-        guideSpotlightStyle: '',
-        guideCardStyle: '',
-        guideCloseHintLastAt: 0,
-        guideHighlightedEl: null,
-        guideResizeObserver: null,
-        guideObservedEl: null,
-        guideObservedModal: null,
-        guideSteps: [
-            {
-                id: 'new-session',
-                selector: '[data-guide="guide-new-session"]',
-                title: '第一步：创建一次访谈',
-                body: '点击新建访谈，开始第一次调研。',
-                cta: '开始',
-                onEnter: function () {
-                    this.currentView = 'sessions';
-                },
-                onNext: function () {
-                    this.resetScenarioSelection();
-                    this.showNewSessionModal = true;
-                }
-            },
-            {
-                id: 'topic',
-                selector: '[data-guide="guide-topic"]',
-                title: '第二步：一句话目标',
-                body: '只需一句话说明目标即可开始。',
-                cta: '下一步',
-                onEnter: function () {
-                    if (!this.showNewSessionModal) {
-                        this.resetScenarioSelection();
-                        this.showNewSessionModal = true;
-                    }
-                    this.$nextTick(() => {
-                        const el = document.querySelector('[data-guide="guide-topic"]');
-                        if (el) el.focus();
-                    });
-                },
-                onNext: function () {
-                    if (!this.newSessionTopic.trim()) {
-                        this.showToast('请先输入一句话目标', 'warning');
-                        const el = document.querySelector('[data-guide="guide-topic"]');
-                        if (el) el.focus();
-                        return false;
-                    }
-                    return true;
-                }
-            },
-            {
-                id: 'scenario',
-                selector: '[data-guide="guide-scenario"]',
-                title: '第三步：选择场景',
-                body: '选一个场景，问题会自动贴合行业语境。',
-                cta: '下一步',
-                onEnter: function () {
-                    if (!this.showNewSessionModal) {
-                        this.resetScenarioSelection();
-                        this.showNewSessionModal = true;
-                    }
-                }
-            },
-            {
-                id: 'start',
-                selector: '[data-guide="guide-start"]',
-                title: '最终确认',
-                body: '确认无误后，点击开始进入访谈。',
-                cta: '开始访谈',
-                onEnter: function () {
-                    if (!this.showNewSessionModal) {
-                        this.resetScenarioSelection();
-                        this.showNewSessionModal = true;
-                    }
-                },
-                onNext: async function () {
-                    if (!this.newSessionTopic.trim()) {
-                        this.showToast('请先输入一句话目标', 'warning');
-                        return false;
-                    }
-                    await this.createNewSession();
-                    this.completeGuide();
-                    return false;
-                }
-            }
-        ],
-        guideStepTotal: 3,
 
         // 服务状态
         serverStatus: null,
@@ -1276,7 +1188,7 @@ function intusApp() {
                 return;
             }
             if (action === 'help') {
-                window.location.href = 'help.html';
+                this.openUrl('help.html');
                 return;
             }
             if (action === 'session' && sessionId) {
@@ -2825,7 +2737,6 @@ function intusApp() {
                 '--dv-z-dropdown': Number.isFinite(tokens?.zIndex?.dropdown) ? String(tokens.zIndex.dropdown) : null,
                 '--dv-z-modal': Number.isFinite(tokens?.zIndex?.modal) ? String(tokens.zIndex.modal) : null,
                 '--dv-z-toast': Number.isFinite(tokens?.zIndex?.toast) ? String(tokens.zIndex.toast) : null,
-                '--dv-z-guide': Number.isFinite(tokens?.zIndex?.guide) ? String(tokens.zIndex.guide) : null,
                 '--dv-duration-fast': Number.isFinite(motion?.durations?.fast) ? `${motion.durations.fast}ms` : null,
                 '--dv-duration-base': Number.isFinite(presetMotion?.durations?.base)
                     ? `${presetMotion.durations.base}ms`
@@ -3178,172 +3089,6 @@ function intusApp() {
             }
             return false;
         },
-        initGuide() {
-            const params = new URLSearchParams(window.location.search);
-            const forced = params.get('guide') === '1';
-            this.hasSeenGuide = localStorage.getItem('intus_guide_seen') === 'true';
-            if (forced || !this.hasSeenGuide) {
-                this.openGuide();
-            }
-            if (forced) {
-                params.delete('guide');
-                const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-                window.history.replaceState({}, '', newUrl);
-            }
-        },
-        openGuide() {
-            this.showGuide = true;
-            this.guideStepIndex = 0;
-            this.guideCloseHintLastAt = 0;
-            this.runGuideStep();
-        },
-        exitGuide() {
-            this.clearGuideHighlight();
-            this.stopGuideObserver();
-            this.showGuide = false;
-            this.guideSpotlightStyle = '';
-            this.guideCardStyle = '';
-            this.hasSeenGuide = true;
-            localStorage.setItem('intus_guide_seen', 'true');
-        },
-        completeGuide() {
-            this.clearGuideHighlight();
-            this.stopGuideObserver();
-            this.showGuide = false;
-            this.guideSpotlightStyle = '';
-            this.guideCardStyle = '';
-            this.hasSeenGuide = true;
-            localStorage.setItem('intus_guide_seen', 'true');
-        },
-        async nextGuideStep() {
-            const step = this.guideSteps[this.guideStepIndex];
-            if (step?.onNext) {
-                const result = await step.onNext.call(this);
-                if (result === false) return;
-            }
-            if (this.guideStepIndex < this.guideSteps.length - 1) {
-                this.guideStepIndex += 1;
-                this.runGuideStep();
-            } else {
-                this.completeGuide();
-            }
-        },
-        prevGuideStep() {
-            if (this.guideStepIndex > 0) {
-                this.guideStepIndex -= 1;
-                this.runGuideStep();
-            }
-        },
-        runGuideStep() {
-            if (!this.showGuide) return;
-            const step = this.guideSteps[this.guideStepIndex];
-            if (!step) return;
-            if (step.onEnter) {
-                step.onEnter.call(this);
-            }
-            this.$nextTick(() => {
-                this.scrollGuideTarget();
-                this.waitForGuideTarget();
-            });
-        },
-        scrollGuideTarget() {
-            const step = this.guideSteps[this.guideStepIndex];
-            const el = step ? document.querySelector(step.selector) : null;
-            if (el && typeof el.scrollIntoView === 'function') {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-            }
-        },
-        waitForGuideTarget(attempt = 0) {
-            if (!this.showGuide) return;
-            const step = this.guideSteps[this.guideStepIndex];
-            const el = step ? document.querySelector(step.selector) : null;
-            if (!el && attempt < 20) {
-                setTimeout(() => this.waitForGuideTarget(attempt + 1), 200);
-                return;
-            }
-            if (!el) {
-                this.exitGuide();
-                return;
-            }
-            this.updateGuideTarget();
-        },
-        updateGuideTarget() {
-            if (!this.showGuide) return;
-            const step = this.guideSteps[this.guideStepIndex];
-            const el = step ? document.querySelector(step.selector) : null;
-            if (!el) {
-                this.clearGuideHighlight();
-                this.guideSpotlightStyle = 'display:none;';
-                this.guideCardStyle = 'opacity:0;';
-                return;
-            }
-            this.setGuideHighlight(el);
-            this.startGuideObserver(el);
-            const rect = el.getBoundingClientRect();
-            const padding = 10;
-            const top = Math.max(rect.top - padding, 6);
-            const left = Math.max(rect.left - padding, 6);
-            const width = Math.min(rect.width + padding * 2, window.innerWidth - 12);
-            const height = Math.min(rect.height + padding * 2, window.innerHeight - 12);
-            this.guideSpotlightStyle = `top:${top}px;left:${left}px;width:${width}px;height:${height}px;`;
-
-            const cardWidth = 320;
-            const cardHeight = 160;
-            let cardTop = rect.bottom + 14;
-            if (cardTop + cardHeight > window.innerHeight) {
-                cardTop = rect.top - cardHeight - 14;
-            }
-            if (cardTop < 12) cardTop = 12;
-            let cardLeft = rect.left;
-            if (cardLeft + cardWidth > window.innerWidth - 12) {
-                cardLeft = window.innerWidth - cardWidth - 12;
-            }
-            if (cardLeft < 12) cardLeft = 12;
-            this.guideCardStyle = `top:${cardTop}px;left:${cardLeft}px;width:${cardWidth}px;`;
-        },
-        setGuideHighlight(el) {
-            if (this.guideHighlightedEl === el) return;
-            this.clearGuideHighlight();
-            this.guideHighlightedEl = el;
-            el.classList.add('guide-highlight-target');
-        },
-        clearGuideHighlight() {
-            if (this.guideHighlightedEl) {
-                this.guideHighlightedEl.classList.remove('guide-highlight-target');
-                this.guideHighlightedEl = null;
-            }
-        },
-        startGuideObserver(el) {
-            const modalEl = document.querySelector('[data-guide="guide-modal"]');
-            if (!this.guideResizeObserver) {
-                this.guideResizeObserver = new ResizeObserver(() => {
-                    this.updateGuideTarget();
-                });
-            }
-            if (this.guideObservedEl !== el) {
-                if (this.guideObservedEl) {
-                    this.guideResizeObserver.unobserve(this.guideObservedEl);
-                }
-                this.guideResizeObserver.observe(el);
-                this.guideObservedEl = el;
-            }
-            if (modalEl && this.guideObservedModal !== modalEl) {
-                if (this.guideObservedModal) {
-                    this.guideResizeObserver.unobserve(this.guideObservedModal);
-                }
-                this.guideResizeObserver.observe(modalEl);
-                this.guideObservedModal = modalEl;
-            }
-        },
-        stopGuideObserver() {
-            if (this.guideResizeObserver) {
-                this.guideResizeObserver.disconnect();
-                this.guideResizeObserver = null;
-            }
-            this.guideObservedEl = null;
-            this.guideObservedModal = null;
-        },
-
         // 加载版本信息
         async loadVersionInfo() {
             try {
@@ -3584,14 +3329,6 @@ function intusApp() {
         },
 
         attemptCloseNewSessionModal() {
-            if (this.showGuide) {
-                const now = Date.now();
-                if (now - this.guideCloseHintLastAt >= 2000) {
-                    this.guideCloseHintLastAt = now;
-                    this.showToast('操作指引进行中，请先完成步骤或点击“跳过”', 'info');
-                }
-                return;
-            }
             this.showNewSessionModal = false;
         },
 

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "94bf9f4",
+  "committedAt": "2026-05-09T00:36:36+08:00",
+  "versionType": "major",
+  "title": "精简产品指引与帮助入口",
+  "changes": [
+    "精简：移除快速指引弹层、介绍页冗余入口和帮助页顶部操作按钮。",
+    "优化：帮助入口改为新标签打开，避免替换当前工作台页面。",
+    "测试：补充静态断言并更新 browser smoke 覆盖。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/app.js",
+    "web/app_modules/auth_license_state.js",
+    "web/help.html",
+    "web/index.html",
+    "web/intro.html",
+    "web/site-config.js",
+    "web/styles.css"
+  ]
+}

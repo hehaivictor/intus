@@ -745,7 +745,7 @@
                             <span class="hidden sm:inline">报告</span>
                             <span class="sm:hidden">报</span>
                         </button>
-                        <button @click="window.location.href='help.html'"
+                        <button @click="openUrl('help.html')"
                                 aria-label="帮助"
                                 :class="getHeaderNavClass(false)"
                                 class="px-3 md:px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm font-medium whitespace-nowrap">
@@ -1099,7 +1099,7 @@
                             <span class="dv-side-nav-icon" aria-hidden="true">▤</span>
                             <span>报告</span>
                         </button>
-                        <button type="button" @click="window.location.href='help.html'" class="dv-side-nav-item">
+                        <button type="button" @click="openUrl('help.html')" class="dv-side-nav-item">
                             <span class="dv-side-nav-icon" aria-hidden="true">?</span>
                             <span>帮助</span>
                         </button>
@@ -1369,25 +1369,6 @@
                             </template>
                         </div>
                     </section>
-                </div>
-            </template>
-
-            <!-- ========== 快速指引（真实页面引导） ========== -->
-            <template x-if="showGuide">
-                <div class="guide-backdrop" @click.self="exitGuide()" @resize.window="updateGuideTarget()" @scroll.window="updateGuideTarget()">
-                    <div class="guide-spotlight" :style="guideSpotlightStyle"></div>
-                    <div class="guide-card" :style="guideCardStyle">
-                        <div class="guide-header">
-                            <div class="guide-step" x-show="guideStepIndex < guideStepTotal">步骤 <span x-text="guideStepIndex + 1"></span>/<span x-text="guideStepTotal"></span></div>
-                            <button class="guide-exit" @click="exitGuide()" x-show="guideStepIndex < guideStepTotal">跳过</button>
-                        </div>
-                        <h3 class="guide-title" x-text="guideSteps[guideStepIndex].title"></h3>
-                        <p class="guide-body" x-text="guideSteps[guideStepIndex].body"></p>
-                        <div class="guide-actions" :class="guideStepIndex >= guideStepTotal ? 'guide-actions--final' : ''">
-                            <button class="guide-btn ghost" @click="prevGuideStep()" :disabled="guideStepIndex === 0" x-show="guideStepIndex < guideStepTotal">上一步</button>
-                            <button class="guide-btn primary" @click="nextGuideStep()" x-text="guideSteps[guideStepIndex].cta"></button>
-                        </div>
-                    </div>
                 </div>
             </template>
 

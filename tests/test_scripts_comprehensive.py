@@ -832,6 +832,40 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("dv-report-back-btn", index_html)
         self.assertNotIn(".dv-report-back-btn", styles_css)
 
+    def test_quick_guide_is_removed_from_product_entry(self):
+        app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        intro_html = (ROOT_DIR / "web" / "intro.html").read_text(encoding="utf-8")
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
+
+        self.assertNotIn("快速指引", index_html)
+        self.assertNotIn("快速指引", intro_html)
+        self.assertNotIn("直接进入产品", intro_html)
+        self.assertNotIn("返回应用", intro_html)
+        self.assertNotIn("guide=1", intro_html)
+        self.assertNotIn("showGuide", index_html)
+        self.assertNotIn("showGuide", app_js)
+        self.assertNotIn("initGuide", app_js)
+        self.assertNotIn("intus_guide_seen", app_js)
+        self.assertNotIn(".guide-backdrop", styles_css)
+        self.assertNotIn("--dv-z-guide", styles_css)
+
+    def test_help_navigation_opens_new_tab(self):
+        app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn("@click=\"openUrl('help.html')\"", index_html)
+        self.assertIn("this.openUrl('help.html');", app_js)
+        self.assertNotIn("window.location.href='help.html'", index_html)
+        self.assertNotIn("window.location.href = 'help.html';", app_js)
+
+    def test_help_page_removes_top_action_buttons(self):
+        help_html = (ROOT_DIR / "web" / "help.html").read_text(encoding="utf-8")
+
+        self.assertNotIn("产品介绍", help_html)
+        self.assertNotIn("返回工作台", help_html)
+        self.assertNotIn("top-actions", help_html)
+
     def test_delete_current_session_returns_to_session_home(self):
         if not shutil.which("node"):
             self.skipTest("node runtime is required for frontend state regression")

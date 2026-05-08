@@ -560,7 +560,6 @@
             if (this.checkFirstVisit()) {
                 return;
             }
-            this.initGuide();
             await this.loadScenarios();
             await this.consumeInitialEntryRoute();
             const pendingAppShellRestore = this.consumeAppShellRestoreTarget();

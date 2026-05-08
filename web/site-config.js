@@ -110,8 +110,7 @@ const SITE_CONFIG = {
     "zIndex": {
       "dropdown": 40,
       "modal": 50,
-      "toast": 60,
-      "guide": 70
+      "toast": 60
     }
   },
   "visualPresets": {

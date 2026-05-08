@@ -1442,7 +1442,6 @@ async function runWithPage(browser, baseUrl, initScript, callback, initArg = und
   });
   await context.addInitScript(() => {
     localStorage.setItem('intus_intro_seen', 'true');
-    localStorage.setItem('intus_guide_seen', 'true');
   });
   if (initScript) {
     await context.addInitScript(initScript, initArg);
@@ -1778,16 +1777,15 @@ async function scenarioHelpDocs(browser, baseUrl) {
         if (progressCardCount > 0) {
           throw new Error('帮助页侧栏不应继续显示阅读进度卡片');
         }
-        const primaryButton = page.locator('.top-actions .btn.primary:visible').first();
-        await expectNeutralControl(primaryButton, `帮助页返回工作台按钮/${mode}`, {
-          expectDark: mode === 'light',
-          expectLight: mode === 'dark',
-        });
+        const topActionCount = await page.locator('.top-actions:visible, a:visible', { hasText: /产品介绍|返回工作台/ }).count();
+        if (topActionCount > 0) {
+          throw new Error(`帮助页顶部不应继续展示产品介绍或返回工作台按钮: ${topActionCount}`);
+        }
       },
       mode,
     );
   }
-  return '标题与帮助文档主文案可见，侧栏阅读进度和蓝色主按钮已移除';
+  return '标题与帮助文档主文案可见，侧栏阅读进度和顶部操作按钮已移除';
 }
 
 async function scenarioSolutionShare(browser, baseUrl) {
@@ -2824,7 +2822,6 @@ async function scenarioResponsiveThemeCompatibility(browser, baseUrl) {
         (mode) => {
           localStorage.setItem('intus_theme_mode', mode);
           localStorage.setItem('intus_intro_seen', 'true');
-          localStorage.setItem('intus_guide_seen', 'true');
         },
         async (page) => {
           const prefix = `${theme.label}/${viewport.label}`;

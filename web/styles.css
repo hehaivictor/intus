@@ -213,8 +213,9 @@ body {
     min-height: calc(100vh - 9rem);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding-bottom: clamp(5rem, 12vh, 9rem);
+    justify-content: flex-start;
+    padding-top: clamp(4rem, 7vh, 5.5rem);
+    padding-bottom: 3rem;
 }
 
 .dv-app-shell {
@@ -1552,8 +1553,8 @@ html[data-theme="light"] .dv-library-type {
     align-items: center;
     justify-content: center;
     width: min(100%, 64rem);
-    min-height: 22rem;
-    padding: 2.25rem 0;
+    min-height: 18rem;
+    padding: 1.75rem 0;
     text-align: center;
 }
 
@@ -1780,7 +1781,8 @@ html[data-theme="light"] .dv-library-type {
 @media (max-width: 900px) {
     .dv-workbench-shell {
         min-height: calc(100vh - 8rem);
-        padding-bottom: clamp(3rem, 8vh, 6rem);
+        padding-top: clamp(3rem, 8vh, 4.5rem);
+        padding-bottom: 2.5rem;
     }
 
     .dv-workbench-side {
@@ -1801,6 +1803,7 @@ html[data-theme="light"] .dv-library-type {
     .dv-workbench-shell {
         min-height: auto;
         justify-content: flex-start;
+        padding-top: 1.5rem;
         padding-bottom: 2rem;
     }
 

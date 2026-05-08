@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "d0d1102",
+  "committedAt": "2026-05-08T16:32:10+08:00",
+  "versionType": "patch",
+  "title": "上移首页启动区位置",
+  "changes": [
+    "优化：首页工作台启动区改为上方偏中锚定，接近 Manus 对话框高度。",
+    "样式：收紧启动区最小高度与上下留白，保留移动端靠上展示。"
+  ],
+  "changedFiles": [
+    "web/styles.css"
+  ]
+}

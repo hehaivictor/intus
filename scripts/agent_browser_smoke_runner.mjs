@@ -1834,6 +1834,28 @@ async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
       await activeGroupButton.waitFor({ timeout: 15000 });
       await expectNeutralControl(activeGroupButton, '侧栏会话显示方式选中按钮');
 
+      await page.locator('.dv-workbench-quote-carousel:visible').waitFor({ timeout: 15000 });
+      const carouselBox = await page.locator('.dv-workbench-quote-carousel:visible').boundingBox();
+      const viewportSize = page.viewportSize();
+      if (!carouselBox || !viewportSize || carouselBox.y + carouselBox.height < viewportSize.height - 96) {
+        throw new Error(`工作台底部名言轮播应贴近首屏底部: box=${JSON.stringify(carouselBox)} viewport=${JSON.stringify(viewportSize)}`);
+      }
+      const quoteTextAlign = await page.locator('.dv-workbench-quote-text:visible').evaluate((el) => getComputedStyle(el).textAlign);
+      if (quoteTextAlign !== 'center') {
+        throw new Error(`名言正文应居中展示: ${quoteTextAlign}`);
+      }
+      const quoteSourceAlign = await page.locator('.dv-workbench-quote-source:visible').evaluate((el) => getComputedStyle(el).textAlign);
+      if (quoteSourceAlign !== 'right') {
+        throw new Error(`名言出处应在正文下方偏右展示: ${quoteSourceAlign}`);
+      }
+      const quoteDotCount = await page.locator('.dv-workbench-quote-dot').count();
+      if (quoteDotCount !== 10) {
+        throw new Error(`工作台底部名言轮播应展示 10 个滚动点: ${quoteDotCount}`);
+      }
+      await page.locator('.dv-workbench-quote-card:visible', { hasText: '知人者智，自知者明' }).waitFor({ timeout: 15000 });
+      await page.getByRole('tab', { name: '切换名言 2', exact: true }).click({ timeout: 15000 });
+      await page.locator('.dv-workbench-quote-card:visible', { hasText: '凡事预则立，不预则废' }).waitFor({ timeout: 15000 });
+
       const topic = '数字化营销战略';
       await taskInput.fill(topic);
       await page.getByRole('button', { name: '开始访谈', exact: true }).click({ timeout: 15000 });
@@ -1857,6 +1879,28 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
     async (page) => {
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('[data-workbench-task-input]', { timeout: 15000 });
+      const sidebarBox = await page.locator('.dv-app-sidebar:visible').first().boundingBox();
+      if (!sidebarBox || sidebarBox.x > 2) {
+        throw new Error(`侧栏应贴近窗口左侧展示: ${JSON.stringify(sidebarBox)}`);
+      }
+      await page.locator('.dv-app-sidebar .dv-sidebar-brand-row:visible').waitFor({ timeout: 15000 });
+      await page.locator('.dv-app-sidebar .dv-sidebar-brand-row:visible').getByText('Intus', { exact: true }).waitFor({ timeout: 15000 });
+      const collapseButton = page.getByRole('button', { name: '收起侧边栏', exact: true });
+      await collapseButton.click({ timeout: 15000 });
+      await page.waitForTimeout(260);
+      const collapsedSidebarBox = await page.locator('.dv-app-sidebar:visible').first().boundingBox();
+      if (!collapsedSidebarBox || collapsedSidebarBox.width >= sidebarBox.width - 80) {
+        throw new Error(`侧栏折叠后宽度应明显收窄: before=${JSON.stringify(sidebarBox)} after=${JSON.stringify(collapsedSidebarBox)}`);
+      }
+      const collapsedBrandButton = page.getByRole('button', { name: '展开侧边栏', exact: true });
+      const collapsedToggleCount = await page.locator('.dv-app-shell.is-sidebar-collapsed .dv-sidebar-collapse-toggle:visible').count();
+      if (collapsedToggleCount > 0) {
+        throw new Error('折叠后不应继续显示独立侧栏收起按钮，应由 logo hover 切换为展开入口');
+      }
+      await collapsedBrandButton.hover({ timeout: 15000 });
+      await page.locator('.dv-app-shell.is-sidebar-collapsed .dv-sidebar-brand-open-icon:visible').waitFor({ timeout: 15000 });
+      await collapsedBrandButton.click({ timeout: 15000 });
+      await page.waitForTimeout(260);
       await page.getByText('所有会话', { exact: true }).waitFor({ timeout: 15000 });
       await page.locator('.dv-sidebar-session-item', { hasText: '售后回访试点会话' }).first().waitFor({ timeout: 15000 });
 

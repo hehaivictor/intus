@@ -116,6 +116,8 @@ function intusApp() {
         effectiveTheme: 'light',
         visualPreset: (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG?.visualPresets?.default) || 'rational',
         showAccountMenu: false,
+        sidebarCollapsed: false,
+        sidebarCollapsedStorageKey: 'intus_sidebar_collapsed',
         showGlobalSearchModal: false,
         globalSearchQuery: '',
         globalSearchLoading: false,
@@ -419,6 +421,7 @@ function intusApp() {
             this.visualPreset = this.resolveVisualPreset();
             this.applyDesignTokens('system', this.resolveEffectiveTheme('system'));
             this.initTheme();
+            this.initSidebarState();
             this.loadAuthAccountHistory();
             this.readAuthRedirectResult();
             this.registerDialogFocusWatchers();
@@ -3036,6 +3039,30 @@ function intusApp() {
             }
         },
 
+        initSidebarState() {
+            try {
+                this.sidebarCollapsed = localStorage.getItem(this.sidebarCollapsedStorageKey) === 'true';
+            } catch (error) {
+                this.sidebarCollapsed = false;
+            }
+        },
+
+        toggleSidebarCollapsed() {
+            this.sidebarCollapsed = !this.sidebarCollapsed;
+            if (typeof this.closeSessionListOptions === 'function') {
+                this.closeSessionListOptions();
+            }
+            if (typeof this.closeSessionActionsMenu === 'function') {
+                this.closeSessionActionsMenu();
+            }
+            this.showAccountMenu = false;
+            try {
+                localStorage.setItem(this.sidebarCollapsedStorageKey, this.sidebarCollapsed ? 'true' : 'false');
+            } catch (error) {
+                console.warn('保存侧边栏状态失败');
+            }
+        },
+
         resolveEffectiveTheme(mode, preferredDark = null) {
             if (mode === 'light' || mode === 'dark') return mode;
             const matchesDark = preferredDark !== null
@@ -3342,7 +3369,8 @@ function intusApp() {
             if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.quotes?.enabled === false) {
                 return;
             }
-            if (this.quotes.length === 0) {
+            const quoteCount = Math.min(this.quotes.length, 10);
+            if (quoteCount === 0) {
                 return;
             }
 
@@ -3352,10 +3380,27 @@ function intusApp() {
                 : 10000;  // 默认10秒
 
             this.quoteRotationInterval = setInterval(() => {
-                this.currentQuoteIndex = (this.currentQuoteIndex + 1) % this.quotes.length;
-                this.currentQuote = this.quotes[this.currentQuoteIndex].text;
-                this.currentQuoteSource = this.quotes[this.currentQuoteIndex].source;
+                this.applyWorkbenchQuote((this.currentQuoteIndex + 1) % quoteCount);
             }, interval);
+        },
+
+        applyWorkbenchQuote(index) {
+            const quoteCount = Math.min(this.quotes.length, 10);
+            if (quoteCount === 0) {
+                return;
+            }
+            const normalizedIndex = ((Number(index) || 0) % quoteCount + quoteCount) % quoteCount;
+            const quote = this.quotes[normalizedIndex] || {};
+            this.currentQuoteIndex = normalizedIndex;
+            this.currentQuote = quote.text || '';
+            this.currentQuoteSource = quote.source || '';
+        },
+
+        selectWorkbenchQuote(index) {
+            this.applyWorkbenchQuote(index);
+            if (this.quoteRotationInterval) {
+                this.startQuoteRotation();
+            }
         },
 
         // 检查服务器状态

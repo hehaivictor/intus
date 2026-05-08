@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260507-ui-entry-trim-v1">
+    <link rel="stylesheet" href="styles.css?v=20260508-workbench-quote-carousel-v3">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -688,7 +688,8 @@
 <body class="bg-surface-secondary min-h-screen font-sans text-text antialiased pb-safe">
     <div x-data="intusApp()" x-cloak class="min-h-screen flex flex-col" @keydown.window="handleGlobalSearchShortcut($event)">
         <!-- Header -->
-        <header class="bg-surface border-b border-border">
+        <header class="bg-surface border-b border-border"
+                :class="{ 'dv-top-header--workspace': authReady && !licenseChecking && !licenseGateActive }">
             <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-5 flex items-center justify-between">
                 <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" @click="window.location.href='intro.html'" title="了解 Intus">
                     <div class="relative logo-icon" :class="webSearching ? 'logo-searching' : ''">
@@ -1041,8 +1042,46 @@
         </template>
 
         <template x-if="!authChecking && authReady && !licenseChecking && !licenseGateActive">
-            <div class="dv-app-shell">
+            <div class="dv-app-shell" :class="{ 'is-sidebar-collapsed': sidebarCollapsed }">
                 <aside class="dv-app-sidebar" aria-label="主导航">
+                    <div class="dv-sidebar-brand-row">
+                        <button type="button"
+                                class="dv-sidebar-brand"
+                                @click="sidebarCollapsed ? toggleSidebarCollapsed() : window.location.href='intro.html'"
+                                :aria-label="sidebarCollapsed ? '展开侧边栏' : '了解 Intus'"
+                                :title="sidebarCollapsed ? '展开侧边栏' : '了解 Intus'">
+                            <span class="relative logo-icon dv-sidebar-brand-mark" :class="webSearching ? 'logo-searching' : ''">
+                                <span class="dv-sidebar-brand-logo" aria-hidden="true">
+                                    <img class="logo-light" src="logo-light.svg" alt="">
+                                    <img class="logo-dark" src="logo-dark.svg" alt="">
+                                </span>
+                                <span class="dv-sidebar-brand-open-icon" aria-hidden="true">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 5.5h14A1.5 1.5 0 0 1 20.5 7v10A1.5 1.5 0 0 1 19 18.5H5A1.5 1.5 0 0 1 3.5 17V7A1.5 1.5 0 0 1 5 5.5Z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.5 5.5v13M13 9l3 3-3 3"/>
+                                    </svg>
+                                </span>
+                            </span>
+                            <span class="dv-sidebar-brand-copy">
+                                <span class="dv-sidebar-brand-title">
+                                    <span class="brand-title">Intus</span>
+                                    <span class="brand-title-cn">见真</span>
+                                </span>
+                                <span class="dv-sidebar-brand-subtitle">见微知著，真见本质</span>
+                            </span>
+                        </button>
+                        <button type="button"
+                                class="dv-sidebar-collapse-toggle"
+                                @click="toggleSidebarCollapsed()"
+                                :aria-label="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+                                :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+                                :aria-expanded="(!sidebarCollapsed).toString()">
+                            <svg x-show="!sidebarCollapsed" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 5.5h14A1.5 1.5 0 0 1 20.5 7v10A1.5 1.5 0 0 1 19 18.5H5A1.5 1.5 0 0 1 3.5 17V7A1.5 1.5 0 0 1 5 5.5Z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.5 5.5v13M14.5 9l-3 3 3 3"/>
+                            </svg>
+                        </button>
+                    </div>
                     <nav class="dv-side-nav">
                         <button type="button" @click="switchView('sessions')" class="dv-side-nav-item" :class="{ 'is-active': isSessionViewActive() }">
                             <span class="dv-side-nav-icon" aria-hidden="true">⌘</span>
@@ -1308,7 +1347,28 @@
                             </form>
                         </div>
                     </section>
-
+                    <section class="dv-workbench-quote-carousel"
+                             x-show="quotes.length > 0"
+                             x-cloak
+                             aria-label="名人名言轮播">
+                        <article class="dv-workbench-quote-card" :key="`workbench-quote-${currentQuoteIndex}`">
+                            <p class="dv-workbench-quote-text fangsong-quote" x-text="currentQuote"></p>
+                            <p class="dv-workbench-quote-source"
+                               x-show="currentQuoteSource"
+                               x-text="currentQuoteSource"></p>
+                        </article>
+                        <div class="dv-workbench-quote-dots" role="tablist" aria-label="名言切换">
+                            <template x-for="(quote, index) in quotes.slice(0, 10)" :key="`${quote.text}-${index}`">
+                                <button type="button"
+                                        class="dv-workbench-quote-dot"
+                                        :class="{ 'is-active': currentQuoteIndex === index }"
+                                        @click="selectWorkbenchQuote(index)"
+                                        :aria-label="`切换名言 ${index + 1}`"
+                                        :aria-selected="(currentQuoteIndex === index).toString()"
+                                        role="tab"></button>
+                            </template>
+                        </div>
+                    </section>
                 </div>
             </template>
 
@@ -6653,6 +6713,6 @@
     <script src="app_modules/interview_runtime.js?v=20260506-interview-assistant-chat-v1"></script>
     <script src="app_modules/auth_license_state.js?v=20260427-license-benefits-entry-v1"></script>
     <script src="app_modules/admin_center_state.js?v=20260410-admin-center-state-v1"></script>
-    <script src="app.js?v=20260507-ui-entry-trim-v1"></script>
+    <script src="app.js?v=20260508-workbench-quote-carousel-v3"></script>
 </body>
 </html>

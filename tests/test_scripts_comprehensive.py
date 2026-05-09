@@ -885,6 +885,26 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("dv-report-back-btn", index_html)
         self.assertNotIn(".dv-report-back-btn", styles_css)
 
+    def test_report_detail_actions_use_primary_and_overflow_menu(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
+        report_runtime_js = (ROOT_DIR / "web" / "app_modules" / "report_detail_runtime.js").read_text(encoding="utf-8")
+
+        self.assertIn("dv-report-primary-action", index_html)
+        self.assertIn("dv-report-overflow-trigger", index_html)
+        self.assertIn("dv-report-overflow-menu", index_html)
+        self.assertIn("getReportPrimaryActionType()", index_html)
+        self.assertIn("runReportPrimaryAction()", index_html)
+        self.assertIn("hasReportOverflowActions()", index_html)
+        self.assertIn("runReportOverflowAction('quality')", index_html)
+        self.assertIn("runReportOverflowAction('download-md')", index_html)
+        self.assertIn("getReportPrimaryActionType()", report_runtime_js)
+        self.assertIn("runReportPrimaryAction()", report_runtime_js)
+        self.assertIn("hasReportOverflowActions()", report_runtime_js)
+        self.assertIn(".dv-report-overflow-menu", styles_css)
+        self.assertIn(".dv-report-overflow-section-title", styles_css)
+        self.assertNotIn("downloadMenuOpen", index_html)
+
     def test_quick_guide_is_removed_from_product_entry(self):
         app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")

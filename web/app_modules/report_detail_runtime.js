@@ -1375,6 +1375,84 @@
             return `正在生成演示文稿...${progressText}（点击停止）`;
         },
 
+        getReportPrimaryActionType() {
+            if (this.isPresentationEnabled() && this.canGeneratePresentation()) {
+                if (this.isPresentationGeneratingCurrentReport()) {
+                    return 'presentation-stop';
+                }
+                if (this.presentationPdfUrl) {
+                    return 'presentation-view';
+                }
+                return 'presentation-generate';
+            }
+            if (this.hasAnyReportDownloadOption()) {
+                return 'download';
+            }
+            return 'none';
+        },
+
+        getReportPrimaryActionLabel() {
+            const actionType = this.getReportPrimaryActionType();
+            if (actionType === 'presentation-stop') {
+                return this.getPresentationGenerationButtonText();
+            }
+            if (actionType === 'presentation-view') {
+                return '查看演示文稿';
+            }
+            if (actionType === 'presentation-generate') {
+                return '生成演示文稿';
+            }
+            if (actionType === 'download') {
+                return '下载访谈报告';
+            }
+            return '';
+        },
+
+        async runReportPrimaryAction() {
+            const actionType = this.getReportPrimaryActionType();
+            if (actionType === 'presentation-stop') {
+                await this.stopPresentationGeneration();
+                return;
+            }
+            if (actionType === 'presentation-view') {
+                this.openPresentationPdf();
+                return;
+            }
+            if (actionType === 'presentation-generate') {
+                await this.generatePresentation();
+                return;
+            }
+            if (actionType === 'download') {
+                await this.downloadReport('md');
+            }
+        },
+
+        hasReportOverflowActions() {
+            return Boolean(
+                this.canGenerateQualityVariantForSelectedReport()
+                || this.hasAnyReportDownloadOption()
+            );
+        },
+
+        async runReportOverflowAction(action) {
+            const actionName = String(action || '').trim();
+            if (actionName === 'quality') {
+                await this.generateQualityReportVariant();
+                return;
+            }
+            if (actionName === 'download-md') {
+                await this.downloadReport('md');
+                return;
+            }
+            if (actionName === 'download-pdf') {
+                await this.downloadReport('pdf');
+                return;
+            }
+            if (actionName === 'download-docx') {
+                await this.downloadReport('docx');
+            }
+        },
+
         isRetriablePresentationPollingError(error) {
             const payload = error?.payload && typeof error.payload === 'object' ? error.payload : {};
             const errorCode = String(payload.error_code || '').trim().toLowerCase();

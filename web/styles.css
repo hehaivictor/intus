@@ -3237,10 +3237,63 @@ html[data-theme="light"] .dv-library-type {
     flex-wrap: wrap;
     gap: 8px;
     justify-content: flex-end;
+    align-items: center;
 }
 
 .dv-report-toolbar-btn {
     min-height: 40px;
+}
+
+.dv-report-primary-action {
+    min-width: 9.5rem;
+}
+
+.dv-report-overflow-trigger {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+.dv-report-overflow-menu {
+    width: min(16rem, calc(100vw - 2rem));
+}
+
+.dv-report-overflow-section {
+    padding: 0.25rem 0;
+}
+
+.dv-report-overflow-section + .dv-report-overflow-section {
+    border-top: 1px solid #f1f5f9;
+}
+
+.dv-report-overflow-section-title {
+    padding: 0.45rem 0.9rem 0.35rem;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.dv-report-overflow-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 0;
+    background: transparent;
+    padding: 0.6rem 0.9rem;
+    color: #334155;
+    text-align: left;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.dv-report-overflow-item:hover,
+.dv-report-overflow-item:focus-visible {
+    background: #f8fafc;
+    color: #0f172a;
+    outline: none;
 }
 
 .dv-report-header-copy {
@@ -4009,8 +4062,20 @@ html[data-theme="dark"] .dv-report-markdown-body :is(h2, h3).is-highlighted {
         justify-content: stretch;
     }
 
-    .dv-report-toolbar-btn,
+    .dv-report-primary-action {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
     .dv-report-toolbar .relative {
+        flex: 0 0 auto;
+    }
+
+    .dv-report-overflow-menu {
+        right: 0;
+    }
+
+    .dv-report-toolbar-btn:not(.dv-report-overflow-trigger) {
         width: 100%;
     }
 
@@ -5503,6 +5568,18 @@ html[data-theme="dark"] .dv-report-header .dv-popover-panel {
     background: #202024 !important;
     border-color: #3f3f46;
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+}
+
+html[data-theme="dark"] .dv-report-overflow-section + .dv-report-overflow-section {
+    border-color: #34343a;
+}
+
+html[data-theme="dark"] .dv-report-overflow-section-title {
+    color: #8a93a3;
+}
+
+html[data-theme="dark"] .dv-report-overflow-item {
+    color: #d8dee7;
 }
 
 html[data-theme="dark"] .dv-report-header .dv-popover-panel button:hover,

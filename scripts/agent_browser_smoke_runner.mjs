@@ -2455,11 +2455,31 @@ async function scenarioReportDetailFlow(browser, baseUrl) {
       if (redundantBackButtonCount > 0) {
         throw new Error('报告详情不应展示冗余的返回报告列表按钮');
       }
+      const toolbarButtonCount = await page.locator('.dv-report-toolbar button:visible').count();
+      if (toolbarButtonCount > 2) {
+        throw new Error(`报告详情头部操作应收敛为主操作和更多菜单: count=${toolbarButtonCount}`);
+      }
+      const primaryActionCount = await page.locator('.dv-report-primary-action:visible').count();
+      if (primaryActionCount !== 1) {
+        throw new Error(`报告详情应展示一个主操作按钮: count=${primaryActionCount}`);
+      }
+      const overflowTrigger = page.locator('.dv-report-overflow-trigger:visible').first();
+      await overflowTrigger.click({ timeout: 15000 });
+      await page.waitForSelector('.dv-report-overflow-menu:visible', { timeout: 15000 });
+      const overflowMenuText = safeText(await page.locator('.dv-report-overflow-menu:visible').first().textContent());
+      if (!overflowMenuText.includes('下载') || !overflowMenuText.includes('Markdown')) {
+        throw new Error(`报告详情更多菜单应展示下载分组: ${overflowMenuText || '<empty>'}`);
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => {
+        const menu = document.querySelector('.dv-report-overflow-menu');
+        return !menu || window.getComputedStyle(menu).display === 'none';
+      }, null, { timeout: 15000 });
       await page.getByRole('button', { name: '报告', exact: true }).click({ timeout: 15000 });
       await page.waitForSelector('[data-report-key="demo-report"]:visible', { timeout: 15000 });
     },
   );
-  return '可从报告列表进入报告详情，不展示冗余返回按钮，并可通过侧栏报告入口回到列表';
+  return '可从报告列表进入报告详情，报告头部操作已收敛为主操作和更多菜单';
 }
 
 async function scenarioReportDetailRefresh(browser, baseUrl) {

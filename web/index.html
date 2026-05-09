@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260509-workbench-draft-v1">
+    <link rel="stylesheet" href="styles.css?v=20260509-report-actions-v1">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -2720,76 +2720,67 @@
                                     <div class="dv-report-header-top">
                                         <div class="dv-report-toolbar">
                                             <button type="button"
-                                                    x-show="canGenerateQualityVariantForSelectedReport()"
-                                                    @click="generateQualityReportVariant()"
-                                                    :disabled="generatingReport"
-                                                    class="report-action-secondary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                                                <svg x-show="!generatingReport" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
-                                                </svg>
-                                                <svg x-show="generatingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                                                </svg>
-                                                <span>生成精审版</span>
-                                            </button>
-                                            <div class="flex flex-col gap-1" x-show="isPresentationEnabled() && canGeneratePresentation()">
-                                                <button @click="isPresentationGeneratingCurrentReport() ? stopPresentationGeneration() : generatePresentation()"
-                                                        x-show="!presentationPdfUrl"
-                                                        :class="isPresentationGeneratingCurrentReport() ? 'report-action-generate-progressing cursor-wait' : 'report-action-generate cursor-pointer'"
-                                                        class="report-action-progress-shell dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors relative overflow-hidden"
-                                                        :aria-busy="isPresentationGeneratingCurrentReport() ? 'true' : 'false'">
-                                                    <span x-show="isPresentationGeneratingCurrentReport() && isPresentationGenerationProgressReliable()" class="report-action-progress-fill" :style="getPresentationGenerationButtonProgressStyle()" aria-hidden="true"></span>
-                                                    <span class="report-action-progress-content flex items-center justify-center gap-2 leading-5">
-                                                        <svg x-show="!isPresentationGeneratingCurrentReport()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v12H3V3zm0 12l4 6h10l4-6M9 9h6M9 12h6"/>
-                                                        </svg>
-                                                        <svg x-show="isPresentationGeneratingCurrentReport()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                                                        </svg>
-                                                        <span x-text="getPresentationGenerationButtonText()"></span>
-                                                    </span>
-                                                </button>
-                                            </div>
-                                            <button x-show="isPresentationEnabled() && canGeneratePresentation() && presentationPdfUrl && !isPresentationGeneratingCurrentReport()"
-                                                    @click="openPresentationPdf()"
-                                                    class="report-action-secondary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                </svg>
-                                                查看演示文稿
-                                            </button>
-                                            <div class="relative" x-show="hasAnyReportDownloadOption()" x-data="{
-                                                downloadMenuOpen: false,
-                                                lastFocusedEl: null,
-                                                openMenu() {
-                                                    this.lastFocusedEl = this.$refs.trigger;
-                                                    this.downloadMenuOpen = true;
-                                                    this.$nextTick(() => this.$refs.firstMenuItem?.focus());
-                                                },
-                                                closeMenu(options = {}) {
-                                                    const { restore = true } = options;
-                                                    this.downloadMenuOpen = false;
-                                                    if (!restore) return;
-                                                    this.$nextTick(() => this.lastFocusedEl?.focus?.());
-                                                }
-                                            }">
-                                                <button @click="downloadMenuOpen ? closeMenu({ restore: false }) : openMenu()"
-                                                        @click.outside="if (downloadMenuOpen) closeMenu()"
-                                                        @keydown.escape.prevent.stop="if (downloadMenuOpen) closeMenu()"
-                                                        x-ref="trigger"
-                                                        class="report-action-primary dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    x-show="getReportPrimaryActionType() !== 'none'"
+                                                    @click="runReportPrimaryAction()"
+                                                    :disabled="getReportPrimaryActionType() === 'download' && !hasAnyReportDownloadOption()"
+                                                    :class="getReportPrimaryActionType() === 'presentation-generate' || getReportPrimaryActionType() === 'presentation-stop' ? (isPresentationGeneratingCurrentReport() ? 'report-action-generate-progressing cursor-wait' : 'report-action-generate cursor-pointer') : 'report-action-primary cursor-pointer'"
+                                                    class="dv-report-primary-action report-action-progress-shell dv-report-toolbar-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors relative overflow-hidden flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    :aria-busy="getReportPrimaryActionType() === 'presentation-stop' ? 'true' : 'false'">
+                                                <span x-show="getReportPrimaryActionType() === 'presentation-stop' && isPresentationGenerationProgressReliable()"
+                                                      class="report-action-progress-fill"
+                                                      :style="getPresentationGenerationButtonProgressStyle()"
+                                                      aria-hidden="true"></span>
+                                                <span class="report-action-progress-content flex items-center justify-center gap-2 leading-5">
+                                                    <svg x-show="getReportPrimaryActionType() === 'presentation-generate' || getReportPrimaryActionType() === 'presentation-stop'" class="w-4 h-4" :class="{ 'animate-spin': getReportPrimaryActionType() === 'presentation-stop' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path x-show="getReportPrimaryActionType() === 'presentation-generate'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v12H3V3zm0 12l4 6h10l4-6M9 9h6M9 12h6"/>
+                                                        <circle x-show="getReportPrimaryActionType() === 'presentation-stop'" class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path x-show="getReportPrimaryActionType() === 'presentation-stop'" class="opacity-75" fill="currentColor" stroke="none" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                    </svg>
+                                                    <svg x-show="getReportPrimaryActionType() === 'presentation-view'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                    <svg x-show="getReportPrimaryActionType() === 'download'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                                     </svg>
-                                                    下载访谈报告
-                                                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': downloadMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                                    <span x-text="getReportPrimaryActionLabel()"></span>
+                                                </span>
+                                            </button>
+                                            <div class="relative"
+                                                 x-show="hasReportOverflowActions()"
+                                                 x-data="{
+                                                    actionMenuOpen: false,
+                                                    lastFocusedEl: null,
+                                                    focusFirstMenuItem() {
+                                                        const items = Array.from(this.$el.querySelectorAll('[data-report-overflow-item]'));
+                                                        const firstVisible = items.find((item) => item.offsetParent !== null && !item.disabled);
+                                                        firstVisible?.focus?.();
+                                                    },
+                                                    openMenu() {
+                                                        this.lastFocusedEl = this.$refs.trigger;
+                                                        this.actionMenuOpen = true;
+                                                        this.$nextTick(() => this.focusFirstMenuItem());
+                                                    },
+                                                    closeMenu(options = {}) {
+                                                        const { restore = true } = options;
+                                                        this.actionMenuOpen = false;
+                                                        if (!restore) return;
+                                                        this.$nextTick(() => this.lastFocusedEl?.focus?.());
+                                                    }
+                                                 }">
+                                                <button type="button"
+                                                        @click="actionMenuOpen ? closeMenu({ restore: false }) : openMenu()"
+                                                        @click.outside="if (actionMenuOpen) closeMenu()"
+                                                        @keydown.escape.prevent.stop="if (actionMenuOpen) closeMenu()"
+                                                        x-ref="trigger"
+                                                        class="dv-report-overflow-trigger report-action-secondary dv-report-toolbar-btn rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center"
+                                                        aria-label="更多报告操作"
+                                                        :aria-expanded="actionMenuOpen ? 'true' : 'false'">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.5h.01M12 12h.01M12 17.5h.01"/>
                                                     </svg>
                                                 </button>
-                                                <div x-show="downloadMenuOpen"
+                                                <div x-show="actionMenuOpen"
                                                      x-transition:enter="transition ease-out duration-200"
                                                      x-transition:enter-start="opacity-0 transform scale-95 -translate-y-1.5"
                                                      x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
@@ -2797,41 +2788,75 @@
                                                      x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
                                                      x-transition:leave-end="opacity-0 transform scale-95 -translate-y-1.5"
                                                      @keydown.escape.prevent.stop="closeMenu()"
-                                                     class="dv-popover-panel absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                                                    <button x-show="canExportFormat('report', 'md')"
-                                                            @click="downloadReport('md'); closeMenu()"
-                                                            x-ref="firstMenuItem"
-                                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 cursor-pointer transition-colors">
-                                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                        </svg>
-                                                        <div>
-                                                            <div class="font-medium">Markdown</div>
-                                                            <div class="text-xs text-gray-500">.md 源文件</div>
-                                                        </div>
-                                                    </button>
-                                                    <button x-show="canExportFormat('report', 'pdf')"
-                                                            @click="downloadReport('pdf'); closeMenu()"
-                                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 cursor-pointer transition-colors">
-                                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                                        </svg>
-                                                        <div>
-                                                            <div class="font-medium">PDF</div>
-                                                            <div class="text-xs text-gray-500">适合打印分享</div>
-                                                        </div>
-                                                    </button>
-                                                    <button x-show="canExportFormat('report', 'docx')"
-                                                            @click="downloadReport('docx'); closeMenu()"
-                                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 cursor-pointer transition-colors">
-                                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                        </svg>
-                                                        <div>
-                                                            <div class="font-medium">Word</div>
-                                                            <div class="text-xs text-gray-500">.docx 可编辑</div>
-                                                        </div>
-                                                    </button>
+                                                     class="dv-popover-panel dv-report-overflow-menu absolute right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+                                                     role="menu"
+                                                     aria-label="报告操作">
+                                                    <div x-show="canGenerateQualityVariantForSelectedReport()" class="dv-report-overflow-section">
+                                                        <div class="dv-report-overflow-section-title">生成</div>
+                                                        <button type="button"
+                                                                @click="runReportOverflowAction('quality').then(() => closeMenu({ restore: false }))"
+                                                                :disabled="generatingReport"
+                                                                data-report-overflow-item
+                                                                class="dv-report-overflow-item disabled:opacity-60 disabled:cursor-not-allowed"
+                                                                role="menuitem">
+                                                            <svg x-show="!generatingReport" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"/>
+                                                            </svg>
+                                                            <svg x-show="generatingReport" class="w-5 h-5 animate-spin text-gray-500" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                                            </svg>
+                                                            <div>
+                                                                <div class="font-medium">生成精审版</div>
+                                                                <div class="text-xs text-gray-500">基于当前报告生成更完整版本</div>
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                    <div x-show="hasAnyReportDownloadOption()" class="dv-report-overflow-section">
+                                                        <div class="dv-report-overflow-section-title">下载</div>
+                                                        <button type="button"
+                                                                x-show="canExportFormat('report', 'md')"
+                                                                @click="runReportOverflowAction('download-md').then(() => closeMenu({ restore: false }))"
+                                                                data-report-overflow-item
+                                                                class="dv-report-overflow-item"
+                                                                role="menuitem">
+                                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                            </svg>
+                                                            <div>
+                                                                <div class="font-medium">Markdown</div>
+                                                                <div class="text-xs text-gray-500">.md 源文件</div>
+                                                            </div>
+                                                        </button>
+                                                        <button type="button"
+                                                                x-show="canExportFormat('report', 'pdf')"
+                                                                @click="runReportOverflowAction('download-pdf').then(() => closeMenu({ restore: false }))"
+                                                                data-report-overflow-item
+                                                                class="dv-report-overflow-item"
+                                                                role="menuitem">
+                                                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                            </svg>
+                                                            <div>
+                                                                <div class="font-medium">PDF</div>
+                                                                <div class="text-xs text-gray-500">适合打印分享</div>
+                                                            </div>
+                                                        </button>
+                                                        <button type="button"
+                                                                x-show="canExportFormat('report', 'docx')"
+                                                                @click="runReportOverflowAction('download-docx').then(() => closeMenu({ restore: false }))"
+                                                                data-report-overflow-item
+                                                                class="dv-report-overflow-item"
+                                                                role="menuitem">
+                                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                            </svg>
+                                                            <div>
+                                                                <div class="font-medium">Word</div>
+                                                                <div class="text-xs text-gray-500">.docx 可编辑</div>
+                                                            </div>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -6692,7 +6717,7 @@
     <script src="site-config.js"></script>
     <script src="app_modules/session_list_state.js?v=20260509-sidebar-session-state-v2"></script>
     <script src="app_modules/report_state.js?v=20260409-auth-license-module-v1"></script>
-    <script src="app_modules/report_detail_runtime.js?v=20260428-report-readiness-v1"></script>
+    <script src="app_modules/report_detail_runtime.js?v=20260509-report-actions-v1"></script>
     <script src="app_modules/interview_runtime.js?v=20260506-interview-assistant-chat-v1"></script>
     <script src="app_modules/auth_license_state.js?v=20260509-guide-removal-v1"></script>
     <script src="app_modules/admin_center_state.js?v=20260410-admin-center-state-v1"></script>

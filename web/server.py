@@ -28037,6 +28037,249 @@ def list_sessions():
         SESSIONS_LIST_SEMAPHORE.release()
 
 
+SESSION_DRAFT_INPUT_MAX_CHARS = 1000
+SESSION_DRAFT_TOPIC_MAX_CHARS = 32
+SESSION_DRAFT_DESCRIPTION_MAX_CHARS = 360
+
+
+def normalize_session_draft_text(value: object, max_len: int = 0) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if max_len > 0 and len(text) > max_len:
+        return text[:max_len].rstrip("，,。；;、 ") + "…"
+    return text
+
+
+def strip_session_draft_topic_noise(value: object) -> str:
+    text = normalize_session_draft_text(value)
+    text = re.sub(r"^(最近|近期|目前|现在|这段时间|这两天)[，,、\s]*", "", text)
+    text = re.sub(r"想[和跟同][^，,。；;、\s]{1,8}聊聊", "", text)
+    noise_words = [
+        "我想了解一下",
+        "我想了解",
+        "想了解一下",
+        "想了解",
+        "我想问问",
+        "想问问",
+        "我想看看",
+        "想看看",
+        "我想",
+        "我要",
+        "我希望",
+        "希望",
+        "需要",
+        "想要",
+        "想",
+        "帮我",
+        "帮忙",
+        "了解一下",
+        "了解",
+        "看看",
+        "问问",
+        "聊聊",
+        "做一个",
+        "做一套",
+        "做一下",
+        "围绕",
+        "关于",
+        "它的特色是",
+        "特色是",
+        "可以通过",
+        "客户老说",
+        "客户说",
+        "用户老说",
+        "用户说",
+        "就是",
+        "到底",
+        "我们的",
+        "我们",
+    ]
+    for word in noise_words:
+        text = text.replace(word, "")
+    text = re.sub(r"(的问题|的情况|的原因|访谈主题)$", "", text)
+    text = re.sub(r"[，,。；;、\s]+", "", text)
+    return text.strip()
+
+
+def build_session_draft_topic_from_input(user_input: str, candidate: str = "") -> str:
+    raw_text = normalize_session_draft_text(user_input)
+    candidate_text = normalize_session_draft_text(candidate)
+    source_text = candidate_text or raw_text
+    compact_text = strip_session_draft_topic_noise(source_text)
+
+    agent_subject_match = re.search(
+        r"(需求访谈AI智能体|需求访谈智能体|访谈AI智能体|访谈智能体|AI智能体|智能体)",
+        raw_text,
+        flags=re.IGNORECASE,
+    )
+    if agent_subject_match and any(
+        keyword in raw_text
+        for keyword in ("特色", "功能", "规划", "需求", "多轮对话", "引导用户", "产品")
+    ):
+        subject = agent_subject_match.group(1)
+        return normalize_session_draft_text(f"{subject}规划访谈", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    usage_match = re.search(
+        r"不(?:怎么|太|愿意)?用(?:我们的|我们)?(?P<subject>[\u4e00-\u9fffA-Za-z0-9]{2,18})",
+        raw_text,
+    )
+    if usage_match:
+        subject = strip_session_draft_topic_noise(usage_match.group("subject"))
+        subject = re.sub(r"(的原因|的情况|的问题)$", "", subject)
+        if subject:
+            return normalize_session_draft_text(f"{subject}低使用率原因访谈", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    decline_match = re.search(r"(?P<subject>[\u4e00-\u9fffA-Za-z0-9]{2,18})下降", compact_text)
+    if decline_match:
+        subject = decline_match.group("subject")
+        return normalize_session_draft_text(f"{subject}下降原因访谈", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    if "问题归因" in compact_text:
+        prefix = compact_text.split("问题归因", 1)[0]
+        prefix = re.sub(r"(处理节奏|处理流程|处理机制)$", "", prefix)
+        if prefix:
+            return normalize_session_draft_text(f"{prefix}问题归因访谈", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    slow_match = re.search(
+        r"(?P<subject>[\u4e00-\u9fffA-Za-z0-9]{2,16}(?:响应慢|处理慢|加载慢|服务慢))",
+        compact_text,
+    )
+    if slow_match:
+        return normalize_session_draft_text(f"{slow_match.group('subject')}问题诊断访谈", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    if "满意度" in compact_text:
+        return normalize_session_draft_text(f"{compact_text[:16]}调研", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    if compact_text.endswith(("访谈", "调研", "评估", "诊断")):
+        return normalize_session_draft_text(compact_text, SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+    fallback_base = compact_text or source_text
+    fallback_base = re.sub(r"(的情况|的问题|的原因)$", "", fallback_base)
+    suffix = "访谈"
+    if any(keyword in fallback_base for keyword in ("下降", "流失", "不用", "不怎么用", "为什么")):
+        suffix = "原因访谈"
+    elif any(keyword in fallback_base for keyword in ("慢", "异常", "卡", "问题")):
+        suffix = "问题诊断访谈"
+    return normalize_session_draft_text(f"{fallback_base}{suffix}", SESSION_DRAFT_TOPIC_MAX_CHARS)
+
+
+def build_session_draft_local_fallback(user_input: str, reason: str = "") -> dict:
+    topic = build_session_draft_topic_from_input(user_input)
+    if not topic:
+        topic = "新访谈"
+    return {
+        "topic": topic,
+        "description": "",
+        "description_generated": False,
+        "confidence": 0.48,
+        "reason": reason or "已根据原始输入整理为访谈主题",
+        "source": "local_fallback",
+    }
+
+
+def normalize_session_draft_payload(parsed: dict, user_input: str, source: str = "ai") -> dict:
+    if not isinstance(parsed, dict):
+        raise ValueError("草稿结果不是 JSON 对象")
+
+    raw_topic = (
+        parsed.get("topic")
+        or parsed.get("title")
+        or parsed.get("session_topic")
+        or parsed.get("interview_topic")
+    )
+    topic = build_session_draft_topic_from_input(user_input, raw_topic)
+    if not topic:
+        topic = build_session_draft_local_fallback(user_input).get("topic", "")
+
+    description_generated = bool(parsed.get("description_generated"))
+    raw_description = parsed.get("description") or parsed.get("summary") or parsed.get("context") or ""
+    description = normalize_session_draft_text(raw_description, SESSION_DRAFT_DESCRIPTION_MAX_CHARS)
+    if not description_generated:
+        description = ""
+
+    try:
+        confidence = float(parsed.get("confidence", 0.6))
+    except (TypeError, ValueError):
+        confidence = 0.6
+    confidence = round(min(1.0, max(0.0, confidence)), 2)
+
+    reason = normalize_session_draft_text(parsed.get("reason") or parsed.get("explanation") or "", 80)
+    if not reason:
+        reason = "已根据用户输入整理访谈草稿"
+
+    return {
+        "topic": topic,
+        "description": description,
+        "description_generated": bool(description and description_generated),
+        "confidence": confidence,
+        "reason": reason,
+        "source": source,
+    }
+
+
+def build_session_draft_prompt(user_input: str) -> str:
+    return f"""你是 Intus 的访谈启动助手。用户会输入一句话或一段还没有整理好的想法，你需要把它整理成新建访谈会话可用的草稿。
+
+## 用户原始输入
+{user_input}
+
+## 任务
+1. 必须生成一个简洁的访谈主题，适合作为会话标题；即使用户输入很口语化，也要整理成标题，不要原样复用。
+2. 只有当用户输入中已经包含明确背景、现象、目标、对象或约束时，才生成主题描述。
+3. 如果描述信息不足，不要为了显得完整而扩写主题描述，description 必须返回空字符串。
+
+## 严格原则
+- 只能整理、压缩、归纳用户原文中已有的信息。
+- 不得补充用户没有提到的业务事实、指标、对象、原因或结论。
+- 主题可以做标题化归纳，比如把“为什么用户不怎么用报表功能”整理成“报表功能低使用率原因访谈”。
+- 主题必须像标题，不要输出“我要、我想、它的特色是、可以通过、来引导”这类口语长句。
+- 主题控制在 6-24 个中文字符左右，最多不要超过 32 个字符。
+- 描述控制在 60-180 个中文字符左右。
+
+## 输出格式
+只输出单个 JSON 对象，不要 markdown 代码块，不要解释：
+{{
+  "topic": "访谈主题",
+  "description": "主题描述，信息不足时为空字符串",
+  "description_generated": true,
+  "confidence": 0.0,
+  "reason": "一句话说明是否生成描述的依据"
+}}"""
+
+
+@app.route('/api/sessions/draft-from-input', methods=['POST'])
+def draft_session_from_input():
+    """把首页自然语言输入整理成新建访谈会话草稿。"""
+    user_id = get_current_user_id_or_none()
+    if not user_id:
+        return jsonify({"error": "请先登录"}), 401
+
+    data = request.get_json() or {}
+    user_input = normalize_session_draft_text(data.get("input") or data.get("user_input") or "")
+    if not user_input:
+        return jsonify({"error": "请输入一句话或一段想法"}), 400
+    if len(user_input) > SESSION_DRAFT_INPUT_MAX_CHARS:
+        return jsonify({"error": f"输入不能超过{SESSION_DRAFT_INPUT_MAX_CHARS}字"}), 400
+
+    draft_client = resolve_ai_client(call_type="session_draft")
+    if not draft_client:
+        return jsonify(build_session_draft_local_fallback(user_input, reason="AI 服务不可用，已保留原始输入"))
+
+    try:
+        response = draft_client.messages.create(
+            model=resolve_model_name(call_type="session_draft"),
+            max_tokens=420,
+            timeout=12.0,
+            messages=[{"role": "user", "content": build_session_draft_prompt(user_input)}],
+        )
+        raw_text = extract_message_text(response)
+        parsed = parse_json_object_response(raw_text or "", required_keys=["topic"])
+        return jsonify(normalize_session_draft_payload(parsed, user_input, source="ai"))
+    except Exception as exc:
+        if ENABLE_DEBUG_LOG:
+            print(f"⚠️ 会话草稿整理失败，使用本地兜底: {exc}")
+        return jsonify(build_session_draft_local_fallback(user_input, reason="AI 草稿解析失败，已保留原始输入"))
+
+
 @app.route('/api/sessions', methods=['POST'])
 def create_session():
     """创建新会话"""

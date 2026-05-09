@@ -3908,6 +3908,204 @@ class ComprehensiveApiTests(unittest.TestCase):
         self.assertEqual(len(materials), 1)
         self.assertEqual(materials[0].get("doc_id"), first_doc.get("doc_id"))
 
+    def test_session_draft_from_input_generates_topic_and_description_for_rich_input(self):
+        self._register()
+
+        class FakeMessages:
+            def __init__(self):
+                self.calls = 0
+                self.kwargs = {}
+
+            def create(self, **kwargs):
+                self.calls += 1
+                self.kwargs = kwargs
+                return types.SimpleNamespace(
+                    content=[
+                        types.SimpleNamespace(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "topic": "客户续费率下降原因访谈",
+                                    "description": "近期客户续费率下降，销售反馈部分客户认为报表价值不明显。本次访谈希望识别问题来自功能设计、使用场景匹配，还是客户认知与交付过程。",
+                                    "description_generated": True,
+                                    "confidence": 0.82,
+                                    "reason": "输入包含背景、现象和访谈目标",
+                                },
+                                ensure_ascii=False,
+                            ),
+                        )
+                    ]
+                )
+
+        class FakeClient:
+            def __init__(self):
+                self.messages = FakeMessages()
+
+        fake_client = FakeClient()
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: fake_client if call_type == "session_draft" else None
+            response = self.client.post(
+                "/api/sessions/draft-from-input",
+                json={
+                    "input": "最近客户续费率下降，销售反馈很多客户觉得报表没价值，但产品团队不确定是功能设计问题还是使用场景不匹配。"
+                },
+            )
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("topic"), "客户续费率下降原因访谈")
+            self.assertIn("报表价值不明显", payload.get("description", ""))
+            self.assertTrue(payload.get("description_generated"))
+            self.assertEqual(payload.get("source"), "ai")
+            self.assertGreaterEqual(float(payload.get("confidence") or 0), 0.8)
+            self.assertEqual(fake_client.messages.calls, 1)
+            self.assertEqual(fake_client.messages.kwargs.get("model"), self.server.resolve_model_name(call_type="session_draft"))
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_generates_only_topic_for_short_input(self):
+        self._register()
+
+        class FakeMessages:
+            def create(self, **_kwargs):
+                return types.SimpleNamespace(
+                    content=[
+                        types.SimpleNamespace(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "topic": "报表功能低使用率原因访谈",
+                                    "description": "用户没有提供背景，因此这里不应该有描述",
+                                    "description_generated": False,
+                                    "confidence": 0.56,
+                                    "reason": "输入只表达了问题方向，缺少背景和目标",
+                                },
+                                ensure_ascii=False,
+                            ),
+                        )
+                    ]
+                )
+
+        class FakeClient:
+            messages = FakeMessages()
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: FakeClient() if call_type == "session_draft" else None
+            response = self.client.post(
+                "/api/sessions/draft-from-input",
+                json={"input": "想了解用户为什么不用报表功能"},
+            )
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("topic"), "报表功能低使用率原因访谈")
+            self.assertEqual(payload.get("description"), "")
+            self.assertFalse(payload.get("description_generated"))
+            self.assertEqual(payload.get("source"), "ai")
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_falls_back_when_ai_invalid(self):
+        self._register()
+
+        class FakeMessages:
+            def create(self, **_kwargs):
+                return types.SimpleNamespace(
+                    content=[types.SimpleNamespace(type="text", text="我先解释一下，但不返回 JSON。")]
+                )
+
+        class FakeClient:
+            messages = FakeMessages()
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: FakeClient() if call_type == "session_draft" else None
+            response = self.client.post(
+                "/api/sessions/draft-from-input",
+                json={"input": "想做一个围绕售后回访问题归因和处理节奏的访谈"},
+            )
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("topic"), "售后回访问题归因访谈")
+            self.assertNotIn("想做一个", payload.get("topic", ""))
+            self.assertNotIn("围绕", payload.get("topic", ""))
+            self.assertEqual(payload.get("description"), "")
+            self.assertFalse(payload.get("description_generated"))
+            self.assertEqual(payload.get("source"), "local_fallback")
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_local_fallback_compresses_colloquial_topic(self):
+        self._register()
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: None
+            cases = [
+                ("我想了解一下为什么用户不怎么用我们的报表功能", "报表功能低使用率原因访谈"),
+                ("最近客户老说服务响应慢，我想问问到底卡在哪里", "服务响应慢问题诊断访谈"),
+                ("想和销售聊聊线索转化率下降的问题", "线索转化率下降原因访谈"),
+            ]
+            for raw_input, expected_topic in cases:
+                with self.subTest(raw_input=raw_input):
+                    response = self.client.post("/api/sessions/draft-from-input", json={"input": raw_input})
+                    self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+                    payload = response.get_json() or {}
+                    self.assertEqual(payload.get("topic"), expected_topic)
+                    self.assertEqual(payload.get("description"), "")
+                    self.assertFalse(payload.get("description_generated"))
+                    self.assertEqual(payload.get("source"), "local_fallback")
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_rewrites_long_ai_topic_into_title(self):
+        self._register()
+
+        raw_input = "我要智能化的需求访谈智能体，它的特色是可以通过多轮对话来引导用户发现真实需求。"
+
+        class FakeMessages:
+            def create(self, **_kwargs):
+                return types.SimpleNamespace(
+                    content=[
+                        types.SimpleNamespace(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "topic": "我要智能化的需求访谈智能体它的特色是可以通过多轮对话来引导用户发现真实需求",
+                                    "description": "",
+                                    "description_generated": False,
+                                    "confidence": 0.72,
+                                    "reason": "用户输入描述了一个智能体想法",
+                                },
+                                ensure_ascii=False,
+                            ),
+                        )
+                    ]
+                )
+
+        class FakeClient:
+            messages = FakeMessages()
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: FakeClient() if call_type == "session_draft" else None
+            response = self.client.post("/api/sessions/draft-from-input", json={"input": raw_input})
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("topic"), "需求访谈智能体规划访谈")
+            self.assertNotIn("我要", payload.get("topic", ""))
+            self.assertNotIn("它的特色", payload.get("topic", ""))
+            self.assertNotIn("可以通过", payload.get("topic", ""))
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_rejects_empty_input(self):
+        self._register()
+
+        response = self.client.post("/api/sessions/draft-from-input", json={"input": "   "})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("请输入", (response.get_json() or {}).get("error", ""))
+
     def test_generate_scenario_with_ai_retries_and_normalizes_dirty_json(self):
         self._register()
 

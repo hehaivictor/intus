@@ -167,6 +167,13 @@ function intusApp() {
         currentSession: null,
         newSessionTopic: '',
         newSessionDescription: '',
+        workbenchDrafting: false,
+        workbenchDraftRequestId: 0,
+        workbenchDraftSourceInput: '',
+        workbenchDraftApplied: false,
+        workbenchDraftMessage: '',
+        newSessionTopicTouched: false,
+        newSessionDescriptionTouched: false,
         selectedInterviewMode: 'deep',  // 默认深度模式
         hoveredDepthMode: null,  // 深度选项悬停状态
         showScenarioSelector: false,  // 场景选择器面板
@@ -254,7 +261,7 @@ function intusApp() {
                 description: '例如：候选人应聘高级产品经理岗位，简历显示有5年B端产品经验，主导过2个千万级项目。本次面试重点评估其需求分析能力、跨部门协调能力和商业思维。'
             },
             'default': {
-                topic: '例如：请输入本次访谈的主题',
+                topic: '例如：输入一句话，或写下一段你的想法',
                 description: '例如：请描述本次访谈的背景、目标和关注重点，帮助AI生成更精准的访谈问题。'
             }
         },

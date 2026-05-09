@@ -1184,6 +1184,21 @@ function buildApiHandler(baseUrl, options = {}) {
       });
       return;
     }
+    if (method === 'POST' && pathname === '/api/sessions/draft-from-input') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: json({
+          topic: '工作台新建访谈验证',
+          description: '',
+          description_generated: false,
+          confidence: 0.52,
+          reason: 'mock 输入只用于验证弹框链路',
+          source: 'mock',
+        }),
+      });
+      return;
+    }
     if (method === 'GET' && pathname === '/api/sessions/session-demo-001') {
       await route.fulfill({
         status: 200,
@@ -1855,16 +1870,25 @@ async function scenarioWorkbenchComposerEntry(browser, baseUrl) {
       await page.locator('.dv-workbench-quote-card:visible', { hasText: '凡事预则立，不预则废' }).waitFor({ timeout: 15000 });
 
       const topic = '数字化营销战略';
+      const expectedDraftTopic = '工作台新建访谈验证';
       await taskInput.fill(topic);
       await page.getByRole('button', { name: '开始访谈', exact: true }).click({ timeout: 15000 });
       await page.waitForSelector('[data-guide="guide-modal"]:visible', { timeout: 15000 });
+      await page.waitForFunction((expected) => {
+        const input = document.querySelector('[data-guide="guide-topic"]');
+        return input && input.value === expected;
+      }, expectedDraftTopic, { timeout: 15000 });
       const modalTopic = await page.locator('[data-guide="guide-topic"]').inputValue();
-      if (modalTopic !== topic) {
-        throw new Error(`新建访谈弹框未带入工作台主题: ${modalTopic}`);
+      if (modalTopic !== expectedDraftTopic) {
+        throw new Error(`新建访谈弹框未应用整理后的工作台主题: ${modalTopic}`);
+      }
+      const draftStatus = await page.locator('.dv-session-draft-status:visible').textContent({ timeout: 15000 });
+      if (!String(draftStatus || '').includes('已整理为访谈主题')) {
+        throw new Error(`新建访谈弹框应提示草稿整理状态: ${draftStatus}`);
       }
     },
   );
-  return '工作台开始访谈会打开新建访谈弹框，并自动带入主题';
+  return '工作台开始访谈会打开新建访谈弹框，并自动应用整理后的主题草稿';
 }
 
 async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {

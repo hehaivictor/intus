@@ -15,6 +15,13 @@
         sessionSortOrder: 'newest',
         sessionGroupBy: 'none',
         showSessionListOptions: false,
+        workbenchDrafting: false,
+        workbenchDraftRequestId: 0,
+        workbenchDraftSourceInput: '',
+        workbenchDraftApplied: false,
+        workbenchDraftMessage: '',
+        newSessionTopicTouched: false,
+        newSessionDescriptionTouched: false,
         activeSessionActionsMenu: null,
         filteredSessions: [],
         currentPage: 1,
@@ -135,13 +142,47 @@
             });
         },
 
+        resetWorkbenchDraftState(cancelInFlight = true) {
+            if (cancelInFlight) {
+                this.workbenchDraftRequestId += 1;
+            }
+            this.workbenchDrafting = false;
+            this.workbenchDraftSourceInput = '';
+            this.workbenchDraftApplied = false;
+            this.workbenchDraftMessage = '';
+            this.newSessionTopicTouched = false;
+            this.newSessionDescriptionTouched = false;
+        },
+
+        markNewSessionTopicTouched() {
+            this.newSessionTopicTouched = true;
+        },
+
+        markNewSessionDescriptionTouched() {
+            this.newSessionDescriptionTouched = true;
+        },
+
+        openWorkbenchSessionComposerFromInput() {
+            const sourceInput = String(this.newSessionTopic || '').trim();
+            if (!sourceInput) {
+                this.focusWorkbenchTaskInput();
+                return;
+            }
+            this.openWorkbenchSessionComposer('', {
+                preserveTopic: true,
+                draftFromInput: true,
+            });
+        },
+
         openWorkbenchSessionComposer(_intent = '', options = {}) {
             const preserveTopic = Boolean(options?.preserveTopic);
+            const draftFromInput = Boolean(options?.draftFromInput);
             const workbenchTopic = preserveTopic ? String(this.newSessionTopic || '').trim() : '';
             if (preserveTopic && !workbenchTopic) {
                 this.focusWorkbenchTaskInput();
                 return;
             }
+            this.resetWorkbenchDraftState(true);
             this.resetScenarioSelection();
             if (preserveTopic) {
                 this.newSessionTopic = workbenchTopic;
@@ -154,6 +195,68 @@
                     input.focus();
                 }
             });
+            if (draftFromInput) {
+                this.draftSessionFromWorkbenchInput(workbenchTopic);
+            } else if (preserveTopic) {
+                this.onTopicInput();
+            }
+        },
+
+        async draftSessionFromWorkbenchInput(sourceInput) {
+            const normalizedInput = String(sourceInput || '').trim();
+            if (!normalizedInput) return;
+
+            const requestId = ++this.workbenchDraftRequestId;
+            this.workbenchDraftSourceInput = normalizedInput;
+            this.workbenchDrafting = true;
+            this.workbenchDraftApplied = false;
+            this.workbenchDraftMessage = '';
+            try {
+                const draft = await this.apiCall('/sessions/draft-from-input', {
+                    method: 'POST',
+                    body: JSON.stringify({ input: normalizedInput }),
+                });
+                this.applyWorkbenchDraft(draft, requestId, normalizedInput);
+            } catch (error) {
+                if (requestId !== this.workbenchDraftRequestId) return;
+                console.warn('会话草稿整理失败:', error);
+                this.workbenchDraftMessage = '可继续手动完善';
+                this.onTopicInput();
+            } finally {
+                if (requestId === this.workbenchDraftRequestId) {
+                    this.workbenchDrafting = false;
+                }
+            }
+        },
+
+        applyWorkbenchDraft(draft, requestId, sourceInput) {
+            if (requestId !== this.workbenchDraftRequestId) return;
+            if (String(sourceInput || '').trim() !== this.workbenchDraftSourceInput) return;
+
+            const topic = String(draft?.topic || '').trim();
+            const description = String(draft?.description || '').trim();
+            const shouldApplyDescription = Boolean(draft?.description_generated && description);
+            let appliedTopic = false;
+            let appliedDescription = false;
+
+            if (topic && !this.newSessionTopicTouched) {
+                this.newSessionTopic = topic;
+                appliedTopic = true;
+            }
+            if (shouldApplyDescription && !this.newSessionDescriptionTouched) {
+                this.newSessionDescription = description;
+                appliedDescription = true;
+            }
+
+            this.workbenchDraftApplied = appliedTopic || appliedDescription;
+            if (appliedDescription) {
+                this.workbenchDraftMessage = '已根据你的输入整理，可继续修改';
+            } else if (appliedTopic) {
+                this.workbenchDraftMessage = '已整理为访谈主题；补充描述后访谈会更准确';
+            } else {
+                this.workbenchDraftMessage = '可继续手动完善';
+            }
+            this.onTopicInput();
         },
 
         openWorkbenchReportsForSolution() {
@@ -208,12 +311,14 @@
                 ? nextGroupBy
                 : 'none';
             this.filterSessions();
+            this.closeSessionListOptions();
         },
 
         setSessionSortOrder(sortOrder) {
             const nextSortOrder = String(sortOrder || 'newest');
             this.sessionSortOrder = nextSortOrder === 'oldest' ? 'oldest' : 'newest';
             this.filterSessions();
+            this.closeSessionListOptions();
         },
 
         toggleSessionActionsMenu(sessionId) {

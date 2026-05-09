@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260509-workbench-manus-composer-v3">
+    <link rel="stylesheet" href="styles.css?v=20260509-workbench-draft-v1">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -1096,7 +1096,7 @@
                             <span>Agents</span>
                         </button>
                         <button type="button" @click="switchView('reports')" class="dv-side-nav-item" :class="{ 'is-active': currentView === 'reports' }">
-                            <span class="dv-side-nav-icon" aria-hidden="true">▤</span>
+                            <span class="dv-side-nav-icon dv-side-nav-report-icon" aria-hidden="true"></span>
                             <span>报告</span>
                         </button>
                         <button type="button" @click="openUrl('help.html')" class="dv-side-nav-item">
@@ -1318,13 +1318,13 @@
                             <div class="dv-workbench-heading">
                                 <p class="dv-workbench-subtitle">和 Intus 一起好好谈谈</p>
                             </div>
-                            <form class="dv-workbench-command" @submit.prevent="openWorkbenchSessionComposer('', { preserveTopic: true })">
+                            <form class="dv-workbench-command" @submit.prevent="openWorkbenchSessionComposerFromInput()">
                                 <div class="dv-workbench-command-input">
                                     <textarea rows="2"
                                               data-workbench-task-input
                                               x-model="newSessionTopic"
                                               @input="onTopicInput()"
-                                              @keydown.enter.exact.prevent="newSessionTopic.trim() && !loading && openWorkbenchSessionComposer('', { preserveTopic: true })"
+                                              @keydown.enter.exact.prevent="newSessionTopic.trim() && !loading && openWorkbenchSessionComposerFromInput()"
                                               :placeholder="getTopicPlaceholder()"
                                               class="dv-workbench-task-input"
                                               autocomplete="off"></textarea>
@@ -4942,16 +4942,23 @@
                     <div class="mb-4">
                         <label for="newTopic" class="block text-sm font-medium text-secondary mb-2">访谈主题 <span class="required-asterisk">*</span></label>
                         <input data-guide="guide-topic" data-dialog-autofocus type="text" id="newTopic" x-model="newSessionTopic"
-                               @input="onTopicInput()"
+                               @input="markNewSessionTopicTouched(); onTopicInput()"
                                :placeholder="getTopicPlaceholder()"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EFF6FF] focus:border-[#EFF6FF]"
                                required>
                         <p class="text-xs text-muted mt-1">简洁描述本次访谈的主题或项目名称</p>
+                        <p x-show="workbenchDrafting || workbenchDraftMessage"
+                           x-cloak
+                           class="dv-session-draft-status"
+                           :class="{ 'is-loading': workbenchDrafting }">
+                            <span class="dv-session-draft-status-dot" aria-hidden="true"></span>
+                            <span x-text="workbenchDrafting ? '正在帮你梳理访谈主题...' : workbenchDraftMessage"></span>
+                        </p>
                     </div>
                     <div class="mb-4">
                         <label for="newDescription" class="block text-sm font-medium text-secondary mb-2">主题描述 <span class="text-xs text-gray-500">(可选)</span></label>
                         <textarea id="newDescription" x-model="newSessionDescription"
-                                  @input="onTopicInput()"
+                                  @input="markNewSessionDescriptionTouched(); onTopicInput()"
                                   :placeholder="getDescriptionPlaceholder()"
                                   rows="5"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EFF6FF] focus:border-[#EFF6FF] resize-none"></textarea>
@@ -6683,12 +6690,12 @@
 
     <!-- 前端配置文件 -->
     <script src="site-config.js"></script>
-    <script src="app_modules/session_list_state.js?v=20260509-sidebar-session-state-v1"></script>
+    <script src="app_modules/session_list_state.js?v=20260509-sidebar-session-state-v2"></script>
     <script src="app_modules/report_state.js?v=20260409-auth-license-module-v1"></script>
     <script src="app_modules/report_detail_runtime.js?v=20260428-report-readiness-v1"></script>
     <script src="app_modules/interview_runtime.js?v=20260506-interview-assistant-chat-v1"></script>
     <script src="app_modules/auth_license_state.js?v=20260509-guide-removal-v1"></script>
     <script src="app_modules/admin_center_state.js?v=20260410-admin-center-state-v1"></script>
-    <script src="app.js?v=20260508-workbench-quote-carousel-v3"></script>
+    <script src="app.js?v=20260509-workbench-draft-v1"></script>
 </body>
 </html>

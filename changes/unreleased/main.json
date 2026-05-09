@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "0be09dc",
+  "committedAt": "2026-05-09T10:16:00+08:00",
+  "versionType": "patch",
+  "title": "修复前端模块缓存版本",
+  "changes": [
+    "修复：更新会话侧栏与登录状态模块的静态资源版本，避免浏览器复用旧模块",
+    "测试：补充模块版本断言，覆盖缓存破坏场景"
+  ],
+  "changedFiles": [
+    "tests/test_scripts_comprehensive.py",
+    "web/index.html"
+  ]
+}

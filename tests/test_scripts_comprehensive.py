@@ -767,6 +767,8 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("sidebarCollapsed ? toggleSidebarCollapsed() : window.location.href='intro.html'", index_html)
         self.assertIn("toggleSidebarCollapsed()", index_html)
         self.assertIn("'is-sidebar-collapsed': sidebarCollapsed", index_html)
+        self.assertIn("session_list_state.js?v=20260509-sidebar-session-state-v1", index_html)
+        self.assertNotIn("session_list_state.js?v=20260409-auth-license-module-v1", index_html)
         self.assertIn('aria-label="名人名言轮播"', index_html)
         self.assertIn("dv-workbench-quote-carousel", index_html)
         self.assertIn("quotes.slice(0, 10)", index_html)
@@ -868,6 +870,8 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("showGuide", app_js)
         self.assertNotIn("initGuide", app_js)
         self.assertNotIn("intus_guide_seen", app_js)
+        self.assertIn("auth_license_state.js?v=20260509-guide-removal-v1", index_html)
+        self.assertNotIn("auth_license_state.js?v=20260427-license-benefits-entry-v1", index_html)
         self.assertNotIn(".guide-backdrop", styles_css)
         self.assertNotIn("--dv-z-guide", styles_css)
 

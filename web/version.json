@@ -1,7 +1,19 @@
 {
-  "version": "6.1.1",
-  "releaseDate": "2026-05-09",
+  "version": "6.1.2",
+  "releaseDate": "2026-05-12",
   "changelog": [
+    {
+      "version": "6.1.2",
+      "date": "2026-05-12",
+      "type": "patch",
+      "title": "优化 CI 依赖缓存与耗时观测",
+      "changes": [
+        "CI：为 runtime harness 增加 uv 缓存",
+        "CI：移除 browser smoke 冗余 uv 安装",
+        "观测：拆分 evaluator 子进程耗时与外层开销",
+        "测试：补充耗时拆分回归覆盖"
+      ]
+    },
     {
       "version": "6.1.1",
       "date": "2026-05-09",

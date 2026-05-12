@@ -191,6 +191,12 @@ def build_unittest_attempt(
     started_at = time.perf_counter()
     execution: SuiteExecution = run_suite_process(list(scenario.cases), quiet=True, failfast=failfast)
     duration_ms = round((time.perf_counter() - started_at) * 1000.0, 2)
+    process_duration_ms = (
+        round(float(execution.process_duration_ms), 2)
+        if execution.process_duration_ms is not None
+        else duration_ms
+    )
+    setup_overhead_ms = round(max(0.0, duration_ms - process_duration_ms), 2)
     combined_output = "\n".join(part for part in (execution.stdout, execution.stderr) if part)
     failed_tests = parse_failure_test_ids(
         combined_output,
@@ -201,6 +207,8 @@ def build_unittest_attempt(
         "status": "PASS" if execution.returncode == 0 else "FAIL",
         "returncode": execution.returncode,
         "duration_ms": duration_ms,
+        "process_duration_ms": process_duration_ms,
+        "setup_overhead_ms": setup_overhead_ms,
         "command": execution.command,
         "failed_tests": failed_tests,
         "highlights": extract_highlights(combined_output),
@@ -593,8 +601,33 @@ def evaluate_scenario(
         sum(float(item["duration_ms"]) for item in attempts) / max(1, len(attempts)),
         2,
     )
+    process_duration_values = [
+        float(item["process_duration_ms"])
+        for item in attempts
+        if item.get("process_duration_ms") is not None
+    ]
+    setup_overhead_values = [
+        float(item["setup_overhead_ms"])
+        for item in attempts
+        if item.get("setup_overhead_ms") is not None
+    ]
     max_budget_ms = round(float(scenario.budgets.get("max_duration_ms", 0) or 0), 2)
     budget_exceeded = bool(max_budget_ms > 0 and max_duration_ms > max_budget_ms)
+    stats = {
+        "attempts": len(attempts),
+        "pass_attempts": pass_attempts,
+        "fail_attempts": fail_attempts,
+        "avg_duration_ms": avg_duration_ms,
+        "max_duration_ms": max_duration_ms,
+        "max_duration_budget_ms": max_budget_ms,
+        "budget_exceeded": budget_exceeded,
+    }
+    if process_duration_values:
+        stats["avg_process_duration_ms"] = round(sum(process_duration_values) / len(process_duration_values), 2)
+        stats["max_process_duration_ms"] = round(max(process_duration_values), 2)
+    if setup_overhead_values:
+        stats["avg_setup_overhead_ms"] = round(sum(setup_overhead_values) / len(setup_overhead_values), 2)
+        stats["max_setup_overhead_ms"] = round(max(setup_overhead_values), 2)
 
     summary = {
         "name": scenario.name,
@@ -611,15 +644,7 @@ def evaluate_scenario(
         "target": scenario_target_summary(scenario),
         "status": status,
         "cases": [asdict(case) for case in scenario.cases],
-        "stats": {
-            "attempts": len(attempts),
-            "pass_attempts": pass_attempts,
-            "fail_attempts": fail_attempts,
-            "avg_duration_ms": avg_duration_ms,
-            "max_duration_ms": max_duration_ms,
-            "max_duration_budget_ms": max_budget_ms,
-            "budget_exceeded": budget_exceeded,
-        },
+        "stats": stats,
         "failure_hotspots": [
             {"test_id": test_id, "count": count}
             for test_id, count in failure_counter.most_common(5)
@@ -636,6 +661,8 @@ def evaluate_scenario(
         f"{scenario_target_summary(scenario)} "
         f"max_ms={max_duration_ms:.2f}"
     )
+    if setup_overhead_values:
+        detail += f" setup_overhead_max_ms={max(setup_overhead_values):.2f}"
     if budget_exceeded:
         detail += f" budget_exceeded>{max_budget_ms:.2f}"
     summary["detail"] = detail

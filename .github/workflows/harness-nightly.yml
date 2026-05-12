@@ -33,6 +33,15 @@ jobs:
           restore-keys: |
             pip-${{ runner.os }}-python-3.11-
 
+      - name: 缓存 uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-python-3.11-runtime-v1-${{ hashFiles('scripts/agent_test_runner.py') }}
+          restore-keys: |
+            uv-${{ runner.os }}-python-3.11-runtime-v1-
+            uv-${{ runner.os }}-python-3.11-
+
       - name: 安装 Node.js
         uses: actions/setup-node@v4
         with:

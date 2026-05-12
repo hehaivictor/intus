@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "branch": "HEAD",
+  "baseRef": "origin/main",
+  "sourceCommit": "d593860",
+  "committedAt": "2026-05-12T10:47:30+08:00",
+  "versionType": "patch",
+  "title": "优化 CI 依赖缓存与耗时观测",
+  "changes": [
+    "CI：为 runtime harness 增加 uv 缓存",
+    "CI：移除 browser smoke 冗余 uv 安装",
+    "观测：拆分 evaluator 子进程耗时与外层开销",
+    "测试：补充耗时拆分回归覆盖"
+  ],
+  "changedFiles": [
+    ".github/workflows/browser-smoke.yml",
+    ".github/workflows/harness-nightly.yml",
+    ".github/workflows/pr-harness.yml",
+    "scripts/agent_eval.py",
+    "scripts/agent_test_runner.py",
+    "tests/test_scripts_comprehensive.py"
+  ]
+}

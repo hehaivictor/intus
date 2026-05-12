@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,6 +35,7 @@ class SuiteExecution:
     returncode: int
     stdout: str
     stderr: str
+    process_duration_ms: float | None = None
 
 
 def build_unittest_command(cases: list[SuiteCase], *, quiet: bool = False, failfast: bool = False) -> list[str]:
@@ -59,6 +61,7 @@ def build_unittest_command(cases: list[SuiteCase], *, quiet: bool = False, failf
 
 def run_suite_process(cases: list[SuiteCase], *, quiet: bool = False, failfast: bool = False) -> SuiteExecution:
     command = build_unittest_command(cases, quiet=quiet, failfast=failfast)
+    started_at = time.perf_counter()
     completed = subprocess.run(
         command,
         cwd=str(ROOT_DIR),
@@ -66,11 +69,13 @@ def run_suite_process(cases: list[SuiteCase], *, quiet: bool = False, failfast: 
         text=True,
         check=False,
     )
+    process_duration_ms = round((time.perf_counter() - started_at) * 1000.0, 2)
     return SuiteExecution(
         command=command,
         returncode=completed.returncode,
         stdout=completed.stdout,
         stderr=completed.stderr,
+        process_duration_ms=process_duration_ms,
     )
 
 

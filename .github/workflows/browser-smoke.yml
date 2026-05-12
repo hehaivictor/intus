@@ -49,13 +49,6 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: 安装 uv
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m pip install --upgrade pip
-          python3 -m pip install uv
-
       - name: 缓存 Playwright 浏览器
         uses: actions/cache@v4
         with:

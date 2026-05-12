@@ -1574,6 +1574,39 @@ vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
         latest_payload = json.loads((Path(artifact_paths["base_dir"]) / "latest.json").read_text(encoding="utf-8"))
         self.assertEqual(str(Path(artifact_paths["run_dir"]) / "handoff.json"), latest_payload["handoff_file"])
 
+    def test_agent_eval_records_unittest_process_and_setup_overhead(self):
+        scenario = agent_eval.EvalScenario(
+            name="slow-setup",
+            category="ops",
+            description="验证 evaluator 可拆分外层总耗时与 unittest 子进程耗时",
+            path="tests/harness_scenarios/ops/slow-setup.json",
+            tags=("nightly",),
+            budgets={"max_duration_ms": 10000},
+            cases=(agent_eval.SuiteCase("tests.fake.Class.test_case", "假用例"),),
+        )
+        fake_execution = agent_eval.SuiteExecution(
+            command=["uv", "run", "python3", "-m", "unittest", "tests.fake.Class.test_case"],
+            returncode=0,
+            stdout=".\nOK\n",
+            stderr="",
+            process_duration_ms=1200.0,
+        )
+
+        with patch.object(agent_eval, "run_suite_process", return_value=fake_execution):
+            with patch.object(agent_eval.time, "perf_counter", side_effect=[100.0, 103.0]):
+                summary, artifact = agent_eval.evaluate_scenario(
+                    scenario,
+                    repeat=1,
+                    failfast=False,
+                )
+
+        self.assertEqual(3000.0, artifact["attempts"][0]["duration_ms"])
+        self.assertEqual(1200.0, artifact["attempts"][0]["process_duration_ms"])
+        self.assertEqual(1800.0, artifact["attempts"][0]["setup_overhead_ms"])
+        self.assertEqual(1200.0, summary["stats"]["max_process_duration_ms"])
+        self.assertEqual(1800.0, summary["stats"]["max_setup_overhead_ms"])
+        self.assertIn("setup_overhead_max_ms=1800.00", summary["detail"])
+
     def test_agent_playbook_sync_check_passes_for_repo(self):
         stdout = io.StringIO()
         with patch("sys.stdout", stdout):

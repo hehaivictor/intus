@@ -1215,6 +1215,32 @@ function buildApiHandler(baseUrl, options = {}) {
       });
       return;
     }
+    if (method === 'POST' && pathname === '/api/sessions/session-demo-001/submit-answer') {
+      let payload = {};
+      try {
+        payload = route.request().postDataJSON();
+      } catch (_error) {
+        payload = {};
+      }
+      const submittedSession = cloneJsonValue(sessionDetailPayload);
+      submittedSession.updated_at = nowIso();
+      submittedSession.interview_count = Math.max(Number(submittedSession.interview_count || 0), 2);
+      submittedSession.interview_log = [
+        ...(Array.isArray(submittedSession.interview_log) ? submittedSession.interview_log : []),
+        {
+          question: safeText(payload?.question, '目前最影响售后回访闭环效率的环节是什么？'),
+          answer: safeText(payload?.answer, '问题归因不统一'),
+          dimension: safeText(payload?.dimension, 'customer_needs'),
+          is_follow_up: Boolean(payload?.is_follow_up),
+        },
+      ];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: json(submittedSession),
+      });
+      return;
+    }
     if (method === 'POST' && pathname === '/api/sessions/session-demo-001/next-question') {
       if (Number(options?.nextQuestionDelayMs || 0) > 0) {
         await sleep(Number(options.nextQuestionDelayMs));
@@ -1276,6 +1302,22 @@ function buildApiHandler(baseUrl, options = {}) {
         status: 200,
         contentType: 'application/json; charset=utf-8',
         body: json(reportGenerationStatusBySession['session-report-001'] || { active: false, state: 'idle' }),
+      });
+      return;
+    }
+    if (method === 'GET' && pathname.startsWith('/api/status/thinking/')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: json({ active: false, state: 'idle' }),
+      });
+      return;
+    }
+    if (method === 'GET' && pathname === '/api/status/web-search') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json; charset=utf-8',
+        body: json({ active: false, state: 'idle' }),
       });
       return;
     }
@@ -1450,7 +1492,7 @@ function buildApiHandler(baseUrl, options = {}) {
   };
 }
 
-async function runWithPage(browser, baseUrl, initScript, callback, initArg = undefined, apiOptions = undefined, apiMode = 'mock', contextOptions = undefined) {
+async function runWithPage(browser, baseUrl, initScript, callback, initArg = undefined, apiOptions = undefined, apiMode = 'mock', contextOptions = undefined, runtimeOptions = undefined) {
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1080 },
     ...(contextOptions || {}),
@@ -1470,6 +1512,12 @@ async function runWithPage(browser, baseUrl, initScript, callback, initArg = und
     if (message.type() === 'error') {
       const text = safeText(message.text());
       if (isIgnorableConsoleError(text)) {
+        return;
+      }
+      const ignoredConsolePatterns = Array.isArray(runtimeOptions?.ignoredConsolePatterns)
+        ? runtimeOptions.ignoredConsolePatterns
+        : [];
+      if (ignoredConsolePatterns.some((pattern) => pattern instanceof RegExp && pattern.test(text))) {
         return;
       }
       errors.push(`console.error: ${text}`);
@@ -2530,7 +2578,10 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
       await page.getByText('问题归因不统一', { exact: true }).click({ timeout: 15000 });
       await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页选项选中态');
       await page.getByRole('button', { name: '下一题', exact: true }).click({ timeout: 15000 });
-      await page.waitForSelector('text=AI 正在思考', { timeout: 15000 });
+      await page
+        .getByText(/AI 正在思考|正在提交当前回答并准备下一题|正在等待上一题提交后的预取结果/)
+        .first()
+        .waitFor({ timeout: 15000 });
       await assertNoVisibleBrandAccentMismatch(page, '.dv-app-content', '访谈页问题生成态');
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForSelector('text=目前最影响售后回访闭环效率的环节是什么？', { timeout: 15000 });
@@ -2546,6 +2597,14 @@ async function scenarioInterviewRefresh(browser, baseUrl) {
     },
     undefined,
     { nextQuestionDelayMs: 750 },
+    'mock',
+    undefined,
+    {
+      ignoredConsolePatterns: [
+        /获取问题失败: TypeError: Failed to fetch/,
+        /错误详情: Failed to fetch TypeError: Failed to fetch/,
+      ],
+    },
   );
   return '访谈进行中刷新后仍恢复到同一会话与当前问题';
 }

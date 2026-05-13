@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "c813f70",
+  "committedAt": "2026-05-13T14:46:58+08:00",
+  "versionType": "patch",
+  "title": "补充项目虚拟环境忽略规则",
+  "changes": [
+    "配置层：在 .gitignore 增加 .venv/ 项，防止项目级虚拟环境被误识别为未跟踪文件",
+    "运维层：配合项目层面安装 harness-toolkit（版本 0.5.1）后的仓库状态保持干净"
+  ],
+  "changedFiles": [
+    ".gitignore"
+  ]
+}

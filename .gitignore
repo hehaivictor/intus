@@ -32,9 +32,11 @@ ENV/
 # 环境变量文件
 .env
 .env.*
+*.env
 web/.env
 web/.env.*
 !web/.env.example
+deploy/*.env
 
 # IDE
 .vscode/
@@ -77,6 +79,7 @@ read_ppt_size.py
 
 # Local harness evaluator artifacts
 artifacts/harness-eval-local/
+artifacts/release-preflight/
 artifacts/planner/
 
 # Local generated visual artifacts

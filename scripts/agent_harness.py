@@ -773,7 +773,7 @@ def main(argv: list[str] | None = None) -> int:
             task_payload=task_payload,
         )
         if args.json:
-            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         else:
             render_text_output(
                 results,

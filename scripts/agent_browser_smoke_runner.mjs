@@ -2700,7 +2700,7 @@ const RESPONSIVE_THEME_MODES = [
 ];
 
 const DARK_SURFACE_SELECTORS = [
-  { selector: 'header', label: '顶部栏' },
+  { selector: 'header', label: '顶部栏', optional: true },
   { selector: '.dv-app-sidebar', label: '桌面侧栏', optional: true },
   { selector: '.dv-side-nav-item.is-active', label: '侧栏当前导航', optional: true },
   { selector: '.dv-workbench-command', label: '工作台输入容器', optional: true },

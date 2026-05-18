@@ -1,0 +1,40 @@
+# Git / local editor state
+.git
+.gitignore
+.DS_Store
+.vscode/
+.idea/
+
+# Python / Node build caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+node_modules/
+
+# Runtime data and generated artifacts
+data/
+output/
+artifacts/
+downloads/
+tmp/
+log/
+sessions/
+history.jsonl
+
+# Local browser / visual artifacts
+.playwright-mcp/
+
+# Sensitive environment files.
+# Runtime configuration must be injected by container environment variables.
+.env
+.env.*
+*.env
+web/.env
+web/.env.*
+!web/.env.example
+deploy/*.env

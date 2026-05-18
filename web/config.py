@@ -466,6 +466,14 @@ WECHAT_OAUTH_STATE_TTL_SECONDS = 300
 # 文档导入、格式转换和解析超时放在这里。
 # 作用：设置文档转换或预处理链路的超时时间（秒）。
 DOCUMENT_CONVERT_TIMEOUT_SECONDS = 60
+# 作用：设置参考材料索引时单个文本块的目标字符数。
+REFERENCE_MATERIAL_CHUNK_SIZE = 1800
+# 作用：设置参考材料相邻文本块之间的重叠字符数。
+REFERENCE_MATERIAL_CHUNK_OVERLAP = 160
+# 作用：设置构造报告/问题上下文时最多引用的参考材料文本块数量。
+REFERENCE_MATERIAL_CONTEXT_CHUNK_LIMIT = 4
+# 作用：设置参考材料内联预览的最大字符数。
+REFERENCE_MATERIAL_INLINE_CHUNK_PREVIEW_LIMIT = 120
 
 # ============ 图片理解默认值 ===========
 # 模型选择和上传约束属于产品默认值，可按环境临时覆盖。

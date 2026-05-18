@@ -34151,6 +34151,17 @@ def get_report_presentation_link(filename):
     pdf_url = str(record.get("pdf_url") or "").strip()
     if not pdf_url and not record.get("path") and not record.get("object_key"):
         return jsonify({"error": "演示文稿不存在"}), 404
+    object_key = str(record.get("object_key") or "").strip()
+    path_str = str(record.get("path") or "").strip()
+    if object_key and object_storage_key_exists(object_key):
+        return redirect(f"/api/reports/{quote(filename)}/presentation", code=302)
+    if path_str:
+        file_path = Path(path_str)
+        downloads_dir = get_downloads_dir()
+        if file_path.exists() and is_path_under(file_path, downloads_dir):
+            return redirect(f"/api/reports/{quote(filename)}/presentation", code=302)
+    if pdf_url:
+        return redirect(pdf_url, code=302)
     return redirect(f"/api/reports/{quote(filename)}/presentation", code=302)
 
 

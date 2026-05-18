@@ -1,12 +1,66 @@
 services:
-  intus:
-    container_name: intus
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.production
+  intus-postgres:
+    image: postgres:16-alpine
+    container_name: intus-postgres
     restart: unless-stopped
     environment:
-      TZ: Asia/Shanghai
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - intus-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  intus-minio:
+    image: minio/minio:latest
+    container_name: intus-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - intus-minio-data:/data
+    ports:
+      - "${MINIO_CONSOLE_PORT}:9001"
+      - "${MINIO_API_PORT}:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  intus-minio-init:
+    image: minio/mc:latest
+    container_name: intus-minio-init
+    depends_on:
+      intus-minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c '
+      mc alias set intus-minio-alias http://intus-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+      && mc mb --ignore-existing intus-minio-alias/${OBJECT_STORAGE_BUCKET}
+      '
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET}
+
+  intus:
+    container_name: intus
+    image: "${IMAGE_REGISTRY}/${IMAGE_NAME}:${TIMESTAMP}"
+    restart: unless-stopped
+    depends_on:
+      intus-postgres:
+        condition: service_healthy
+      intus-minio:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
       INTUS_LICENSE_ENFORCEMENT_ENABLED: ${INTUS_LICENSE_ENFORCEMENT_ENABLED:-false}
@@ -18,9 +72,9 @@ services:
       ENABLE_WEB_SEARCH: ${ENABLE_WEB_SEARCH:-true}
       ENABLE_VISION: ${ENABLE_VISION:-true}
       SECRET_KEY: ${SECRET_KEY:-}
-      AUTH_DB_PATH: ${AUTH_DB_PATH:-data/auth/users.db}
-      LICENSE_DB_PATH: ${LICENSE_DB_PATH:-data/auth/licenses.db}
-      META_INDEX_DB_PATH: ${META_INDEX_DB_PATH:-data/meta_index.db}
+      AUTH_DB_PATH: ${AUTH_DB_PATH}
+      LICENSE_DB_PATH: ${LICENSE_DB_PATH}
+      META_INDEX_DB_PATH: ${META_INDEX_DB_PATH}
       LICENSE_CODE_SIGNING_SECRET: ${LICENSE_CODE_SIGNING_SECRET:-}
       ADMIN_USER_IDS: ${ADMIN_USER_IDS:-}
       ADMIN_PHONE_NUMBERS: ${ADMIN_PHONE_NUMBERS:-}
@@ -54,14 +108,14 @@ services:
       ASSESSMENT_BASE_URL: ${ASSESSMENT_BASE_URL:-}
       ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
       ZHIPU_SEARCH_ENGINE: ${ZHIPU_SEARCH_ENGINE:-search_pro}
-      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
-      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-}
-      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-}
-      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:-}
-      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:-}
-      OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-true}
-      OBJECT_STORAGE_SIGNATURE_VERSION: ${OBJECT_STORAGE_SIGNATURE_VERSION:-s3v4}
-      OBJECT_STORAGE_PREFIX: ${OBJECT_STORAGE_PREFIX:-}
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET}
+      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID}
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY}
+      OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE}
+      OBJECT_STORAGE_SIGNATURE_VERSION: ${OBJECT_STORAGE_SIGNATURE_VERSION}
+      OBJECT_STORAGE_PREFIX: ${OBJECT_STORAGE_PREFIX}
       INSTANCE_SCOPE_KEY: ${INSTANCE_SCOPE_KEY:-}
       INSTANCE_SCOPE_ENFORCEMENT_ENABLED: ${INSTANCE_SCOPE_ENFORCEMENT_ENABLED:-false}
       PAPER2SLIDES_API_URL: ${PAPER2SLIDES_API_URL:-}
@@ -73,18 +127,19 @@ services:
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 5002
     ports:
-      - "5002:5002"
+      - "${HOST_PORT}:5002"
     volumes:
-      - ../data:/app/data
-      - ../resources:/app/resources:ro
-      - ../artifacts:/app/artifacts
-      - ../output:/app/output
-    command:
-      - python3
-      - scripts/run_gunicorn.py
+      - ./data:/app/data
+      - ./resources:/app/resources:ro
+      - ./artifacts:/app/artifacts
+      - ./output:/app/output
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5002/api/status >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 60s
+
+volumes:
+  intus-postgres-data:
+  intus-minio-data:

@@ -1,10 +1,17 @@
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
 WORKDIR /app
+
+RUN echo "deb http://mirrors.aliyun.com/debian/ bookworm main contrib non-free non-free-firmware" > /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security/ bookworm-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ \
+    UV_LINK_MODE=copy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -13,12 +20,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir uv
+RUN pip install --no-cache-dir \
+    uv \
+    gunicorn \
+    flask \
+    flask-cors \
+    anthropic \
+    requests \
+    reportlab \
+    pillow \
+    jdcloud-sdk \
+    "psycopg[binary]" \
+    boto3 \
+    -i https://mirrors.aliyun.com/pypi/simple/
 
 COPY . /app
 
+RUN leaked_env_files="$(find /app -type f \( -name '.env' -o -name '.env.*' -o -name '*.env' \) ! -path '/app/web/.env.example' -print)" \
+    && if [ -n "$leaked_env_files" ]; then \
+      echo "Sensitive env files must not be baked into the image:" >&2; \
+      printf '%s\n' "$leaked_env_files" >&2; \
+      exit 1; \
+    fi
+
 RUN mkdir -p /app/data /app/output /app/artifacts
+
+RUN uv run scripts/convert_doc.py --help >/dev/null || true
 
 EXPOSE 5002
 
-CMD ["python3", "scripts/run_gunicorn.py"]
+CMD ["sh", "-c", "python3 scripts/prestart_web.py && exec gunicorn -c web/gunicorn.conf.py web.wsgi:app"]

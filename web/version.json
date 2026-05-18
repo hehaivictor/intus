@@ -1,7 +1,18 @@
 {
-  "version": "6.1.6",
+  "version": "6.1.7",
   "releaseDate": "2026-05-18",
   "changelog": [
+    {
+      "version": "6.1.7",
+      "date": "2026-05-18",
+      "type": "patch",
+      "title": "perf(模型配置): 优化 Intus 默认模型路由",
+      "changes": [
+        "模型配置：将访谈、摘要、搜索决策和评分默认切换到 deepseek-chat。",
+        "报告链路：将深度问题和报告草案切换到 deepseek-reasoner，审稿回落到 deepseek-chat。",
+        "性能策略：收紧报告审稿 token 上限，并避免同一客户端重复触发问题竞速。"
+      ]
+    },
     {
       "version": "6.1.6",
       "date": "2026-05-18",

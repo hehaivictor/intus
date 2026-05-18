@@ -10,23 +10,23 @@ Intus 策略配置
 # ============ 模型角色分工 ===========
 # 先看这一组，就能知道问题、报告、摘要、评分各自走哪个模型。
 # 作用：设置全局默认模型名，未单独指定 lane 模型时会回落到这里。
-MODEL_NAME = "doubao-seed-2-0-pro"  # 默认主模型（问题链路）
+MODEL_NAME = "deepseek-chat"  # 默认主模型（问题链路）
 # 作用：设置问题生成链路使用的模型名称。
 QUESTION_MODEL_NAME = MODEL_NAME
 # 作用：设置深度访谈模式下 question lane 的专用模型名称。
-QUESTION_MODEL_NAME_DEEP = "deepseek-v4-flash"
+QUESTION_MODEL_NAME_DEEP = "deepseek-reasoner"
 # 作用：设置报告主链路使用的模型名称。
-REPORT_MODEL_NAME = "deepseek-v4-pro"
+REPORT_MODEL_NAME = "deepseek-reasoner"
 # 作用：设置报告草案阶段使用的模型名称。
 REPORT_DRAFT_MODEL_NAME = REPORT_MODEL_NAME
 # 作用：设置报告审稿阶段使用的模型名称。
-REPORT_REVIEW_MODEL_NAME = "doubao-seed-2-0-pro"
+REPORT_REVIEW_MODEL_NAME = "deepseek-chat"
 # 作用：设置摘要链路使用的模型名称。
-SUMMARY_MODEL_NAME = "deepseek-v4-flash"
+SUMMARY_MODEL_NAME = "deepseek-chat"
 # 作用：设置搜索决策链路使用的模型名称。
-SEARCH_DECISION_MODEL_NAME = "deepseek-v4-flash"
+SEARCH_DECISION_MODEL_NAME = "deepseek-chat"
 # 作用：设置评分链路使用的模型名称。
-ASSESSMENT_MODEL_NAME = "deepseek-ai/DeepSeek-V3.2"
+ASSESSMENT_MODEL_NAME = "deepseek-chat"
 
 # ============ AI 客户端通用策略 ===========
 # 客户端启动策略保留在 config；接入开关和探测行为请放在 .env。
@@ -153,7 +153,7 @@ QUESTION_SESSION_HEDGE_BUDGET = 4
 # 作用：单个维度内允许发生问题并发竞速的次数预算。
 QUESTION_DIMENSION_HEDGE_BUDGET = 1
 # 作用：控制只有主备客户端不同才启用问题竞速。
-QUESTION_HEDGED_ONLY_WHEN_DISTINCT_CLIENT = False
+QUESTION_HEDGED_ONLY_WHEN_DISTINCT_CLIENT = True
 # 作用：控制是否启用问题竞速延迟的自适应策略。
 QUESTION_HEDGE_ADAPTIVE_ENABLED = True
 # 作用：设置问题竞速自适应策略生效所需的最小样本数。
@@ -222,7 +222,7 @@ REPORT_V3_DRAFT_RETRY_BACKOFF_SECONDS = None
 # 作用：设置草案为空时是否立即失败；`None` 表示按档位默认。
 REPORT_V3_FAST_FAIL_ON_DRAFT_EMPTY = None
 # 作用：设置报告审稿阶段允许生成的最大 token 数。
-REPORT_V3_REVIEW_MAX_TOKENS = None
+REPORT_V3_REVIEW_MAX_TOKENS = 2600
 # 作用：设置报告 V3 基础审稿轮数。
 REPORT_V3_REVIEW_BASE_ROUNDS = 2
 # 作用：设置 quality 档额外补修轮数。

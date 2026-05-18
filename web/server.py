@@ -28100,11 +28100,49 @@ def strip_session_draft_topic_noise(value: object) -> str:
     return text.strip()
 
 
+def build_agent_requirement_topic_from_input(raw_text: str) -> str:
+    """从智能体类需求中提取业务对象，避免退化成泛泛的“智能体规划访谈”。"""
+    text = normalize_session_draft_text(raw_text)
+    if "智能体" not in text:
+        return ""
+
+    prefix = text.split("智能体", 1)[0]
+    action_aliases = [
+        ("实时查询", "查询"),
+        ("查询", "查询"),
+        ("监测", "监测"),
+        ("跟踪", "跟踪"),
+        ("分析", "分析"),
+        ("预测", "预测"),
+        ("推荐", "推荐"),
+        ("生成", "生成"),
+        ("识别", "识别"),
+        ("管理", "管理"),
+    ]
+    for marker, action in action_aliases:
+        if marker not in prefix:
+            continue
+        subject = prefix.rsplit(marker, 1)[-1]
+        subject = strip_session_draft_topic_noise(subject)
+        subject = re.sub(r"^(能够|可以|可|自动|智能|实时)+", "", subject)
+        subject = re.sub(r"(的)?$", "", subject).strip()
+        if len(subject) >= 2:
+            return normalize_session_draft_text(
+                f"{subject}{action}智能体访谈",
+                SESSION_DRAFT_TOPIC_MAX_CHARS,
+            )
+    return ""
+
+
 def build_session_draft_topic_from_input(user_input: str, candidate: str = "") -> str:
     raw_text = normalize_session_draft_text(user_input)
     candidate_text = normalize_session_draft_text(candidate)
     source_text = candidate_text or raw_text
     compact_text = strip_session_draft_topic_noise(source_text)
+
+    agent_requirement_topic = build_agent_requirement_topic_from_input(raw_text)
+    if agent_requirement_topic:
+        return agent_requirement_topic
 
     agent_subject_match = re.search(
         r"(需求访谈AI智能体|需求访谈智能体|访谈AI智能体|访谈智能体|AI智能体|智能体)",
@@ -28162,16 +28200,67 @@ def build_session_draft_topic_from_input(user_input: str, candidate: str = "") -
     return normalize_session_draft_text(f"{fallback_base}{suffix}", SESSION_DRAFT_TOPIC_MAX_CHARS)
 
 
+def build_session_draft_description_from_input(user_input: str) -> str:
+    text = normalize_session_draft_text(user_input, SESSION_DRAFT_DESCRIPTION_MAX_CHARS)
+    if len(text) < 30:
+        return ""
+    product_markers = ("智能体", "系统", "平台", "工具", "产品", "应用", "功能")
+    intent_markers = ("具体", "功能", "辅助", "决策", "能够", "可以", "需要哪些", "想要做", "计划")
+    if not any(marker in text for marker in product_markers):
+        return ""
+    if not any(marker in text for marker in intent_markers):
+        return ""
+
+    lines = []
+    background_match = re.search(
+        r"^(?P<subject>[^，,。；;]{2,24}?)(?:想要|想|希望|计划|需要|要)(?:做|建设|打造|开发|引入|构建|上线|建立)",
+        text,
+    )
+    if background_match:
+        subject = normalize_session_draft_text(background_match.group("subject"))
+        if subject:
+            lines.append(f"业务背景：{subject}")
+
+    ability_match = re.search(
+        r"(?:能够|可以|可)(?P<ability>[^，,。；;]{2,48}?智能体)",
+        text,
+    )
+    if ability_match:
+        ability = normalize_session_draft_text(ability_match.group("ability"))
+        if ability:
+            lines.append(f"核心能力：{ability}")
+
+    goal_match = re.search(
+        r"(?:可以)?辅助(?P<goal>[^，,。；;]{2,36}?)(?:，|,|。|；|;|具体|$)",
+        text,
+    )
+    if goal_match:
+        goal = normalize_session_draft_text(goal_match.group("goal"))
+        if goal:
+            lines.append(f"使用目标：辅助{goal}")
+
+    focus_match = re.search(r"具体(?P<focus>需要哪些[^，,。；;]{1,24})", text)
+    if focus_match:
+        focus = normalize_session_draft_text(focus_match.group("focus"))
+        if focus:
+            lines.append(f"待确认重点：{focus}")
+
+    if lines:
+        return normalize_session_draft_text("；".join(lines), SESSION_DRAFT_DESCRIPTION_MAX_CHARS)
+    return text
+
+
 def build_session_draft_local_fallback(user_input: str, reason: str = "") -> dict:
     topic = build_session_draft_topic_from_input(user_input)
+    description = build_session_draft_description_from_input(user_input)
     if not topic:
         topic = "新访谈"
     return {
         "topic": topic,
-        "description": "",
-        "description_generated": False,
-        "confidence": 0.48,
-        "reason": reason or "已根据原始输入整理为访谈主题",
+        "description": description,
+        "description_generated": bool(description),
+        "confidence": 0.56 if description else 0.48,
+        "reason": reason or ("已根据原始输入整理为访谈主题和描述" if description else "已根据原始输入整理为访谈主题"),
         "source": "local_fallback",
     }
 
@@ -28193,7 +28282,11 @@ def normalize_session_draft_payload(parsed: dict, user_input: str, source: str =
     description_generated = bool(parsed.get("description_generated"))
     raw_description = parsed.get("description") or parsed.get("summary") or parsed.get("context") or ""
     description = normalize_session_draft_text(raw_description, SESSION_DRAFT_DESCRIPTION_MAX_CHARS)
-    if not description_generated:
+    input_description = build_session_draft_description_from_input(user_input)
+    if input_description and ("：" in input_description or not description_generated):
+        description = input_description
+        description_generated = True
+    elif not description_generated:
         description = ""
 
     try:

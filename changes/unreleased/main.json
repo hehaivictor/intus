@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "a998faf",
+  "committedAt": "2026-05-18T17:38:21+08:00",
+  "versionType": "patch",
+  "title": "修复首页访谈草稿上下文丢失",
+  "changes": [
+    "修复智能体类需求被压缩成泛化访谈主题的问题。",
+    "优化会话草稿描述生成，将原始需求结构化为背景、能力、目标和待确认重点。",
+    "测试补充首页输入草稿生成的上下文保留与 AI 泛化主题修复回归。"
+  ],
+  "changedFiles": [
+    "tests/test_api_comprehensive.py",
+    "web/server.py"
+  ]
+}

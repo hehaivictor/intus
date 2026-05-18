@@ -4099,6 +4099,71 @@ class ComprehensiveApiTests(unittest.TestCase):
         finally:
             self.server.resolve_ai_client = old_resolve_ai_client
 
+    def test_session_draft_from_input_keeps_domain_context_for_agent_requirement(self):
+        self._register()
+
+        raw_input = "博大纺织想要做一个能够实时查询原材料价格的智能体可以辅助董事长做决策，具体需要哪些功能"
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: None
+            response = self.client.post("/api/sessions/draft-from-input", json={"input": raw_input})
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertNotEqual(payload.get("topic"), "智能体规划访谈")
+            self.assertIn("原材料价格", payload.get("topic", ""))
+            self.assertIn("智能体", payload.get("topic", ""))
+            description = payload.get("description", "")
+            self.assertIn("业务背景：博大纺织", description)
+            self.assertIn("核心能力：实时查询原材料价格的智能体", description)
+            self.assertIn("使用目标：辅助董事长做决策", description)
+            self.assertIn("待确认重点：需要哪些功能", description)
+            self.assertTrue(payload.get("description_generated"))
+            self.assertEqual(payload.get("source"), "local_fallback")
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
+    def test_session_draft_from_input_repairs_generic_agent_ai_draft(self):
+        self._register()
+
+        raw_input = "博大纺织想要做一个能够实时查询原材料价格的智能体可以辅助董事长做决策，具体需要哪些功能"
+
+        class FakeMessages:
+            def create(self, **_kwargs):
+                return types.SimpleNamespace(
+                    content=[
+                        types.SimpleNamespace(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "topic": "智能体规划访谈",
+                                    "description": "",
+                                    "description_generated": False,
+                                    "confidence": 0.7,
+                                    "reason": "用户想规划智能体",
+                                },
+                                ensure_ascii=False,
+                            ),
+                        )
+                    ]
+                )
+
+        class FakeClient:
+            messages = FakeMessages()
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: FakeClient() if call_type == "session_draft" else None
+            response = self.client.post("/api/sessions/draft-from-input", json={"input": raw_input})
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("topic"), "原材料价格查询智能体访谈")
+            self.assertIn("使用目标：辅助董事长做决策", payload.get("description", ""))
+            self.assertTrue(payload.get("description_generated"))
+            self.assertEqual(payload.get("source"), "ai")
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
     def test_session_draft_from_input_rejects_empty_input(self):
         self._register()
 

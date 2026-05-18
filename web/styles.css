@@ -799,9 +799,9 @@ html[data-theme="light"] .dv-admin-tab.bg-blue-700 {
 }
 
 .session-actions-menu {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    right: 0.15rem;
+    position: fixed;
+    top: 0.5rem;
+    right: 0.5rem;
     z-index: var(--dv-z-dropdown);
     min-width: 7.5rem;
     border: 1px solid var(--dv-color-border);

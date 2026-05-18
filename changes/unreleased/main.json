@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "f1a4f31",
+  "committedAt": "2026-05-18T18:12:11+08:00",
+  "versionType": "patch",
+  "title": "修复会话删除菜单被侧栏裁剪",
+  "changes": [
+    "修复：会话三点菜单改为按触发按钮计算固定层位置，避免被滚动列表裁剪。",
+    "前端：滚动会话列表时自动关闭操作菜单，并保留视口内兜底位置。",
+    "测试：补充浏览器 smoke 断言删除入口可见可点击，并同步脚本测试锚点。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_scripts_comprehensive.py",
+    "web/app_modules/session_list_state.js",
+    "web/index.html",
+    "web/styles.css"
+  ]
+}

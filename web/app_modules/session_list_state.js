@@ -23,6 +23,7 @@
         newSessionTopicTouched: false,
         newSessionDescriptionTouched: false,
         activeSessionActionsMenu: null,
+        sessionActionsMenuStyle: {},
         filteredSessions: [],
         currentPage: 1,
         pageSize: 10,
@@ -321,15 +322,51 @@
             this.closeSessionListOptions();
         },
 
-        toggleSessionActionsMenu(sessionId) {
+        buildSessionActionsMenuStyle(trigger) {
+            if (!trigger || typeof trigger.getBoundingClientRect !== 'function') {
+                return {};
+            }
+            const rect = trigger.getBoundingClientRect();
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+            const menuWidth = 132;
+            const menuHeight = 48;
+            const gutter = 8;
+            const left = Math.min(
+                Math.max(gutter, rect.right - menuWidth),
+                Math.max(gutter, viewportWidth - menuWidth - gutter),
+            );
+            let top = rect.bottom + 6;
+            if (top + menuHeight + gutter > viewportHeight) {
+                top = rect.top - menuHeight - 6;
+            }
+            top = Math.min(
+                Math.max(gutter, top),
+                Math.max(gutter, viewportHeight - menuHeight - gutter),
+            );
+            return {
+                position: 'fixed',
+                top: `${Math.round(top)}px`,
+                left: `${Math.round(left)}px`,
+                right: 'auto',
+            };
+        },
+
+        toggleSessionActionsMenu(sessionId, event = null) {
             const normalizedId = String(sessionId || '').trim();
             if (!normalizedId) return;
-            this.activeSessionActionsMenu = this.activeSessionActionsMenu === normalizedId ? null : normalizedId;
+            if (this.activeSessionActionsMenu === normalizedId) {
+                this.closeSessionActionsMenu();
+                return;
+            }
+            this.sessionActionsMenuStyle = this.buildSessionActionsMenuStyle(event?.currentTarget || null);
+            this.activeSessionActionsMenu = normalizedId;
             this.showSessionListOptions = false;
         },
 
         closeSessionActionsMenu() {
             this.activeSessionActionsMenu = null;
+            this.sessionActionsMenuStyle = {};
         },
 
         enterSessionBatchMode() {

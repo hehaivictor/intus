@@ -1972,7 +1972,39 @@ async function scenarioSidebarLibraryAgentsTrim(browser, baseUrl) {
       await collapsedBrandButton.click({ timeout: 15000 });
       await page.waitForTimeout(260);
       await page.getByText('所有会话', { exact: true }).waitFor({ timeout: 15000 });
-      await page.locator('.dv-sidebar-session-item', { hasText: '售后回访试点会话' }).first().waitFor({ timeout: 15000 });
+      const sidebarSessionRow = page.locator('.dv-sidebar-session-row', { hasText: '售后回访试点会话' }).first();
+      await sidebarSessionRow.waitFor({ timeout: 15000 });
+      await sidebarSessionRow.hover({ timeout: 15000 });
+      await sidebarSessionRow.locator('.dv-sidebar-session-more').click({ timeout: 15000 });
+      const sessionActionsMenu = page.locator('.session-actions-menu:visible').first();
+      await sessionActionsMenu.waitFor({ timeout: 15000 });
+      const sessionActionsPosition = await sessionActionsMenu.evaluate((el) => getComputedStyle(el).position);
+      if (sessionActionsPosition !== 'fixed') {
+        throw new Error(`会话操作菜单应脱离滚动列表固定展示: ${sessionActionsPosition}`);
+      }
+      const sessionActionsBox = await sessionActionsMenu.boundingBox();
+      const sessionActionsViewport = page.viewportSize();
+      if (
+        !sessionActionsBox ||
+        !sessionActionsViewport ||
+        sessionActionsBox.x < 0 ||
+        sessionActionsBox.y < 0 ||
+        sessionActionsBox.x + sessionActionsBox.width > sessionActionsViewport.width ||
+        sessionActionsBox.y + sessionActionsBox.height > sessionActionsViewport.height
+      ) {
+        throw new Error(`会话操作菜单应直接在视口内可见: box=${JSON.stringify(sessionActionsBox)} viewport=${JSON.stringify(sessionActionsViewport)}`);
+      }
+      const deleteHitTargetVisible = await sessionActionsMenu.locator('.session-actions-delete').evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        return Boolean(target && el.contains(target));
+      });
+      if (!deleteHitTargetVisible) {
+        throw new Error('会话删除入口中心点应可见且可点击，不应被侧栏滚动区域裁剪');
+      }
+      await sessionActionsMenu.locator('.session-actions-delete').click({ timeout: 15000 });
+      await page.locator('[data-dialog-key="showDeleteModal"]:visible').getByText('确认删除', { exact: true }).waitFor({ timeout: 15000 });
+      await page.locator('[data-dialog-key="showDeleteModal"]:visible').getByRole('button', { name: '取消', exact: true }).click({ timeout: 15000 });
 
       const sidebarSearchCount = await page.locator('.dv-app-sidebar .dv-sidebar-search:visible').count();
       if (sidebarSearchCount > 0) {

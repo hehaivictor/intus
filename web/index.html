@@ -1148,7 +1148,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="dv-sidebar-session-list custom-scrollbar" x-show="sessionsLoaded && filteredSessions.length > 0" x-cloak>
+                        <div class="dv-sidebar-session-list custom-scrollbar"
+                             x-show="sessionsLoaded && filteredSessions.length > 0"
+                             @scroll="closeSessionActionsMenu()"
+                             x-cloak>
                             <template x-for="group in sidebarSessionDisplayGroups" :key="group.key">
                                 <section class="dv-sidebar-session-group">
                                     <div x-show="group.showHeader" x-cloak class="dv-sidebar-session-group-title">
@@ -1171,7 +1174,7 @@
                                             </button>
                                             <button type="button"
                                                     class="dv-sidebar-session-more"
-                                                    @click.stop="toggleSessionActionsMenu(session.session_id)"
+                                                    @click.stop="toggleSessionActionsMenu(session.session_id, $event)"
                                                     aria-label="会话操作"
                                                     aria-haspopup="menu"
                                                     :aria-expanded="(activeSessionActionsMenu === session.session_id).toString()">
@@ -1189,6 +1192,7 @@
                                                  x-transition:leave-end="opacity-0 translate-y-1 scale-95"
                                                  @click.outside="activeSessionActionsMenu === session.session_id && closeSessionActionsMenu()"
                                                  class="session-actions-menu"
+                                                 :style="sessionActionsMenuStyle"
                                                  role="menu">
                                                 <button type="button"
                                                         class="session-actions-delete"

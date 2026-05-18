@@ -787,7 +787,7 @@ class ComprehensiveScriptTests(unittest.TestCase):
         group_method_end = session_state_js.index("setSessionSortOrder(sortOrder)", group_method_start)
         group_method = session_state_js[group_method_start:group_method_end]
         sort_method_start = session_state_js.index("setSessionSortOrder(sortOrder)")
-        sort_method_end = session_state_js.index("toggleSessionActionsMenu(sessionId)", sort_method_start)
+        sort_method_end = session_state_js.index("toggleSessionActionsMenu(sessionId, event = null)", sort_method_start)
         sort_method = session_state_js[sort_method_start:sort_method_end]
         self.assertIn("this.closeSessionListOptions();", group_method)
         self.assertIn("this.closeSessionListOptions();", sort_method)

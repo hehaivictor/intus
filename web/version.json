@@ -1,7 +1,18 @@
 {
-  "version": "6.1.9",
-  "releaseDate": "2026-05-19",
+  "version": "6.1.10",
+  "releaseDate": "2026-05-20",
   "changelog": [
+    {
+      "version": "6.1.10",
+      "date": "2026-05-20",
+      "type": "patch",
+      "title": "修复多 worker 下问题生成误中断",
+      "changes": [
+        "修复：将访谈出题 thinking 状态写入共享运行目录，避免 Gunicorn 多 worker 读不到进度导致前端误判中断。",
+        "部署：更新生产 Compose 为系统环境变量入口，并忽略直写参数版本地 YAML。",
+        "测试：补充跨 worker thinking 状态回归与生产 Compose 环境入口断言。"
+      ]
+    },
     {
       "version": "6.1.9",
       "date": "2026-05-19",

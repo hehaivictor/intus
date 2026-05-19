@@ -1,7 +1,18 @@
 {
-  "version": "6.1.7",
-  "releaseDate": "2026-05-18",
+  "version": "6.1.8",
+  "releaseDate": "2026-05-19",
   "changelog": [
+    {
+      "version": "6.1.8",
+      "date": "2026-05-19",
+      "type": "patch",
+      "title": "调整 License 关闭时默认专业版策略",
+      "changes": [
+        "修复：License 校验关闭时忽略已有低等级 License，登录用户默认按专业版能力计算。",
+        "配置：生产 Compose 补齐深度问题模型网关环境变量注入。",
+        "测试：补充 License 关闭默认等级和生产模型 lane 注入回归。"
+      ]
+    },
     {
       "version": "6.1.7",
       "date": "2026-05-18",

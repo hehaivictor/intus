@@ -203,7 +203,20 @@ class RuntimeTokenConfigTests(unittest.TestCase):
         ]:
             compose_text = compose_path.read_text(encoding="utf-8")
             for key in expected_keys:
-                self.assertIn(f"{key}: ${{{key}:-}}", compose_text, f"{compose_path} 缺少 {key}")
+                self.assertRegex(
+                    compose_text,
+                    rf"{key}: \$\{{{key}(?::-|:\?)[^}}]*\}}",
+                    f"{compose_path} 缺少 {key}",
+                )
+
+    def test_production_compose_uses_process_environment_only(self):
+        compose_text = (ROOT_DIR / "deploy" / "docker-compose.production.yml").read_text(encoding="utf-8")
+
+        self.assertNotIn("env_file:", compose_text)
+        self.assertIn("image: registry.cn-hangzhou.aliyuncs.com/public-topeak/intus:${INTUS_IMAGE_TAG:?", compose_text)
+        self.assertIn("CONFIG_RESOLUTION_MODE: env_only", compose_text)
+        self.assertIn("INTUS_CONFIG_RESOLUTION_MODE: env_only", compose_text)
+        self.assertIn("OBJECT_STORAGE_ENDPOINT: http://intus-minio:9000", compose_text)
 
     def test_debug_import_warns_for_explicit_insecure_defaults(self):
         with patch("builtins.print") as mock_print:

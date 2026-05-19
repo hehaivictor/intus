@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "3238327",
+  "committedAt": "2026-05-20T00:12:32+08:00",
+  "versionType": "patch",
+  "title": "修复多 worker 下问题生成误中断",
+  "changes": [
+    "修复：将访谈出题 thinking 状态写入共享运行目录，避免 Gunicorn 多 worker 读不到进度导致前端误判中断。",
+    "部署：更新生产 Compose 为系统环境变量入口，并忽略直写参数版本地 YAML。",
+    "测试：补充跨 worker thinking 状态回归与生产 Compose 环境入口断言。"
+  ],
+  "changedFiles": [
+    ".gitignore",
+    "README.md",
+    "deploy/docker-compose.production.yml",
+    "tests/test_api_comprehensive.py",
+    "tests/test_runtime_token_config.py",
+    "web/server.py"
+  ]
+}

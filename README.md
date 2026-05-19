@@ -131,7 +131,8 @@ python3 scripts/run_gunicorn.py
 - Gunicorn 运行参数由 [web/gunicorn.conf.py](web/gunicorn.conf.py) 从进程环境变量读取
 - 如果只改 `web/config.py`，Gunicorn 相关参数不会自动生效
 - Nginx 示例配置见 [deploy/nginx/intus.conf.example](deploy/nginx/intus.conf.example)
-- 如需使用 Docker Compose 生产部署，请以 [deploy/docker-compose.production.yml](deploy/docker-compose.production.yml) 为唯一正式入口
+- 如需使用 Docker Compose 生产部署，请以 [deploy/docker-compose.production.yml](deploy/docker-compose.production.yml) 为唯一正式入口；该文件不使用 `env_file`，服务器需通过系统环境变量注入配置
+- 镜像版本通过 `INTUS_IMAGE_TAG` 指定，例如 `20260519102006`，不需要在服务器保留 `.env` 或 `deploy/*.env`
 - 生产环境启动前会校验关键安全配置；`SECRET_KEY` 为模板占位值、`INSTANCE_SCOPE_KEY` 为空或 `SMS_PROVIDER=mock` 时会拒绝启动
 
 ## 关键配置项

@@ -37,6 +37,7 @@ web/.env
 web/.env.*
 !web/.env.example
 deploy/*.env
+deploy/*.local.yml
 
 # IDE
 .vscode/

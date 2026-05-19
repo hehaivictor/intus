@@ -205,6 +205,12 @@ class ComprehensiveApiTests(unittest.TestCase):
         self.server.reset_question_generation_stats()
         self.server.reset_question_generation_runtime_stats()
         self.server.reset_report_generation_runtime_stats()
+        with self.server.thinking_status_lock:
+            self.server.thinking_status.clear()
+        thinking_status_dir = self.server.get_thinking_status_dir()
+        if thinking_status_dir.exists():
+            for status_file in thinking_status_dir.glob("*.json"):
+                status_file.unlink()
 
     def _register(self, client=None):
         target = client or self.client
@@ -3232,6 +3238,27 @@ class ComprehensiveApiTests(unittest.TestCase):
         finally:
             self.server.resolve_ai_client = old_resolve_ai_client
             self.server.generate_question_with_tiered_strategy = old_generate_question
+
+    def test_thinking_status_survives_worker_memory_miss(self):
+        self._register()
+        created = self._create_session(topic="跨 worker 思考状态")
+        session_id = created["session_id"]
+
+        self.server.update_thinking_status(session_id, "generating", has_search=False)
+        with self.server.thinking_status_lock:
+            self.server.thinking_status.clear()
+
+        status_resp = self.client.get(f"/api/status/thinking/{session_id}")
+        self.assertEqual(status_resp.status_code, 200, status_resp.get_data(as_text=True))
+        payload = status_resp.get_json() or {}
+        self.assertTrue(payload.get("active"))
+        self.assertEqual("generating", payload.get("stage"))
+        self.assertEqual(2, payload.get("stage_index"))
+
+        self.server.clear_thinking_status(session_id)
+        status_after_clear = self.client.get(f"/api/status/thinking/{session_id}")
+        self.assertEqual(status_after_clear.status_code, 200, status_after_clear.get_data(as_text=True))
+        self.assertFalse((status_after_clear.get_json() or {}).get("active"))
 
     def test_next_question_waits_for_inflight_prefetch(self):
         self._register()

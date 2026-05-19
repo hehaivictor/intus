@@ -3866,6 +3866,7 @@ web_search_active = False
 # ============ 思考进度状态追踪（方案B）============
 thinking_status = {}           # { session_id: { stage, stage_index, total_stages, message } }
 thinking_status_lock = threading.Lock()
+THINKING_STATUS_TTL_SECONDS = 15 * 60
 
 # ============ AI 调度优先级控制 ============
 # 目标：问题/报告优先，摘要/搜索决策后台降级，减少主链路尾延迟。
@@ -13294,19 +13295,81 @@ def update_thinking_status(session_id: str, stage: str, has_search: bool = True)
     # - 无搜索时：分析(0) -> 生成(2)，检索阶段被跳过
     index = stage_info["index"]
 
+    status_payload = {
+        "session_id": session_id,
+        "stage": stage,
+        "stage_index": index,
+        "total_stages": 3,  # 总是3个阶段，无搜索时检索会被快速跳过
+        "message": stage_info["message"],
+        "updated_at": _time.time(),
+    }
+
     with thinking_status_lock:
-        thinking_status[session_id] = {
-            "stage": stage,
-            "stage_index": index,
-            "total_stages": 3,  # 总是3个阶段，无搜索时检索会被快速跳过
-            "message": stage_info["message"],
-        }
+        thinking_status[session_id] = status_payload
+    persist_thinking_status(session_id, status_payload)
 
 
 def clear_thinking_status(session_id: str):
     """清除思考进度状态"""
     with thinking_status_lock:
         thinking_status.pop(session_id, None)
+    delete_persisted_thinking_status(session_id)
+
+
+def get_thinking_status_dir() -> Path:
+    """返回跨 worker 共享的思考状态目录。"""
+    return DATA_DIR / "runtime" / "thinking_status"
+
+
+def get_thinking_status_file(session_id: str) -> Path:
+    session_hash = hashlib.sha256(str(session_id or "").encode("utf-8")).hexdigest()
+    return get_thinking_status_dir() / f"{session_hash}.json"
+
+
+def persist_thinking_status(session_id: str, status_payload: dict):
+    """把思考状态落盘，避免 Gunicorn 多 worker 读不到进程内状态。"""
+    if not session_id or not isinstance(status_payload, dict):
+        return
+    try:
+        status_dir = get_thinking_status_dir()
+        status_dir.mkdir(parents=True, exist_ok=True)
+        status_file = get_thinking_status_file(session_id)
+        tmp_file = status_file.with_name(f".{status_file.name}.{os.getpid()}.tmp")
+        tmp_file.write_text(json.dumps(status_payload, ensure_ascii=False), encoding="utf-8")
+        tmp_file.replace(status_file)
+    except Exception as exc:
+        if ENABLE_DEBUG_LOG:
+            print(f"⚠️ 写入思考状态失败: {exc}")
+
+
+def read_persisted_thinking_status(session_id: str) -> Optional[dict]:
+    """读取跨 worker 思考状态；过期或不匹配时返回空。"""
+    if not session_id:
+        return None
+    status_file = get_thinking_status_file(session_id)
+    try:
+        if not status_file.exists():
+            return None
+        payload = json.loads(status_file.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, dict) or payload.get("session_id") != session_id:
+        return None
+    updated_at = float(payload.get("updated_at") or 0)
+    if updated_at <= 0 or (_time.time() - updated_at) > THINKING_STATUS_TTL_SECONDS:
+        delete_persisted_thinking_status(session_id)
+        return None
+    return payload
+
+
+def delete_persisted_thinking_status(session_id: str):
+    if not session_id:
+        return
+    try:
+        get_thinking_status_file(session_id).unlink(missing_ok=True)
+    except Exception as exc:
+        if ENABLE_DEBUG_LOG:
+            print(f"⚠️ 删除思考状态失败: {exc}")
 
 
 def update_report_generation_status(
@@ -44494,6 +44557,8 @@ def get_thinking_status(session_id):
 
     with thinking_status_lock:
         status = thinking_status.get(session_id)
+    if not status:
+        status = read_persisted_thinking_status(session_id)
 
     if status:
         return jsonify({

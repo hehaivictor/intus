@@ -1,29 +1,104 @@
+# Intus production compose.
+#
+# This file is designed for servers that do not keep any .env file.
+# Export required variables in the server environment, then run:
+#
+#   docker compose -f deploy/docker-compose.production.yml up -d
+#
+# If you copy this file to a deployment directory as docker-compose.yaml,
+# the command becomes:
+#
+#   docker compose up -d
+
 services:
-  intus:
-    container_name: intus
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.production
+  intus-postgres:
+    image: postgres:16-alpine
+    container_name: intus-postgres
     restart: unless-stopped
     environment:
-      TZ: Asia/Shanghai
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in server environment}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in server environment}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in server environment}
+    volumes:
+      - intus-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  intus-minio:
+    image: minio/minio:latest
+    container_name: intus-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID in server environment}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY in server environment}
+    volumes:
+      - intus-minio-data:/data
+    ports:
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  intus-minio-init:
+    image: minio/mc:latest
+    container_name: intus-minio-init
+    depends_on:
+      intus-minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c '
+      mc alias set intus-minio-alias http://intus-minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+      && mc mb --ignore-existing "intus-minio-alias/$$OBJECT_STORAGE_BUCKET"
+      '
+    environment:
+      MINIO_ROOT_USER: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID in server environment}
+      MINIO_ROOT_PASSWORD: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY in server environment}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:?set OBJECT_STORAGE_BUCKET in server environment}
+
+  intus:
+    image: registry.cn-hangzhou.aliyuncs.com/public-topeak/intus:${INTUS_IMAGE_TAG:?set INTUS_IMAGE_TAG in server environment}
+    container_name: intus
+    restart: unless-stopped
+    pull_policy: always
+    depends_on:
+      intus-postgres:
+        condition: service_healthy
+      intus-minio:
+        condition: service_healthy
+      intus-minio-init:
+        condition: service_completed_successfully
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
-      INTUS_LICENSE_ENFORCEMENT_ENABLED: ${INTUS_LICENSE_ENFORCEMENT_ENABLED:-false}
-      LICENSE_ENFORCEMENT_ENABLED: ${LICENSE_ENFORCEMENT_ENABLED:-false}
-      CONFIG_RESOLUTION_MODE: ${CONFIG_RESOLUTION_MODE:-auto}
+      CONFIG_RESOLUTION_MODE: env_only
+      INTUS_CONFIG_RESOLUTION_MODE: env_only
       DEBUG_MODE: ${DEBUG_MODE:-false}
       ENABLE_AI: ${ENABLE_AI:-true}
       ENABLE_DEBUG_LOG: ${ENABLE_DEBUG_LOG:-false}
       ENABLE_WEB_SEARCH: ${ENABLE_WEB_SEARCH:-true}
       ENABLE_VISION: ${ENABLE_VISION:-true}
-      SECRET_KEY: ${SECRET_KEY:-}
+
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in server environment}
+      LICENSE_CODE_SIGNING_SECRET: ${LICENSE_CODE_SIGNING_SECRET:?set LICENSE_CODE_SIGNING_SECRET in server environment}
+      INTUS_LICENSE_ENFORCEMENT_ENABLED: ${INTUS_LICENSE_ENFORCEMENT_ENABLED:-false}
+      LICENSE_ENFORCEMENT_ENABLED: ${LICENSE_ENFORCEMENT_ENABLED:-false}
+      INSTANCE_SCOPE_KEY: ${INSTANCE_SCOPE_KEY:?set INSTANCE_SCOPE_KEY in server environment}
+      INSTANCE_SCOPE_ENFORCEMENT_ENABLED: ${INSTANCE_SCOPE_ENFORCEMENT_ENABLED:-true}
+
       AUTH_DB_PATH: ${AUTH_DB_PATH:-data/auth/users.db}
       LICENSE_DB_PATH: ${LICENSE_DB_PATH:-data/auth/licenses.db}
-      META_INDEX_DB_PATH: ${META_INDEX_DB_PATH:-data/meta_index.db}
-      LICENSE_CODE_SIGNING_SECRET: ${LICENSE_CODE_SIGNING_SECRET:-}
+      META_INDEX_DB_PATH: ${META_INDEX_DB_PATH:?set META_INDEX_DB_PATH in server environment}
+
       ADMIN_USER_IDS: ${ADMIN_USER_IDS:-}
-      ADMIN_PHONE_NUMBERS: ${ADMIN_PHONE_NUMBERS:-}
+      ADMIN_PHONE_NUMBERS: ${ADMIN_PHONE_NUMBERS:?set ADMIN_PHONE_NUMBERS in server environment}
+
       SMS_LOGIN_ENABLED: ${SMS_LOGIN_ENABLED:-true}
       SMS_PROVIDER: ${SMS_PROVIDER:-jdcloud}
       SMS_TEST_CODE: ${SMS_TEST_CODE:-}
@@ -35,58 +110,100 @@ services:
       JD_SMS_TEMPLATE_ID_LOGIN: ${JD_SMS_TEMPLATE_ID_LOGIN:-}
       JD_SMS_TEMPLATE_ID_BIND: ${JD_SMS_TEMPLATE_ID_BIND:-}
       JD_SMS_TEMPLATE_ID_RECOVER: ${JD_SMS_TEMPLATE_ID_RECOVER:-}
+
+      WECHAT_LOGIN_ENABLED: ${WECHAT_LOGIN_ENABLED:-false}
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      WECHAT_REDIRECT_URI: ${WECHAT_REDIRECT_URI:-}
+      WECHAT_OAUTH_SCOPE: ${WECHAT_OAUTH_SCOPE:-snsapi_login}
+
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
       ANTHROPIC_USE_BEARER_AUTH: ${ANTHROPIC_USE_BEARER_AUTH:-true}
-      QUESTION_API_KEY: ${QUESTION_API_KEY:-}
-      QUESTION_BASE_URL: ${QUESTION_BASE_URL:-}
+      QUESTION_API_KEY: ${QUESTION_API_KEY:?set QUESTION_API_KEY in server environment}
+      QUESTION_BASE_URL: ${QUESTION_BASE_URL:?set QUESTION_BASE_URL in server environment}
+      QUESTION_USE_BEARER_AUTH: ${QUESTION_USE_BEARER_AUTH:-true}
       QUESTION_DEEP_API_KEY: ${QUESTION_DEEP_API_KEY:-}
       QUESTION_DEEP_BASE_URL: ${QUESTION_DEEP_BASE_URL:-}
+      QUESTION_DEEP_USE_BEARER_AUTH: ${QUESTION_DEEP_USE_BEARER_AUTH:-true}
       REPORT_API_KEY: ${REPORT_API_KEY:-}
       REPORT_BASE_URL: ${REPORT_BASE_URL:-}
+      REPORT_USE_BEARER_AUTH: ${REPORT_USE_BEARER_AUTH:-true}
       REPORT_DRAFT_API_KEY: ${REPORT_DRAFT_API_KEY:-}
       REPORT_DRAFT_BASE_URL: ${REPORT_DRAFT_BASE_URL:-}
+      REPORT_DRAFT_USE_BEARER_AUTH: ${REPORT_DRAFT_USE_BEARER_AUTH:-true}
       REPORT_REVIEW_API_KEY: ${REPORT_REVIEW_API_KEY:-}
       REPORT_REVIEW_BASE_URL: ${REPORT_REVIEW_BASE_URL:-}
+      REPORT_REVIEW_USE_BEARER_AUTH: ${REPORT_REVIEW_USE_BEARER_AUTH:-true}
       SUMMARY_API_KEY: ${SUMMARY_API_KEY:-}
       SUMMARY_BASE_URL: ${SUMMARY_BASE_URL:-}
+      SUMMARY_USE_BEARER_AUTH: ${SUMMARY_USE_BEARER_AUTH:-true}
       SEARCH_DECISION_API_KEY: ${SEARCH_DECISION_API_KEY:-}
       SEARCH_DECISION_BASE_URL: ${SEARCH_DECISION_BASE_URL:-}
+      SEARCH_DECISION_USE_BEARER_AUTH: ${SEARCH_DECISION_USE_BEARER_AUTH:-true}
       ASSESSMENT_API_KEY: ${ASSESSMENT_API_KEY:-}
       ASSESSMENT_BASE_URL: ${ASSESSMENT_BASE_URL:-}
+      ASSESSMENT_USE_BEARER_AUTH: ${ASSESSMENT_USE_BEARER_AUTH:-true}
+
+      MODEL_NAME: ${MODEL_NAME:-}
+      QUESTION_MODEL_NAME: ${QUESTION_MODEL_NAME:-}
+      QUESTION_MODEL_NAME_DEEP: ${QUESTION_MODEL_NAME_DEEP:-}
+      REPORT_MODEL_NAME: ${REPORT_MODEL_NAME:-}
+      REPORT_DRAFT_MODEL_NAME: ${REPORT_DRAFT_MODEL_NAME:-}
+      REPORT_REVIEW_MODEL_NAME: ${REPORT_REVIEW_MODEL_NAME:-}
+      SUMMARY_MODEL_NAME: ${SUMMARY_MODEL_NAME:-}
+      SEARCH_DECISION_MODEL_NAME: ${SEARCH_DECISION_MODEL_NAME:-}
+      ASSESSMENT_MODEL_NAME: ${ASSESSMENT_MODEL_NAME:-}
+      API_TIMEOUT: ${API_TIMEOUT:-90}
+      REPORT_API_TIMEOUT: ${REPORT_API_TIMEOUT:-210}
+      REPORT_DRAFT_API_TIMEOUT: ${REPORT_DRAFT_API_TIMEOUT:-}
+      REPORT_REVIEW_API_TIMEOUT: ${REPORT_REVIEW_API_TIMEOUT:-}
+
       ZHIPU_API_KEY: ${ZHIPU_API_KEY:-}
       ZHIPU_SEARCH_ENGINE: ${ZHIPU_SEARCH_ENGINE:-search_pro}
-      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
-      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-}
-      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-}
-      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:-}
-      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:-}
-      OBJECT_STORAGE_FORCE_PATH_STYLE: ${OBJECT_STORAGE_FORCE_PATH_STYLE:-true}
+      VISION_API_URL: ${VISION_API_URL:-}
+      VISION_MODEL_NAME: ${VISION_MODEL_NAME:-}
+
+      OBJECT_STORAGE_ENDPOINT: http://intus-minio:9000
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-us-east-1}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:?set OBJECT_STORAGE_BUCKET in server environment}
+      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID in server environment}
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY in server environment}
+      OBJECT_STORAGE_FORCE_PATH_STYLE: "true"
       OBJECT_STORAGE_SIGNATURE_VERSION: ${OBJECT_STORAGE_SIGNATURE_VERSION:-s3v4}
-      OBJECT_STORAGE_PREFIX: ${OBJECT_STORAGE_PREFIX:-}
-      INSTANCE_SCOPE_KEY: ${INSTANCE_SCOPE_KEY:-}
-      INSTANCE_SCOPE_ENFORCEMENT_ENABLED: ${INSTANCE_SCOPE_ENFORCEMENT_ENABLED:-false}
+      OBJECT_STORAGE_PREFIX: ${OBJECT_STORAGE_PREFIX:-intus}
+
       PAPER2SLIDES_API_URL: ${PAPER2SLIDES_API_URL:-}
       PAPER2SLIDES_API_TOKEN: ${PAPER2SLIDES_API_TOKEN:-}
+      PAPER2SLIDES_TIMEOUT: ${PAPER2SLIDES_TIMEOUT:-30}
       PAPER2SLIDES_PROFILE: ${PAPER2SLIDES_PROFILE:-consulting}
       REFLY_API_URL: ${REFLY_API_URL:-}
       REFLY_API_KEY: ${REFLY_API_KEY:-}
       REFLY_WORKFLOW_ID: ${REFLY_WORKFLOW_ID:-}
+      REFLY_INPUT_FIELD: ${REFLY_INPUT_FIELD:-report}
+      REFLY_FILES_FIELD: ${REFLY_FILES_FIELD:-files}
+      REFLY_TIMEOUT: ${REFLY_TIMEOUT:-30}
+      REFLY_POLL_TIMEOUT: ${REFLY_POLL_TIMEOUT:-600}
+      REFLY_POLL_INTERVAL: ${REFLY_POLL_INTERVAL:-2}
+
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 5002
     ports:
-      - "5002:5002"
+      - "${HOST_PORT:-5002}:5002"
     volumes:
-      - ../data:/app/data
-      - ../resources:/app/resources:ro
-      - ../artifacts:/app/artifacts
-      - ../output:/app/output
-    command:
-      - python3
-      - scripts/run_gunicorn.py
+      - intus-app-data:/app/data
+      - intus-app-output:/app/output
+      - intus-app-artifacts:/app/artifacts
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5002/api/status >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 60s
+
+volumes:
+  intus-postgres-data:
+  intus-minio-data:
+  intus-app-data:
+  intus-app-output:
+  intus-app-artifacts:

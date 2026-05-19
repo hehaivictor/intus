@@ -932,12 +932,12 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("styles.css?v=20260519-auth-input-radius-v1", index_html)
         self.assertNotIn("styles.css?v=20260509-report-actions-v1", index_html)
 
-        auth_input_start = styles_css.index(".dv-auth-input {")
+        auth_input_start = styles_css.index("input.dv-auth-input {")
         auth_input_end = styles_css.index("}", auth_input_start)
         auth_input_style = styles_css[auth_input_start:auth_input_end]
         self.assertIn("border-radius: var(--dv-radius-md);", auth_input_style)
         self.assertIn("box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);", auth_input_style)
-        self.assertIn('.dv-auth-input[aria-invalid="true"]', styles_css)
+        self.assertIn('input.dv-auth-input[aria-invalid="true"]', styles_css)
 
         auth_button_start = styles_css.index(".dv-auth-secondary-button {")
         auth_button_end = styles_css.index("}", auth_button_start)

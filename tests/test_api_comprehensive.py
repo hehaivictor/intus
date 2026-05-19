@@ -589,6 +589,29 @@ class ComprehensiveApiTests(unittest.TestCase):
         self.assertEqual(["quick"], status_payload.get("allowed_interview_modes"))
         self.assertEqual("quick", status_payload.get("interview_mode_default"))
 
+    def test_license_disabled_ignores_existing_low_level_license_for_default_capabilities(self):
+        self.server.LICENSE_ENFORCEMENT_ENABLED = False
+        self.server.set_license_enforcement_override(False)
+        self._register()
+        experience_code = self._generate_license_batch(level_key="experience", note="关闭校验默认专业版")["licenses"][0]["code"]
+        activate_payload = self._activate_license(experience_code)
+        self.assertEqual("experience", (activate_payload.get("license") or {}).get("level_key"))
+
+        me_resp = self.client.get("/api/auth/me")
+        self.assertEqual(me_resp.status_code, 200, me_resp.get_data(as_text=True))
+        me_payload = me_resp.get_json() or {}
+        self.assertEqual("professional", (me_payload.get("level") or {}).get("key"))
+        self.assertEqual(["quick", "standard", "deep"], me_payload.get("allowed_interview_modes"))
+        self.assertEqual("deep", me_payload.get("interview_mode_default"))
+
+        status_resp = self.client.get("/api/status")
+        self.assertEqual(status_resp.status_code, 200, status_resp.get_data(as_text=True))
+        status_payload = status_resp.get_json() or {}
+        self.assertFalse(status_payload.get("license_enforcement_enabled"))
+        self.assertEqual("professional", (status_payload.get("level") or {}).get("key"))
+        self.assertEqual(["quick", "standard", "deep"], status_payload.get("allowed_interview_modes"))
+        self.assertEqual("deep", status_payload.get("interview_mode_default"))
+
     def test_status_reports_sms_login_disabled_when_explicitly_closed(self):
         old_enabled = self.server.SMS_LOGIN_ENABLED
         try:

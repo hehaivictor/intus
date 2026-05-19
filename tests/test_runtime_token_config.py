@@ -176,6 +176,35 @@ class RuntimeTokenConfigTests(unittest.TestCase):
             )
         self.assertIn("SMS_PROVIDER=mock", str(ctx.exception))
 
+    def test_production_compose_injects_all_model_gateway_lanes(self):
+        expected_keys = [
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_BASE_URL",
+            "QUESTION_API_KEY",
+            "QUESTION_BASE_URL",
+            "QUESTION_DEEP_API_KEY",
+            "QUESTION_DEEP_BASE_URL",
+            "REPORT_API_KEY",
+            "REPORT_BASE_URL",
+            "REPORT_DRAFT_API_KEY",
+            "REPORT_DRAFT_BASE_URL",
+            "REPORT_REVIEW_API_KEY",
+            "REPORT_REVIEW_BASE_URL",
+            "SUMMARY_API_KEY",
+            "SUMMARY_BASE_URL",
+            "SEARCH_DECISION_API_KEY",
+            "SEARCH_DECISION_BASE_URL",
+            "ASSESSMENT_API_KEY",
+            "ASSESSMENT_BASE_URL",
+        ]
+        for compose_path in [
+            ROOT_DIR / "docker-compose.yaml",
+            ROOT_DIR / "deploy" / "docker-compose.production.yml",
+        ]:
+            compose_text = compose_path.read_text(encoding="utf-8")
+            for key in expected_keys:
+                self.assertIn(f"{key}: ${{{key}:-}}", compose_text, f"{compose_path} 缺少 {key}")
+
     def test_debug_import_warns_for_explicit_insecure_defaults(self):
         with patch("builtins.print") as mock_print:
             module = load_server_module(

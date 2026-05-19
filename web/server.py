@@ -8769,11 +8769,11 @@ def resolve_effective_user_level(
     if not user_row:
         return "experience"
     resolved_license_state = license_state if isinstance(license_state, dict) else get_user_license_state(int(user_row["id"]))
+    if not bool(resolved_license_state.get("enforcement_enabled")):
+        return "professional"
     if bool(resolved_license_state.get("has_valid_license")):
         license_summary = resolved_license_state.get("license") or {}
         return normalize_user_level_key(license_summary.get("level_key"), fallback=DEFAULT_USER_LEVEL_KEY)
-    if not bool(resolved_license_state.get("enforcement_enabled")):
-        return "professional"
     license_summary = resolved_license_state.get("license") or {}
     return normalize_user_level_key(license_summary.get("level_key"), fallback="experience")
 

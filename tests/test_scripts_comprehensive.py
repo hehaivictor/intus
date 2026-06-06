@@ -1176,6 +1176,7 @@ vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
         self.assertIn("ownership-migration-core", scenario_names)
         self.assertIn("license-admin-preview", scenario_names)
         self.assertIn("report-solution-core", scenario_names)
+        self.assertIn("deep-interview-question-quality", scenario_names)
         self.assertIn("report-solution-preview", scenario_names)
         self.assertIn("ownership-migration-governance", scenario_names)
         self.assertIn("access-boundaries", scenario_names)
@@ -1252,6 +1253,15 @@ vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
         self.assertTrue(any(sample["name"] == "share-readonly-regression-must-fail" for sample in asset_target.calibration_samples))
         access_target = next(item for item in scenarios if item.name == "access-boundaries")
         self.assertTrue(any(sample["name"] == "share-readonly-regression-must-fail" for sample in access_target.calibration_samples))
+        deep_interview_target = next(item for item in scenarios if item.name == "deep-interview-question-quality")
+        self.assertEqual("report-solution", deep_interview_target.category)
+        self.assertIn("nightly", deep_interview_target.tags)
+        self.assertTrue(
+            any(
+                case.test_id == "tests.test_question_fast_strategy.QuestionFastStrategyTests.test_deep_high_evidence_reference_docs_uses_full_profile"
+                for case in deep_interview_target.cases
+            )
+        )
         presentation_target = next(item for item in scenarios if item.name == "presentation-map-concurrency")
         self.assertTrue(any(sample["name"] == "presentation-sidecar-integrity-must-fail" for sample in presentation_target.calibration_samples))
         presentation_target = next(item for item in scenarios if item.name == "presentation-map-concurrency")

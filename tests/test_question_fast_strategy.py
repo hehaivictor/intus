@@ -113,6 +113,11 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.server.QUESTION_HIGH_EVIDENCE_DISABLE_DYNAMIC_LANE = True
         self.server.QUESTION_HIGH_EVIDENCE_HEDGED_ENABLED = False
         self.server.QUESTION_HIGH_EVIDENCE_FAST_PATH_ENABLED = True
+        self.server.QUESTION_DEEP_FORCE_FULL_PROMPT = True
+        self.server.QUESTION_DEEP_FORCE_FULL_FOR_HIGH_EVIDENCE = True
+        self.server.QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION = True
+        self.server.QUESTION_DEEP_ALLOW_REFERENCE_LIGHT = False
+        self.server.QUESTION_DEEP_QUALITY_GATE_BLOCKS_FORCE_COMPLETE = True
         self.server.QUESTION_HEDGE_FAILURE_FALLBACK_ENABLED = True
         self.server.QUESTION_HEDGE_REQUIRE_SHADOW_BLOCKER = True
         self.server.QUESTION_FAST_REFERENCE_HEDGE_BYPASS_BUDGET = True
@@ -128,6 +133,14 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.server.SEARCH_DECISION_MAX_INFLIGHT = 1
         self.server.SEARCH_DECISION_PREFETCH_RULE_ONLY = True
         self.server.SEARCH_DECISION_SEMAPHORE = self.server.threading.BoundedSemaphore(self.server.SEARCH_DECISION_MAX_INFLIGHT)
+        self.server.question_ai_client = None
+        self.server.question_deep_ai_client = None
+        self.server.report_ai_client = None
+        self.server.report_draft_ai_client = None
+        self.server.report_review_ai_client = None
+        self.server.summary_ai_client = None
+        self.server.search_decision_ai_client = None
+        self.server.assessment_ai_client = None
         self.server.MAX_TOKENS_QUESTION = 1600
         self.server.INTERVIEW_MODE_MAX_BLINDSPOTS_QUICK = 1
         self.server.INTERVIEW_MODE_MAX_BLINDSPOTS_STANDARD = 2
@@ -511,6 +524,40 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertIn("evidence_fast", profile["selection_reason"])
         self.assertIn("has_reference_docs", profile["selection_reason"])
 
+    def test_deep_high_evidence_reference_docs_uses_full_profile(self):
+        profile = self.server._select_question_generation_runtime_profile(
+            prompt="x" * 3200,
+            truncated_docs=["需求文档A"],
+            decision_meta={
+                "mode": "deep",
+                "should_follow_up": False,
+                "has_search": False,
+                "has_reference_docs": True,
+                "has_truncated_docs": True,
+                "missing_aspects": ["角色分工"],
+                "formal_questions_count": 2,
+                "follow_up_round": 0,
+                "answer_mode": "pick_with_reason",
+                "requires_rationale": True,
+                "evidence_intent": "high",
+                "critical_dimension_hit": True,
+            },
+            base_call_type="question",
+            allow_fast_path=True,
+            mode_strategy={
+                "mode": "deep",
+                "allow_high_evidence": True,
+                "promote_high_evidence": True,
+                "high_evidence_policy": "deep_promoted",
+                "blindspot_cap": 4,
+            },
+        )
+
+        self.assertFalse(profile["allow_fast_path"])
+        self.assertEqual(profile["fast_output_mode"], "full")
+        self.assertIn("deep_full_required", profile["selection_reason"])
+        self.assertNotIn("reference_light", profile["profile_name"])
+
     def test_runtime_profile_uses_reference_light_for_first_high_evidence_question_with_docs(self):
         profile = self.server._select_question_generation_runtime_profile(
             prompt="x" * 2800,
@@ -794,6 +841,68 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertEqual(meta["search_mode"], "rule_only")
         self.assertTrue(len(prompt) > 0)
         self.assertIsInstance(truncated_docs, list)
+
+    def test_deep_full_prompt_includes_question_history_and_evidence_slots(self):
+        original_preflight = self.server.plan_mid_interview_preflight
+        original_ledger = self.server.refresh_session_evidence_ledger
+        self.addCleanup(setattr, self.server, "plan_mid_interview_preflight", original_preflight)
+        self.addCleanup(setattr, self.server, "refresh_session_evidence_ledger", original_ledger)
+
+        self.server.refresh_session_evidence_ledger = lambda _session: {
+            "formal_questions_total": 2,
+            "overall_evidence_density": 0.2,
+            "priority_dimensions": ["target_architecture"],
+        }
+        self.server.plan_mid_interview_preflight = lambda *_args, **_kwargs: {
+            "should_intervene": True,
+            "reason": "目标架构缺少系统边界证据",
+            "probe_slots": ["系统边界", "接口责任人"],
+            "blocked_sections": ["目标架构"],
+            "boost_evidence_intent": True,
+        }
+
+        all_dim_logs = [
+            {
+                "dimension": "target_architecture",
+                "question": "当前系统边界是什么？",
+                "answer": "MES 和 PLM",
+                "is_follow_up": False,
+            },
+            {
+                "dimension": "target_architecture",
+                "question": "哪些接口最不稳定？",
+                "answer": "BOM 同步",
+                "is_follow_up": False,
+            },
+        ]
+        prompt, _truncated_docs, meta = self.server.build_interview_prompt(
+            {
+                "topic": "智能工艺访谈",
+                "interview_mode": "deep",
+                "interview_log": list(all_dim_logs),
+                "scenario_config": {
+                    "dimensions": [
+                        {
+                            "id": "target_architecture",
+                            "name": "目标架构",
+                            "description": "系统边界、接口和数据流",
+                            "key_aspects": ["系统边界", "接口责任", "数据来源"],
+                        }
+                    ]
+                },
+            },
+            "target_architecture",
+            all_dim_logs,
+            output_mode="full",
+            search_mode="rule_only",
+        )
+
+        self.assertEqual(meta.get("output_mode"), "full")
+        self.assertIn("已问问题", prompt)
+        self.assertIn("当前系统边界是什么", prompt)
+        self.assertIn("本题优先补齐的证据槽位", prompt)
+        self.assertIn("系统边界", prompt)
+        self.assertNotIn("每项尽量不超过 14 个字", prompt)
 
     def test_build_prompt_limits_missing_aspects_by_interview_mode(self):
         original_missing_aspects = self.server.get_dimension_missing_aspects
@@ -1504,6 +1613,8 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertIn("report", tier_used)
 
     def test_dynamic_lane_order_promotes_better_lane(self):
+        self.server.question_ai_client = object()
+        self.server.summary_ai_client = object()
         runtime_profile = {
             "profile_name": "question_follow_up_light",
             "fast_prompt_mode": "light",
@@ -1533,6 +1644,8 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertIn("summary", lane_meta["ordered_candidates"])
 
     def test_generate_question_uses_dynamic_lane_order(self):
+        self.server.question_ai_client = object()
+        self.server.summary_ai_client = object()
         runtime_profile = {
             "profile_name": "question_follow_up_light",
             "selection_reason": "follow_up",
@@ -1603,6 +1716,8 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertIn("question", response)
 
     def test_generate_question_applies_lane_specific_runtime_params(self):
+        self.server.question_ai_client = object()
+        self.server.summary_ai_client = object()
         self.server.QUESTION_FAST_TIMEOUT_BY_LANE = {"summary": 7.0}
         self.server.QUESTION_FAST_MAX_TOKENS_BY_LANE = {"summary": 580}
         self.server.QUESTION_HEDGE_DELAY_BY_LANE = {"summary": 0.8}
@@ -1784,6 +1899,57 @@ class QuestionFastStrategyTests(unittest.TestCase):
             3.4,
         )
 
+    def test_question_similarity_detects_semantic_duplicate(self):
+        self.assertTrue(
+            self.server.is_similar_interview_question(
+                "当前最核心的业务痛点是什么？",
+                "目前最大的业务问题主要是什么？",
+            )
+        )
+        self.assertFalse(
+            self.server.is_similar_interview_question(
+                "当前最核心的业务痛点是什么？",
+                "需要对接哪些外部系统？",
+            )
+        )
+
+    def test_deep_dimension_does_not_force_complete_when_quality_missing(self):
+        original_budget = self.server.get_follow_up_budget_status
+        original_saturation = self.server.calculate_dimension_saturation
+        original_missing = self.server.get_dimension_missing_aspects
+        original_fatigue = self.server.calculate_user_fatigue
+        original_pending = self.server.has_pending_forced_follow_up
+        self.addCleanup(setattr, self.server, "get_follow_up_budget_status", original_budget)
+        self.addCleanup(setattr, self.server, "calculate_dimension_saturation", original_saturation)
+        self.addCleanup(setattr, self.server, "get_dimension_missing_aspects", original_missing)
+        self.addCleanup(setattr, self.server, "calculate_user_fatigue", original_fatigue)
+        self.addCleanup(setattr, self.server, "has_pending_forced_follow_up", original_pending)
+
+        self.server.get_follow_up_budget_status = lambda *_args, **_kwargs: {"can_follow_up": True}
+        self.server.calculate_dimension_saturation = lambda *_args, **_kwargs: {
+            "coverage_score": 0.5,
+            "depth_score": 0.4,
+            "volume_score": 0.4,
+            "saturation_score": 0.45,
+        }
+        self.server.get_dimension_missing_aspects = lambda *_args, **_kwargs: ["系统边界", "数据来源"]
+        self.server.calculate_user_fatigue = lambda *_args, **_kwargs: {"fatigue_score": 0.0, "detected_signals": []}
+        self.server.has_pending_forced_follow_up = lambda *_args, **_kwargs: False
+
+        session = {
+            "interview_mode": "deep",
+            "interview_log": [
+                {"dimension": "target_architecture", "question": f"Q{idx}", "answer": "短答", "is_follow_up": False}
+                for idx in range(6)
+            ],
+        }
+
+        result = self.server.evaluate_dimension_completion_v2(session, "target_architecture")
+
+        self.assertFalse(result["can_complete"])
+        self.assertEqual(result["action"], "evidence_gap_confirm")
+        self.assertTrue(result["quality_warning"])
+
 
     def test_prefetch_runtime_profile_uses_independent_params(self):
         self.server.QUESTION_FAST_TIMEOUT = 7.0
@@ -1827,6 +1993,8 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertEqual(profile["full_max_tokens"], 1200)
 
     def test_generate_prefetch_question_keeps_background_runtime_isolation(self):
+        self.server.question_ai_client = object()
+        self.server.summary_ai_client = object()
         self.server.QUESTION_FAST_TIMEOUT_BY_LANE = {"summary": 7.0}
         self.server.QUESTION_FAST_MAX_TOKENS_BY_LANE = {"summary": 580}
         self.server.QUESTION_HEDGE_DELAY_BY_LANE = {"summary": 0.8}

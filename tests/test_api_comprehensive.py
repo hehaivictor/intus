@@ -3423,6 +3423,82 @@ class ComprehensiveApiTests(unittest.TestCase):
         with self.server.prefetch_cache_lock:
             self.assertNotIn(dimension, self.server.prefetch_cache.get(session_id, {}))
 
+    def test_next_question_discards_semantic_duplicate_prefetch(self):
+        self._register()
+        created = self._create_session(topic="重复预生成丢弃", interview_mode="deep")
+        session_id = created["session_id"]
+        dimension = list(created["dimensions"].keys())[0]
+        self._submit_answer(
+            session_id,
+            dimension,
+            question="当前最核心的业务痛点是什么？",
+            answer="当前主要卡在跨部门协作成本高。",
+        )
+        session_file = self.server.SESSIONS_DIR / f"{session_id}.json"
+        session_signature = self.server.get_file_signature(session_file)
+        duplicate_question = "目前最大的业务问题主要是什么？"
+
+        with self.server.prefetch_cache_lock:
+            self.server.prefetch_cache.setdefault(session_id, {})[dimension] = {
+                "question_data": {
+                    "question": duplicate_question,
+                    "options": ["协作效率", "系统集成", "数据质量"],
+                    "multi_select": False,
+                    "dimension": dimension,
+                    "ai_generated": True,
+                },
+                "created_at": time.time(),
+                "topic": created.get("topic"),
+                "session_signature": session_signature,
+                "valid": True,
+            }
+
+        next_q = self.client.post(
+            f"/api/sessions/{session_id}/next-question",
+            json={"dimension": dimension},
+        )
+
+        self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
+        payload = next_q.get_json() or {}
+        self.assertNotEqual(payload.get("question"), duplicate_question)
+        self.assertFalse(payload.get("prefetched", False))
+
+    def test_next_question_discards_semantic_duplicate_result_cache(self):
+        self._register()
+        created = self._create_session(topic="重复结果缓存丢弃", interview_mode="deep")
+        session_id = created["session_id"]
+        dimension = list(created["dimensions"].keys())[0]
+        self._submit_answer(
+            session_id,
+            dimension,
+            question="当前最核心的业务痛点是什么？",
+            answer="当前主要卡在跨部门协作成本高。",
+        )
+        session_file = self.server.SESSIONS_DIR / f"{session_id}.json"
+        session_signature = self.server.get_file_signature(session_file)
+        cache_key = self.server._build_question_result_cache_key(session_id, dimension, session_signature)
+        duplicate_question = "目前最大的业务问题主要是什么？"
+        self.server._set_question_result_cache(
+            cache_key,
+            {
+                "question": duplicate_question,
+                "options": ["协作效率", "系统集成", "数据质量"],
+                "multi_select": False,
+                "dimension": dimension,
+                "ai_generated": True,
+            },
+        )
+
+        next_q = self.client.post(
+            f"/api/sessions/{session_id}/next-question",
+            json={"dimension": dimension},
+        )
+
+        self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
+        payload = next_q.get_json() or {}
+        self.assertNotEqual(payload.get("question"), duplicate_question)
+        self.assertFalse(payload.get("cached", False))
+
     def test_complete_dimension_requires_coverage_threshold(self):
         self._register()
         created = self._create_session(topic="完成维度测试")

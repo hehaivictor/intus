@@ -366,6 +366,26 @@ class RuntimeTokenConfigTests(unittest.TestCase):
         self.assertEqual(selected_lane, "assessment")
         self.assertEqual(module.resolve_model_name(call_type="assessment_score"), "glm-assessment")
 
+    def test_deep_question_model_override_does_not_change_other_lanes(self):
+        module = load_server_module(
+            {
+                "QUESTION_MODEL_NAME": "deepseek-chat",
+                "QUESTION_MODEL_NAME_DEEP": "glm-5.1",
+                "REPORT_MODEL_NAME": "deepseek-reasoner",
+                "SUMMARY_MODEL_NAME": "deepseek-chat",
+                "ASSESSMENT_MODEL_NAME": "deepseek-chat",
+            }
+        )
+        module._is_question_lane_available_for_model = lambda _model_name: True
+
+        overrides, fallback = module.resolve_interview_mode_lane_model_overrides("deep")
+
+        self.assertFalse(fallback)
+        self.assertEqual(overrides.get("question"), "glm-5.1")
+        self.assertEqual(module.REPORT_MODEL_NAME, "deepseek-reasoner")
+        self.assertEqual(module.SUMMARY_MODEL_NAME, "deepseek-chat")
+        self.assertEqual(module.ASSESSMENT_MODEL_NAME, "deepseek-chat")
+
     def test_report_phase_models_apply_on_report_lane(self):
         module = load_server_module(
             {

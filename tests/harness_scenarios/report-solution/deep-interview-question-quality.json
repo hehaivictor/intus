@@ -1,0 +1,44 @@
+{
+  "name": "deep-interview-question-quality",
+  "category": "report-solution",
+  "description": "覆盖深度访谈问题生成的 full prompt 策略、问题语义去重、证据缺口 gate 和 deep question lane 模型 A/B 边界。",
+  "tags": [
+    "nightly",
+    "report",
+    "interview",
+    "quality"
+  ],
+  "budgets": {
+    "max_duration_ms": 180000
+  },
+  "cases": [
+    {
+      "test_id": "tests.test_question_fast_strategy.QuestionFastStrategyTests.test_deep_high_evidence_reference_docs_uses_full_profile",
+      "label": "深度高取证问题强制 full profile"
+    },
+    {
+      "test_id": "tests.test_question_fast_strategy.QuestionFastStrategyTests.test_deep_full_prompt_includes_question_history_and_evidence_slots",
+      "label": "full prompt 注入已问问题与证据槽位"
+    },
+    {
+      "test_id": "tests.test_question_fast_strategy.QuestionFastStrategyTests.test_question_similarity_detects_semantic_duplicate",
+      "label": "语义相似问题可识别"
+    },
+    {
+      "test_id": "tests.test_question_fast_strategy.QuestionFastStrategyTests.test_deep_dimension_does_not_force_complete_when_quality_missing",
+      "label": "深度质量不足不因题数上限静默完成"
+    },
+    {
+      "test_id": "tests.test_runtime_token_config.RuntimeTokenConfigTests.test_deep_question_model_override_does_not_change_other_lanes",
+      "label": "deep question 模型 A/B 不污染其他 lane"
+    },
+    {
+      "test_id": "tests.test_api_comprehensive.ComprehensiveApiTests.test_next_question_discards_semantic_duplicate_prefetch",
+      "label": "预取缓存命中重复题时丢弃"
+    },
+    {
+      "test_id": "tests.test_api_comprehensive.ComprehensiveApiTests.test_next_question_discards_semantic_duplicate_result_cache",
+      "label": "结果缓存命中重复题时丢弃"
+    }
+  ]
+}

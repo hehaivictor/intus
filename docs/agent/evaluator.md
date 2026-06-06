@@ -51,10 +51,11 @@ tag 约定：
 
 三阶段开始新增了 `tenant` 主题场景，用来单独跟踪 `INSTANCE_SCOPE_KEY`、资产归属、分享 owner 和对象存储元数据边界；其中 `instance-scope-boundaries` 已进入 nightly，`asset-ownership-boundaries` 先作为 manual 深回归保留。
 
-当前场景库已扩到 16 条，除原有的核心链路外，还新增了：
+当前场景库已扩到 20 条，除原有的核心链路外，还新增了：
 
 - `browser-smoke-extended`：更完整的 UI 状态机浏览器回归
 - `browser-smoke-live-extended`：真实后端下的报告详情、方案页与公开分享真链路
+- `deep-interview-question-quality`：深度访谈问题 full prompt、语义去重、质量 gate 和 deep question lane 模型 A/B 边界
 - `account-merge-rollback`：账号合并与管理员回滚链路
 - `license-admin-preview`：License 管理 workflow 预演
 - `env-overlay-resolution`：运行时环境文件叠加解析

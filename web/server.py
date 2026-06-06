@@ -742,6 +742,11 @@ QUESTION_FAST_LIGHT_PROMPT_MAX_CHARS = _cfg_int("QUESTION_FAST_LIGHT_PROMPT_MAX_
 if QUESTION_FAST_LIGHT_PROMPT_MAX_CHARS < 0:
     QUESTION_FAST_LIGHT_PROMPT_MAX_CHARS = 0
 QUESTION_FAST_LIGHT_REFERENCE_DOCS_ENABLED = _cfg_bool("QUESTION_FAST_LIGHT_REFERENCE_DOCS_ENABLED", True)
+QUESTION_DEEP_FORCE_FULL_PROMPT = _cfg_bool("QUESTION_DEEP_FORCE_FULL_PROMPT", True)
+QUESTION_DEEP_FORCE_FULL_FOR_HIGH_EVIDENCE = _cfg_bool("QUESTION_DEEP_FORCE_FULL_FOR_HIGH_EVIDENCE", True)
+QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION = _cfg_bool("QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION", True)
+QUESTION_DEEP_ALLOW_REFERENCE_LIGHT = _cfg_bool("QUESTION_DEEP_ALLOW_REFERENCE_LIGHT", False)
+QUESTION_DEEP_QUALITY_GATE_BLOCKS_FORCE_COMPLETE = _cfg_bool("QUESTION_DEEP_QUALITY_GATE_BLOCKS_FORCE_COMPLETE", True)
 QUESTION_FAST_LIGHT_MAX_REFERENCE_DOCS = _cfg_int("QUESTION_FAST_LIGHT_MAX_REFERENCE_DOCS", 2)
 if QUESTION_FAST_LIGHT_MAX_REFERENCE_DOCS < 1:
     QUESTION_FAST_LIGHT_MAX_REFERENCE_DOCS = 1
@@ -4747,6 +4752,14 @@ def _set_question_result_cache(cache_key: str, value: dict) -> None:
             "value": copy.deepcopy(value),
             "expire_at": expire_at,
         }
+
+
+def _delete_question_result_cache(cache_key: str) -> None:
+    key = str(cache_key or "").strip()
+    if not key:
+        return
+    with question_result_cache_lock:
+        question_result_cache.pop(key, None)
 
 
 def _build_interview_prompt_cache_key(
@@ -8771,6 +8784,11 @@ def resolve_effective_user_level(
         return "experience"
     resolved_license_state = license_state if isinstance(license_state, dict) else get_user_license_state(int(user_row["id"]))
     if not bool(resolved_license_state.get("enforcement_enabled")):
+        if bool(resolved_license_state.get("has_valid_license")):
+            license_summary = resolved_license_state.get("license") or {}
+            license_level_key = normalize_user_level_key(license_summary.get("level_key"), fallback=DEFAULT_USER_LEVEL_KEY)
+            if license_level_key != "experience":
+                return license_level_key
         return "professional"
     if bool(resolved_license_state.get("has_valid_license")):
         license_summary = resolved_license_state.get("license") or {}
@@ -8783,8 +8801,16 @@ def build_user_level_context_for_user(
     user_row: Optional[sqlite3.Row],
     *,
     license_state: Optional[dict] = None,
+    prefer_bound_license_level: bool = False,
 ) -> dict:
-    level_key = resolve_effective_user_level(user_row, license_state=license_state)
+    resolved_license_state = license_state if isinstance(license_state, dict) else (
+        get_user_license_state(int(user_row["id"])) if user_row else {}
+    )
+    if prefer_bound_license_level and bool(resolved_license_state.get("has_valid_license")):
+        license_summary = resolved_license_state.get("license") or {}
+        level_key = normalize_user_level_key(license_summary.get("level_key"), fallback=DEFAULT_USER_LEVEL_KEY)
+    else:
+        level_key = resolve_effective_user_level(user_row, license_state=resolved_license_state)
     return {
         "level": build_user_level_payload(level_key),
         "capabilities": build_user_capabilities_for_level(level_key),
@@ -18714,6 +18740,7 @@ def get_interview_mode_runtime_strategy(mode_or_session) -> dict:
     strategy["mode"] = normalized_mode
     lane_model_overrides, deep_model_fallback = resolve_interview_mode_lane_model_overrides(normalized_mode)
     strategy["lane_model_overrides"] = lane_model_overrides
+    strategy["deep_question_model"] = str(QUESTION_MODEL_NAME_DEEP or "").strip() if normalized_mode == "deep" else ""
     strategy["deep_model_fallback"] = bool(deep_model_fallback)
     strategy["blindspot_cap"] = get_interview_mode_blindspot_cap(normalized_mode)
     strategy["high_evidence_policy"] = INTERVIEW_MODE_HIGH_EVIDENCE_POLICIES.get(normalized_mode, INTERVIEW_MODE_HIGH_EVIDENCE_POLICIES["standard"])
@@ -19900,6 +19927,73 @@ def evaluate_answer_quality(eval_result: dict, answer: str, is_follow_up: bool, 
     }
 
 
+QUESTION_SIMILARITY_STOPWORDS = {
+    "当前",
+    "目前",
+    "主要",
+    "最",
+    "核心",
+    "请",
+    "你",
+    "您",
+    "贵司",
+    "是什么",
+    "哪些",
+    "方面",
+    "一个",
+    "一下",
+    "的",
+}
+
+QUESTION_SIMILARITY_SYNONYMS = {
+    "痛点": "问题",
+    "诉求": "需求",
+    "最关键": "关键",
+    "最大的": "大",
+    "最大": "大",
+    "当前": "",
+    "目前": "",
+}
+
+
+def normalize_interview_question_text(text: object) -> str:
+    raw = str(text or "").strip().lower()
+    for source, target in QUESTION_SIMILARITY_SYNONYMS.items():
+        raw = raw.replace(source, target)
+    raw = re.sub(r"[\s，。？！、；：,.?!;:（）()【】\[\]\"'“”‘’]", "", raw)
+    for word in QUESTION_SIMILARITY_STOPWORDS:
+        raw = raw.replace(word, "")
+    return raw
+
+
+def question_token_set(text: object) -> set[str]:
+    normalized = normalize_interview_question_text(text)
+    if not normalized:
+        return set()
+    if len(normalized) == 1:
+        return {normalized}
+    return {normalized[i:i + 2] for i in range(len(normalized) - 1) if normalized[i:i + 2].strip()}
+
+
+def is_similar_interview_question(left: object, right: object, threshold: float = 0.62) -> bool:
+    left_tokens = question_token_set(left)
+    right_tokens = question_token_set(right)
+    if not left_tokens or not right_tokens:
+        return False
+    score = len(left_tokens & right_tokens) / max(1, len(left_tokens | right_tokens))
+    return score >= threshold
+
+
+def find_similar_interview_question_log(logs: list, question: object, threshold: float = 0.62) -> Optional[dict]:
+    candidate = str(question or "").strip()
+    if not candidate:
+        return None
+    for log in reversed(list(logs or [])):
+        if is_similar_interview_question(log.get("question"), candidate, threshold=threshold):
+            return log
+    return None
+
+
 def evaluate_dimension_completion_v2(session: dict, dimension: str) -> dict:
     """维度完成门禁（V2）：题量 + 质量 + 强制追问。"""
     mode_config = get_interview_mode_config(session)
@@ -19976,11 +20070,26 @@ def evaluate_dimension_completion_v2(session: dict, dimension: str) -> dict:
     # 4. 达到上限保护或预算耗尽，强制完成
     budget_exhausted = not budget_status.get("can_follow_up", True)
     reached_upper_bound = formal_count >= max_formal
+    is_deep_mode = normalize_interview_mode_key(session.get("interview_mode", DEFAULT_INTERVIEW_MODE)) == "deep"
+    if (
+        QUESTION_DEEP_QUALITY_GATE_BLOCKS_FORCE_COMPLETE
+        and is_deep_mode
+        and not meets_quality
+        and reached_upper_bound
+        and not budget_exhausted
+    ):
+        return {
+            "can_complete": False,
+            "reason": "深度模式质量门槛未达成，需要补齐证据缺口",
+            "action": "evidence_gap_confirm",
+            "quality_warning": True,
+            "snapshot": snapshot,
+        }
     if reached_upper_bound or budget_exhausted:
         return {
             "can_complete": True,
-            "reason": "达到上限保护，允许强制完成",
-            "action": "force_complete",
+            "reason": "预算耗尽且质量仍不足，允许带质量警告完成" if budget_exhausted and not meets_quality else "达到上限保护，允许强制完成",
+            "action": "blocked_by_budget_with_quality_gap" if budget_exhausted and not meets_quality else "force_complete",
             "quality_warning": not meets_quality,
             "snapshot": snapshot,
         }
@@ -29811,6 +29920,16 @@ def get_next_question(session_id):
     prefer_prefetch = bool(data.get("prefer_prefetch", False))
     session_signature = get_file_signature(session_file)
     question_cache_key = _build_question_result_cache_key(session_id, dimension, session_signature)
+    cached_dim_logs = [log for log in session.get("interview_log", []) if log.get("dimension") == dimension]
+
+    def _is_duplicate_cached_question(payload: dict, source: str) -> bool:
+        duplicate_log = find_similar_interview_question_log(cached_dim_logs, payload.get("question") if isinstance(payload, dict) else "")
+        if not duplicate_log:
+            return False
+        if ENABLE_DEBUG_LOG:
+            matched_question = duplicate_log.get("question", "")
+            print(f"⚠️ 丢弃重复缓存问题: source={source}, matched={matched_question}")
+        return True
 
     report_resume_question = (
         build_report_follow_up_resume_question(session, dimension)
@@ -29827,11 +29946,14 @@ def get_next_question(session_id):
 
     cached_question_payload = _get_question_result_cache(question_cache_key)
     if isinstance(cached_question_payload, dict):
-        if ENABLE_DEBUG_LOG:
-            print(f"📦 命中问题结果缓存: session={session_id}, dimension={dimension}")
-        _record_cache_hit_metric("question_result_cache_hit")
-        cached_question_payload["cached"] = True
-        return jsonify(cached_question_payload)
+        if _is_duplicate_cached_question(cached_question_payload, "question_result_cache"):
+            _delete_question_result_cache(question_cache_key)
+        else:
+            if ENABLE_DEBUG_LOG:
+                print(f"📦 命中问题结果缓存: session={session_id}, dimension={dimension}")
+            _record_cache_hit_metric("question_result_cache_hit")
+            cached_question_payload["cached"] = True
+            return jsonify(cached_question_payload)
 
     prefetch_wait_seconds = QUESTION_SUBMIT_PREFETCH_WAIT_SECONDS if prefer_prefetch else QUESTION_PREFETCH_INFLIGHT_WAIT_SECONDS
     prefetch_wait_started_at = _time.perf_counter()
@@ -29840,11 +29962,14 @@ def get_next_question(session_id):
     if waited_prefetch:
         cached_question_payload = _get_question_result_cache(question_cache_key)
         if isinstance(cached_question_payload, dict):
-            if ENABLE_DEBUG_LOG:
-                print(f"📦 等待后命中问题结果缓存: session={session_id}, dimension={dimension}")
-            _record_cache_hit_metric("question_result_cache_hit")
-            cached_question_payload["cached"] = True
-            return jsonify(cached_question_payload)
+            if _is_duplicate_cached_question(cached_question_payload, "waited_question_result_cache"):
+                _delete_question_result_cache(question_cache_key)
+            else:
+                if ENABLE_DEBUG_LOG:
+                    print(f"📦 等待后命中问题结果缓存: session={session_id}, dimension={dimension}")
+                _record_cache_hit_metric("question_result_cache_hit")
+                cached_question_payload["cached"] = True
+                return jsonify(cached_question_payload)
 
     # ========== 步骤5: 检查预生成缓存 ==========
     prefetched = get_prefetch_result(session_id, dimension, session_signature=session_signature)
@@ -29933,11 +30058,14 @@ def get_next_question(session_id):
             "missing_aspects": get_dimension_missing_aspects(session, dimension),
         })
 
-        prefetched["decision_meta"] = prefetched_meta
+        if _is_duplicate_cached_question(prefetched, "prefetch_cache"):
+            _delete_question_result_cache(question_cache_key)
+        else:
+            prefetched["decision_meta"] = prefetched_meta
 
-        prefetched["prefetched"] = True
-        _set_question_result_cache(question_cache_key, prefetched)
-        return jsonify(prefetched)
+            prefetched["prefetched"] = True
+            _set_question_result_cache(question_cache_key, prefetched)
+            return jsonify(prefetched)
 
     # 检查是否有 Claude API
     if not resolve_ai_client(call_type="question"):
@@ -30139,13 +30267,15 @@ def get_next_question(session_id):
             result["question_selected_lane"] = selected_lane
             result["question_runtime_profile"] = runtime_profile.get("profile_name", "")
             question_mode_metrics["ai_recommendation"] = bool(result.get("ai_recommendation"))
-            # 兜底：避免连续重复问题（最多自动重试一次）
-            last_log = all_dim_logs[-1] if all_dim_logs else None
-            if last_log and last_log.get("question") == result.get("question"):
+            # 兜底：避免同维度重复问题（最多自动重试一次）
+            duplicate_log = find_similar_interview_question_log(all_dim_logs, result.get("question"))
+            if duplicate_log:
                 if ENABLE_DEBUG_LOG:
                     print("⚠️ 检测到重复问题，自动重试一次")
                 retry_runtime_profile = dict(runtime_profile)
                 retry_runtime_profile["allow_fast_path"] = False
+                decision_meta["duplicate_guard_triggered"] = True
+                decision_meta["duplicate_guard_matched_question"] = duplicate_log.get("question", "")
                 retry_response, retry_result, retry_tier = generate_question_with_tiered_strategy(
                     prompt,
                     truncated_docs=truncated_docs,
@@ -30158,18 +30288,21 @@ def get_next_question(session_id):
                 )
                 if ENABLE_DEBUG_LOG:
                     print(f"⚙️ 重复问题重试通道: {retry_tier}")
-                if retry_result and retry_result.get("question") != last_log.get("question"):
+                retry_duplicate_log = find_similar_interview_question_log(all_dim_logs, retry_result.get("question") if retry_result else "")
+                if retry_result and not retry_duplicate_log:
                     tier_used = retry_tier
                     response = retry_response
                     selected_lane = retry_tier.split(":", 1)[1] if ":" in retry_tier else ""
                     decision_meta["tier_used"] = retry_tier
                     decision_meta["selected_lane"] = selected_lane
+                    decision_meta["duplicate_guard_retry_tier"] = retry_tier
                     retry_result["dimension"] = dimension
                     retry_result["ai_generated"] = True
                     retry_result["decision_meta"] = decision_meta
                     retry_result["question_generation_tier"] = retry_tier
                     retry_result["question_selected_lane"] = selected_lane
                     retry_result["question_runtime_profile"] = runtime_profile.get("profile_name", "")
+                    retry_result["duplicate_guard_triggered"] = True
                     result = retry_result
                     question_mode_metrics["ai_recommendation"] = bool(result.get("ai_recommendation"))
                 else:
@@ -43670,7 +43803,7 @@ def list_report_export_assets(filename):
     if not user_row:
         return jsonify({"error": "请先登录"}), 401
     user_id = int(user_row["id"])
-    level_context = build_user_level_context_for_user(user_row)
+    level_context = build_user_level_context_for_user(user_row, prefer_bound_license_level=True)
 
     normalized = normalize_solution_report_filename(filename)
     if not normalized:
@@ -43703,7 +43836,7 @@ def create_report_export_asset(filename):
     if not user_row:
         return jsonify({"error": "请先登录"}), 401
     user_id = int(user_row["id"])
-    level_context = build_user_level_context_for_user(user_row)
+    level_context = build_user_level_context_for_user(user_row, prefer_bound_license_level=True)
 
     normalized = normalize_solution_report_filename(filename)
     if not normalized:
@@ -43775,7 +43908,7 @@ def download_report_export_asset(filename, asset_id):
     if not user_row:
         return jsonify({"error": "请先登录"}), 401
     user_id = int(user_row["id"])
-    level_context = build_user_level_context_for_user(user_row)
+    level_context = build_user_level_context_for_user(user_row, prefer_bound_license_level=True)
 
     normalized = normalize_solution_report_filename(filename)
     if not normalized:

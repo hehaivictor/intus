@@ -50,6 +50,13 @@
 python3 scripts/replay_preflight_diagnostics.py <session_id> --json
 ```
 
+## 深度访谈问题质量排查
+
+- 先看 `question_runtime_profile`：deep 模式高取证或关键维度不应出现 `reference_light`、`balanced_light` 或 `probe_light`。
+- 再看 `decision_meta.duplicate_guard_triggered`：频繁触发表示当前维度问题过近，需要检查已问问题摘要和证据槽位提示。
+- 再看维度完成结果：`evidence_gap_confirm` 表示质量不足且仍可继续补问；`blocked_by_budget_with_quality_gap` 表示预算耗尽，报告层必须保留证据不足提示。
+- 模型 A/B 只改 `QUESTION_MODEL_NAME_DEEP`；不要同时改 summary、search、assessment 或 report 模型，否则无法判断问题质量变化来自模型还是策略。
+
 ## 常见失误
 
 - 只改前端状态，不补后端失败态，导致恢复链路仍不完整。

@@ -356,6 +356,44 @@ def build_interview_prompt(
     evidence_intent = capture_contract.get("evidence_intent", "low")
     prompt_missing_aspects = list(missing_aspects[:blindspot_cap]) if blindspot_cap > 0 else []
 
+    asked_question_guidance = ""
+    evidence_slot_guidance = ""
+    if not is_lightweight_output:
+        asked_questions = []
+        seen_questions = set()
+        for log in list(all_dim_logs or []):
+            question_text = str(log.get("question") or "").strip()
+            if not question_text or question_text in seen_questions:
+                continue
+            seen_questions.add(question_text)
+            asked_questions.append(question_text)
+        if asked_questions:
+            asked_lines = "\n".join(f"- {_clip_prompt_text(question, 120)}" for question in asked_questions[-8:])
+            asked_question_guidance = f"""
+## 已问问题
+
+{asked_lines}
+
+生成下一题时必须避开上述问题的同义重复；如果必须回到同一主题，必须换成更具体的证据槽位。
+"""
+
+        focus_slots = [str(slot or "").strip() for slot in list(preflight_plan.get("probe_slots", []) or []) if str(slot or "").strip()]
+        if not focus_slots:
+            focus_slots = [str(item or "").strip() for item in prompt_missing_aspects if str(item or "").strip()]
+        blocked_sections = [str(item or "").strip() for item in list(preflight_plan.get("blocked_sections", []) or []) if str(item or "").strip()]
+        if focus_slots or blocked_sections:
+            focus_text = "\n".join(f"- {_clip_prompt_text(slot, 80)}" for slot in focus_slots[:EVIDENCE_LEDGER_MAX_FOCUS_SLOTS])
+            blocked_text = "\n".join(f"- {_clip_prompt_text(section, 80)}" for section in blocked_sections[:3])
+            if blocked_text:
+                blocked_text = f"\n\n当前阻塞段落：\n{blocked_text}"
+            evidence_slot_guidance = f"""
+## 本题优先补齐的证据槽位
+
+{focus_text or '- 关键依据'}{blocked_text}
+
+问题必须要求用户给出对象、范围、数量、责任人、系统边界、时间或决策依据中的至少一种。
+"""
+
     ai_eval_guidance = ""
     if suggest_ai_eval and last_log and not is_lightweight_output:
         ai_eval_guidance = f"""
@@ -548,6 +586,8 @@ def build_interview_prompt(
 这个维度关注：{dimension_description or dim_info.get('description', '')}
 
 该维度已收集了 {formal_questions_count} 个正式问题的回答，关键方面包括：{key_aspects_text}
+{asked_question_guidance}
+{evidence_slot_guidance}
 {ai_eval_guidance}
 {blindspot_guidance}
 {preflight_guidance}
@@ -669,7 +709,8 @@ def _select_question_generation_runtime_profile(
 ) -> dict:
     normalized_meta = dict(decision_meta or {})
     normalized_mode_strategy = dict(mode_strategy or {})
-    normalized_mode = normalize_interview_mode_key(normalized_mode_strategy.get("mode", DEFAULT_INTERVIEW_MODE))
+    requested_mode = normalized_mode_strategy.get("mode") or normalized_meta.get("mode") or normalized_meta.get("interview_mode")
+    normalized_mode = normalize_interview_mode_key(requested_mode, DEFAULT_INTERVIEW_MODE)
     lowered_call_type = str(base_call_type or "").strip().lower()
     is_prefetch_first = lowered_call_type.startswith("prefetch_first")
     is_prefetch = lowered_call_type.startswith("prefetch")
@@ -736,6 +777,9 @@ def _select_question_generation_runtime_profile(
     can_use_light_prompt = not has_search and (
         not has_truncated_docs or (has_reference_docs and QUESTION_FAST_LIGHT_REFERENCE_DOCS_ENABLED)
     )
+    deep_reference_light_allowed = bool(QUESTION_DEEP_ALLOW_REFERENCE_LIGHT or normalized_mode != "deep")
+    if normalized_mode == "deep" and not deep_reference_light_allowed and has_reference_docs:
+        can_use_light_prompt = False
     reference_light_candidate = bool(can_use_light_prompt and has_reference_docs)
     high_evidence_fast_candidate = bool(high_evidence_intent and can_use_light_prompt and QUESTION_HIGH_EVIDENCE_FAST_PATH_ENABLED)
     effective_fast_allowed = bool(allow_fast_path)
@@ -762,6 +806,15 @@ def _select_question_generation_runtime_profile(
     hedge_delay_by_lane = QUESTION_HEDGE_DELAY_BY_LANE
     reasons = []
     release_conservative_mode = bool(QUESTION_RELEASE_CONSERVATIVE_MODE and not is_prefetch)
+    deep_full_required = bool(
+        normalized_mode == "deep"
+        and not is_prefetch
+        and QUESTION_DEEP_FORCE_FULL_PROMPT
+        and (
+            (QUESTION_DEEP_FORCE_FULL_FOR_HIGH_EVIDENCE and high_evidence_intent)
+            or (QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION and critical_dimension_hit)
+        )
+    )
 
     if is_prefetch:
         primary_lane = PREFETCH_QUESTION_PRIMARY_LANE
@@ -807,7 +860,21 @@ def _select_question_generation_runtime_profile(
         if requires_rationale:
             reasons.append("requires_rationale")
 
-    if has_search or (has_truncated_docs and not can_use_light_prompt):
+    if deep_full_required:
+        profile_name = f"{profile_prefix}_deep_evidence_full" if high_evidence_intent else f"{profile_prefix}_deep_full"
+        effective_fast_allowed = False
+        fast_output_mode = "full"
+        full_timeout = _clamp_question_generation_timeout(
+            max(18.0, float(full_timeout or fast_timeout) + (8.0 if high_evidence_intent else 6.0)),
+            minimum=18.0,
+        )
+        full_max_tokens = _clamp_question_generation_tokens(
+            min(max_tokens_ceiling, max(1400, int(full_max_tokens or 0))),
+            minimum=900,
+            ceiling=max_tokens_ceiling,
+        )
+        reasons.append("deep_full_required")
+    elif has_search or (has_truncated_docs and not can_use_light_prompt):
         profile_name = f"{profile_prefix}_evidence_search_full" if high_evidence_intent else f"{profile_prefix}_search_full"
         effective_fast_allowed = False
         if has_search:
@@ -1104,6 +1171,7 @@ def _prepare_question_generation_runtime(
     runtime_profile["blindspot_cap"] = max(1, int(mode_strategy.get("blindspot_cap", INTERVIEW_MODE_MAX_BLINDSPOTS_STANDARD) or INTERVIEW_MODE_MAX_BLINDSPOTS_STANDARD))
     runtime_profile["high_evidence_policy"] = str(mode_strategy.get("high_evidence_policy") or INTERVIEW_MODE_HIGH_EVIDENCE_POLICIES["standard"])
     runtime_profile["deep_model_fallback"] = bool(mode_strategy.get("deep_model_fallback", False))
+    runtime_profile["deep_question_model"] = str(mode_strategy.get("deep_question_model") or "")
     runtime_profile["lane_model_overrides"] = copy.deepcopy(mode_strategy.get("lane_model_overrides", {}) or {})
     runtime_profile["fast_timeout"] = _clamp_question_generation_timeout(
         max(5.0, _safe_float(runtime_profile.get("fast_timeout"), QUESTION_FAST_TIMEOUT) * fast_timeout_scale),

@@ -14,13 +14,13 @@ MODEL_NAME = "deepseek-chat"  # 默认主模型（问题链路）
 # 作用：设置问题生成链路使用的模型名称。
 QUESTION_MODEL_NAME = MODEL_NAME
 # 作用：设置深度访谈模式下 question lane 的专用模型名称。
-QUESTION_MODEL_NAME_DEEP = "deepseek-reasoner"
-# 作用：设置报告主链路使用的模型名称。
-REPORT_MODEL_NAME = "deepseek-reasoner"
+QUESTION_MODEL_NAME_DEEP = "gpt-5.4-mini"
+# 作用：设置报告主链路使用的模型名称；保持轻量基线，避免同网关回退影响摘要/搜索/评分。
+REPORT_MODEL_NAME = "deepseek-chat"
 # 作用：设置报告草案阶段使用的模型名称。
-REPORT_DRAFT_MODEL_NAME = REPORT_MODEL_NAME
+REPORT_DRAFT_MODEL_NAME = "glm-4.7"
 # 作用：设置报告审稿阶段使用的模型名称。
-REPORT_REVIEW_MODEL_NAME = "deepseek-chat"
+REPORT_REVIEW_MODEL_NAME = "glm-4.7"
 # 作用：设置摘要链路使用的模型名称。
 SUMMARY_MODEL_NAME = "deepseek-chat"
 # 作用：设置搜索决策链路使用的模型名称。
@@ -102,6 +102,16 @@ QUESTION_FAST_REFERENCE_PROMPT_MAX_CHARS = max(
 )
 # 作用：控制问题快档是否允许启用轻量参考资料模式。
 QUESTION_FAST_LIGHT_REFERENCE_DOCS_ENABLED = True
+# 作用：深度访谈是否强制关键问题使用完整 Prompt，避免快档轻量化稀释上下文。
+QUESTION_DEEP_FORCE_FULL_PROMPT = True
+# 作用：深度访谈高取证强度问题是否强制完整 Prompt。
+QUESTION_DEEP_FORCE_FULL_FOR_HIGH_EVIDENCE = True
+# 作用：深度访谈关键维度是否强制完整 Prompt。
+QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION = True
+# 作用：深度访谈是否允许参考资料轻量快档；默认关闭以优先保证问题深度。
+QUESTION_DEEP_ALLOW_REFERENCE_LIGHT = False
+# 作用：深度访谈质量不足时是否阻止题数上限直接完成。
+QUESTION_DEEP_QUALITY_GATE_BLOCKS_FORCE_COMPLETE = True
 # 作用：设置轻量参考资料模式下最多注入的参考资料条数。
 QUESTION_FAST_LIGHT_MAX_REFERENCE_DOCS = 2
 # 作用：控制存在截断文档时是否直接跳过问题快档。

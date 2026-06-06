@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "branch": "codex/deep-interview-question-quality",
+  "baseRef": "origin/main",
+  "sourceCommit": "e6421ef",
+  "committedAt": "2026-06-07T02:57:36+08:00",
+  "versionType": "patch",
+  "title": "优化深度访谈问题质量",
+  "changes": [
+    "强制深度访谈关键问题使用完整 Prompt，减少轻量快档导致的追问变浅",
+    "增加语义重复识别、证据槽位提示和质量不足完成门禁",
+    "调整模型默认分工，深度问题使用 gpt-5.4-mini，报告草案和审稿使用 glm-4.7",
+    "补充单元测试、evaluator 场景和实施计划文档"
+  ],
+  "changedFiles": [
+    "docs/agent/evaluator.md",
+    "docs/agent/interview.md",
+    "docs/agent/plans/deep-interview-question-quality-optimization.md",
+    "tests/harness_scenarios/report-solution/deep-interview-question-quality.json",
+    "tests/test_api_comprehensive.py",
+    "tests/test_question_fast_strategy.py",
+    "tests/test_runtime_token_config.py",
+    "tests/test_scripts_comprehensive.py",
+    "web/config.py",
+    "web/server.py",
+    "web/server_modules/interview_runtime.py"
+  ]
+}

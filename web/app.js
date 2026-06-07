@@ -5956,6 +5956,10 @@ function intusApp() {
                     .replace(/(\[[^\]\n]*)[：:]([^\]\n]*\])/g, '$1-$2')
                     .replace(/(\{[^\}\n]*)[：:]([^\}\n]*\})/g, '$1-$2')
                     .replace(/(\|[^|\n]*)[：:]([^|\n]*\|)/g, '$1-$2');
+                nextLine = nextLine.replace(
+                    /^(\s*)([A-Za-z][A-Za-z0-9_]*)\s*-\.\s*([^\.\n<>|\-]+?)\s*\.\s*([A-Za-z][A-Za-z0-9_]*)\s*$/,
+                    (_match, indent, from, label, to) => `${indent}${from} -.->|${String(label || '').trim()}| ${to}`
+                );
 
                 return nextLine;
             }).join('\n');

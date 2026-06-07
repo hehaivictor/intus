@@ -21437,8 +21437,10 @@ flowchart TD
 - **连接线语法规则（严格遵守）**：
   - 无标签连接：`A --> B`
   - 带标签连接：`A -->|标签文字| B`（标签在箭头后面，竖线包围）
+  - 虚线带标签连接：`A -.->|标签文字| B`
   - **禁止使用**：`A --|标签|--> B`（这是错误语法）
   - **禁止使用**：`A -->|标签|--> B`（不能有双箭头）
+  - **禁止使用**：`A -.标签. B`（虚线标签不能省略箭头）
   - **禁止使用**：`A --- B`（虚线无箭头）
 
 ### 3. 需求分类饼图（可选）
@@ -21476,6 +21478,7 @@ flowchart LR
 - 节点ID使用英文字母，标签使用中文
 - 保持结构简洁，避免过度复杂的嵌套
 - 带标签的连接线使用 `-->|标签文字|` 格式（标签在箭头后面）
+- 虚线带标签连接使用 `-.->|标签文字|` 格式，不要写成 `-.标签.`
 
 ### 5. 图表配色与视觉层次（必须）
 - 禁止整张图仅使用单一颜色或同色浅深渐变，至少使用 3 种语义色。
@@ -25604,12 +25607,18 @@ def normalize_mermaid_syntax_v3(raw_value: object) -> str:
     value = str(raw_value or "").replace("```mermaid", "").replace("```", "").strip()
     if not value:
         return ""
-    return value.translate(str.maketrans({
+    value = value.translate(str.maketrans({
         "“": '"',
         "”": '"',
         "‘": "'",
         "’": "'",
     })).strip()
+    value = re.sub(
+        r"(?m)^(\s*)([A-Za-z][A-Za-z0-9_]*)\s*-\.\s*([^\.\n<>|\-]+?)\s*\.\s*([A-Za-z][A-Za-z0-9_]*)\s*$",
+        lambda match: f"{match.group(1)}{match.group(2)} -.->|{match.group(3).strip()}| {match.group(4)}",
+        value,
+    )
+    return value.strip()
 
 
 def _render_priority_table_from_needs_v3(needs: list) -> list[str]:

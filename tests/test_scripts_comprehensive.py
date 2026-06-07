@@ -1104,6 +1104,57 @@ vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
             msg=f"stdout:\\n{completed.stdout}\\nstderr:\\n{completed.stderr}",
         )
 
+    def test_frontend_mermaid_normalizes_implicit_dotted_edge_labels(self):
+        if not shutil.which("node"):
+            self.skipTest("node runtime is required for frontend mermaid regression")
+
+        script = f"""
+const fs = require('fs');
+const vm = require('vm');
+
+const appCode = fs.readFileSync({json.dumps(str(ROOT_DIR / "web" / "app.js"))}, 'utf8');
+const context = {{
+  console,
+  setTimeout,
+  clearTimeout,
+  URLSearchParams,
+  SITE_CONFIG: {{ visualPresets: {{ default: 'rational' }} }},
+  window: {{
+    location: {{ origin: 'http://127.0.0.1:5002', pathname: '/index.html', search: '', hash: '' }},
+    history: {{ replaceState() {{}} }},
+  }},
+}};
+context.globalThis = context;
+vm.createContext(context);
+vm.runInContext(`${{appCode}}\nglobalThis.__intusApp = intusApp;`, context);
+
+const app = context.__intusApp();
+const source = `flowchart TD
+    P1[需求跑偏]
+    B[跨部门需求评审会]
+    P1 -.影响. B`;
+const normalized = app.normalizeMermaidFlowchartLabels(source);
+if (!normalized.includes('P1 -.->|影响| B')) {{
+  throw new Error(`implicit dotted edge label was not normalized: ${{normalized}}`);
+}}
+if (normalized.includes('-.影响.')) {{
+  throw new Error(`invalid dotted edge label remained: ${{normalized}}`);
+}}
+"""
+        completed = subprocess.run(
+            ["node", "-e", script],
+            cwd=ROOT_DIR,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        self.assertEqual(
+            completed.returncode,
+            0,
+            msg=f"stdout:\\n{completed.stdout}\\nstderr:\\n{completed.stderr}",
+        )
+
     def test_agent_guardrails_suite_definitions_cover_core_invariants(self):
         minimal_cases = agent_guardrails.resolve_suite_cases("minimal")
         minimal_ids = [item.test_id for item in minimal_cases]

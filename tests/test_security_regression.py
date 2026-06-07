@@ -4913,6 +4913,19 @@ class SecurityRegressionTests(unittest.TestCase):
         finally:
             self.server.REPORT_V3_RENDER_MERMAID_FROM_DATA = old_flag
 
+    def test_normalize_mermaid_syntax_v3_fixes_implicit_dotted_edge_labels(self):
+        raw = (
+            "flowchart TD\n"
+            "    P1[需求跑偏]\n"
+            "    B[跨部门需求评审会]\n"
+            "    P1 -.影响. B\n"
+        )
+
+        normalized = self.server.normalize_mermaid_syntax_v3(raw)
+
+        self.assertIn("P1 -.->|影响| B", normalized)
+        self.assertNotIn("-.影响.", normalized)
+
     def test_render_report_from_draft_v3_dispatches_assessment_and_custom_template(self):
         backup_assessment = self.server.render_report_from_draft_assessment_v1
         backup_custom = self.server.render_report_from_draft_custom_v1

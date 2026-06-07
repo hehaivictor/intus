@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "bd41bf5",
+  "committedAt": "2026-06-07T10:32:52+08:00",
+  "versionType": "patch",
+  "title": "清理题干中的内嵌选项",
+  "changes": [
+    "修复：在问题规范化阶段剥离模型误塞进题干尾部的选项枚举",
+    "测试：补充题干包含 A/B/C/D 选项列表的回归用例"
+  ],
+  "changedFiles": [
+    "tests/test_runtime_token_config.py",
+    "web/server.py"
+  ]
+}

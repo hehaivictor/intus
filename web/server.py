@@ -29185,6 +29185,59 @@ def _clean_generated_question_text(question: str) -> str:
     return re.sub(r"\s+", " ", str(question or "")).strip()
 
 
+def _find_embedded_option_label_start(question_text: str, option_start: int) -> Optional[int]:
+    prefix = str(question_text or "")[:max(0, option_start)]
+    label_patterns = [
+        r"(?:^|[\s:：;；,，。])(?:[A-Ha-h]|\d{1,2}|[①②③④⑤⑥⑦⑧⑨⑩])[\.\)、:：]\s*$",
+        r"(?:^|[\s:：;；,，。])[（(](?:[A-Ha-h]|\d{1,2}|[①②③④⑤⑥⑦⑧⑨⑩])[）)]\s*$",
+    ]
+    for pattern in label_patterns:
+        match = re.search(pattern, prefix)
+        if match:
+            return match.start()
+    return None
+
+
+def _strip_embedded_option_list_from_question(question: str, options: list[str]) -> str:
+    """移除模型误塞进 question 字段尾部的 A/B/C/D 选项枚举。"""
+    question_text = _clean_generated_question_text(question)
+    clean_options = [
+        _clean_generated_question_text(option)
+        for option in list(options or [])
+        if _clean_generated_question_text(option)
+    ]
+    if len(clean_options) < 2:
+        return question_text
+
+    lowered_question = question_text.lower()
+    cursor = 0
+    option_positions = []
+    for option in clean_options[:6]:
+        lowered_option = option.lower()
+        found_at = lowered_question.find(lowered_option, cursor)
+        if found_at < 0:
+            continue
+        option_positions.append(found_at)
+        cursor = found_at + max(1, len(lowered_option))
+        if len(option_positions) >= 2:
+            break
+
+    if len(option_positions) < 2:
+        return question_text
+
+    first_option_start = option_positions[0]
+    label_start = _find_embedded_option_label_start(question_text, first_option_start)
+    cut_start = label_start if label_start is not None else first_option_start
+    if label_start is None:
+        prefix_tail = question_text[max(0, first_option_start - 8):first_option_start]
+        if not re.search(r"[:：]\s*$", prefix_tail) and first_option_start < int(len(question_text) * 0.35):
+            return question_text
+
+    stripped = question_text[:cut_start].rstrip()
+    stripped = re.sub(r"[\s:：;；,，、。]+$", "", stripped).strip()
+    return stripped or question_text
+
+
 def _normalize_generated_option_label(option: str) -> str:
     """统一移除模型常见的选项序号前缀，避免不同 lane 混用 A/B/C/D 或数字编号。"""
     text = str(option or "").strip()
@@ -29271,7 +29324,6 @@ def normalize_generated_question_result(result: Optional[dict], fallback_contrac
     question_text = _clean_generated_question_text(result.get("question", ""))
     if not question_text:
         return None
-    result["question"] = question_text[:240]
     if "multi_select" not in result:
         result["multi_select"] = False
     if "is_follow_up" not in result:
@@ -29305,6 +29357,10 @@ def normalize_generated_question_result(result: Optional[dict], fallback_contrac
     normalized_options = _normalize_generated_option_list(option_list)
     if len(normalized_options) < 2:
         return None
+    question_text = _strip_embedded_option_list_from_question(question_text, normalized_options)
+    if not question_text:
+        return None
+    result["question"] = question_text[:240]
     result["options"] = normalized_options[:6]
     result["question_multi_select"] = original_multi_select
 

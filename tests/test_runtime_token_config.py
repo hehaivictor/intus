@@ -594,6 +594,36 @@ class RuntimeTokenConfigTests(unittest.TestCase):
             ["成本控制", "实施周期", "数据质量", "组织协同"],
         )
 
+    def test_normalize_generated_question_result_strips_embedded_option_list_from_question(self):
+        module = load_server_module()
+        normalized = module.normalize_generated_question_result(
+            {
+                "question": (
+                    "当你们要判断“该由谁拍板、哪些团队必须参与”时，最常依赖哪一种具体证据？"
+                    "请按最主要的一项选择，并说明对应的对象、范围或责任边界： "
+                    "A. 组织架构/职责分工表里的明确职责归属 "
+                    "B. 系统Owner/接口清单里的系统边界与责任人 "
+                    "C. 历史类似项目里曾经的拍板人和参与团队 "
+                    "D. 业务影响范围/时间节点里对流程、角色或数量的影响"
+                ),
+                "options": [
+                    "组织架构/职责分工表里的明确职责归属",
+                    "系统Owner/接口清单里的系统边界与责任人",
+                    "历史类似项目里曾经的拍板人和参与团队",
+                    "业务影响范围/时间节点里对流程、角色或数量的影响",
+                ],
+                "multi_select": False,
+                "is_follow_up": False,
+            }
+        )
+
+        self.assertEqual(
+            normalized.get("question"),
+            "当你们要判断“该由谁拍板、哪些团队必须参与”时，最常依赖哪一种具体证据？请按最主要的一项选择，并说明对应的对象、范围或责任边界",
+        )
+        for option in normalized.get("options", []):
+            self.assertNotIn(f"A. {option}", normalized.get("question", ""))
+
     def test_generate_question_strategy_strips_prefixed_options(self):
         module = load_server_module()
 

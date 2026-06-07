@@ -806,7 +806,12 @@ def _select_question_generation_runtime_profile(
     hedge_delay_by_lane = QUESTION_HEDGE_DELAY_BY_LANE
     reasons = []
     release_conservative_mode = bool(QUESTION_RELEASE_CONSERVATIVE_MODE and not is_prefetch)
-    deep_full_required = bool(
+    deep_prefetch_full_required = bool(
+        normalized_mode == "deep"
+        and is_prefetch
+        and QUESTION_DEEP_FORCE_FULL_PROMPT
+    )
+    deep_evidence_full_required = bool(
         normalized_mode == "deep"
         and not is_prefetch
         and QUESTION_DEEP_FORCE_FULL_PROMPT
@@ -815,6 +820,7 @@ def _select_question_generation_runtime_profile(
             or (QUESTION_DEEP_FORCE_FULL_FOR_CRITICAL_DIMENSION and critical_dimension_hit)
         )
     )
+    deep_full_required = bool(deep_prefetch_full_required or deep_evidence_full_required)
 
     if is_prefetch:
         primary_lane = PREFETCH_QUESTION_PRIMARY_LANE

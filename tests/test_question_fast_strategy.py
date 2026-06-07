@@ -558,6 +558,42 @@ class QuestionFastStrategyTests(unittest.TestCase):
         self.assertIn("deep_full_required", profile["selection_reason"])
         self.assertNotIn("reference_light", profile["profile_name"])
 
+    def test_deep_prefetch_routes_force_full_profile(self):
+        mode_strategy = self.server.get_interview_mode_runtime_strategy("deep")
+
+        for base_call_type, expected_prefix in (
+            ("prefetch", "prefetch"),
+            ("prefetch_first", "prefetch_first"),
+        ):
+            with self.subTest(base_call_type=base_call_type):
+                profile = self.server._select_question_generation_runtime_profile(
+                    prompt="x" * 2200,
+                    truncated_docs=[],
+                    decision_meta={
+                        "interview_mode": "deep",
+                        "should_follow_up": False,
+                        "hard_triggered": False,
+                        "has_search": False,
+                        "has_reference_docs": False,
+                        "has_truncated_docs": False,
+                        "missing_aspects": [],
+                        "formal_questions_count": 0,
+                        "follow_up_round": 0,
+                        "answer_mode": "pick_only",
+                        "requires_rationale": False,
+                        "evidence_intent": "low",
+                    },
+                    base_call_type=base_call_type,
+                    allow_fast_path=True,
+                    mode_strategy=mode_strategy,
+                )
+
+                self.assertEqual(profile["profile_name"], f"{expected_prefix}_deep_full")
+                self.assertFalse(profile["allow_fast_path"])
+                self.assertEqual(profile["fast_output_mode"], "full")
+                self.assertIn("deep_full_required", profile["selection_reason"])
+                self.assertNotIn("light", profile["profile_name"])
+
     def test_runtime_profile_uses_reference_light_for_first_high_evidence_question_with_docs(self):
         profile = self.server._select_question_generation_runtime_profile(
             prompt="x" * 2800,
@@ -1904,6 +1940,12 @@ class QuestionFastStrategyTests(unittest.TestCase):
             self.server.is_similar_interview_question(
                 "当前最核心的业务痛点是什么？",
                 "目前最大的业务问题主要是什么？",
+            )
+        )
+        self.assertTrue(
+            self.server.is_similar_interview_question(
+                "当前最让你们头疼的痛点是什么？",
+                "当前最影响推进的痛点是什么？",
             )
         )
         self.assertFalse(

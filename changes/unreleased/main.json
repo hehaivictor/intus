@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "04cb358",
+  "committedAt": "2026-06-07T10:03:33+08:00",
+  "versionType": "patch",
+  "title": "修复深度预生成问题浅显重复",
+  "changes": [
+    "深度模式下预生成问题强制使用 full profile",
+    "补强痛点类问题相似度识别，拦截换壳重复题",
+    "增加深度预生成和真实重复样例回归测试"
+  ],
+  "changedFiles": [
+    "tests/test_question_fast_strategy.py",
+    "web/server.py",
+    "web/server_modules/interview_runtime.py"
+  ]
+}

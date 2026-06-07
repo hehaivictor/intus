@@ -19998,6 +19998,150 @@ def find_similar_interview_question_log(logs: list, question: object, threshold:
     return None
 
 
+QUESTION_VISIBLE_GENERIC_OPTION_TERMS = {
+    "效率",
+    "成本",
+    "体验",
+    "质量",
+    "进度",
+    "风险",
+    "资源",
+    "沟通",
+    "协作",
+    "流程",
+    "其他",
+    "不确定",
+}
+
+QUESTION_VISIBLE_CONTEXT_MARKERS = {
+    "业务",
+    "需求",
+    "评审",
+    "方案",
+    "系统",
+    "接口",
+    "数据",
+    "权限",
+    "团队",
+    "研发",
+    "运维",
+    "产品",
+    "项目",
+    "负责人",
+    "责任",
+    "边界",
+    "流程",
+    "审批",
+    "上线",
+    "部署",
+    "预算",
+    "客户",
+    "用户",
+    "集成",
+    "归属",
+    "决策",
+    "交付",
+    "验收",
+}
+
+QUESTION_VISIBLE_GENERIC_QUESTION_PATTERNS = (
+    "最需要优先确认的重点是什么",
+    "最核心诉求",
+    "主要诉求是什么",
+    "最大问题是什么",
+    "核心问题是什么",
+    "最大痛点是什么",
+    "核心痛点是什么",
+    "最让你们头疼的痛点是什么",
+    "最影响推进的痛点是什么",
+    "主要身份是",
+    "使用经验更接近哪种",
+)
+
+
+def _compact_visible_question_text(text: object) -> str:
+    return re.sub(r"[\s，。？！、；：,.?!;:（）()【】\[\]\"'“”‘’]", "", str(text or "").strip())
+
+
+def _has_visible_context_marker(text: object) -> bool:
+    raw = str(text or "")
+    return any(marker in raw for marker in QUESTION_VISIBLE_CONTEXT_MARKERS)
+
+
+def _is_placeholder_visible_option(text: object) -> bool:
+    raw = str(text or "").strip()
+    return bool(re.fullmatch(r"(选项|方案)?[A-D一二三四1234]", raw, flags=re.IGNORECASE))
+
+
+def _is_generic_visible_option(text: object) -> bool:
+    raw = str(text or "").strip()
+    compact = _compact_visible_question_text(raw)
+    if not compact:
+        return True
+    if _is_placeholder_visible_option(compact):
+        return True
+    if compact in QUESTION_VISIBLE_GENERIC_OPTION_TERMS:
+        return True
+    return len(compact) <= 4 and not _has_visible_context_marker(compact)
+
+
+def evaluate_visible_question_quality_gate(
+    payload: dict,
+    session: Optional[dict] = None,
+    dimension: str = "",
+    source: str = "",
+) -> dict:
+    """用户可见问题质量闸门：拦截泛题、模板选项和占位符式问题。"""
+    if not isinstance(payload, dict):
+        return {"passed": False, "reasons": ["invalid_payload"], "source": str(source or "")}
+    if payload.get("completed"):
+        return {"passed": True, "reasons": [], "source": str(source or "")}
+
+    question = str(payload.get("question") or "").strip()
+    compact_question = _compact_visible_question_text(question)
+    options = [
+        str(option or "").strip()
+        for option in (payload.get("options") or [])
+        if str(option or "").strip()
+    ]
+    reasons = []
+
+    if len(compact_question) < 12:
+        reasons.append("short_question")
+
+    generic_question = any(pattern in compact_question for pattern in QUESTION_VISIBLE_GENERIC_QUESTION_PATTERNS)
+    if generic_question:
+        reasons.append("generic_question")
+
+    if len(options) < 2:
+        reasons.append("insufficient_options")
+
+    generic_options = [option for option in options if _is_generic_visible_option(option)]
+    placeholder_options = [option for option in options if _is_placeholder_visible_option(option)]
+    contextual_options = [option for option in options if _has_visible_context_marker(option)]
+    generic_option_ratio = len(generic_options) / max(1, len(options))
+
+    if len(placeholder_options) >= 2 or generic_option_ratio >= 0.75 or (generic_question and not contextual_options):
+        reasons.append("generic_options")
+
+    unique_reasons = []
+    for reason in reasons:
+        if reason not in unique_reasons:
+            unique_reasons.append(reason)
+
+    return {
+        "passed": not unique_reasons,
+        "reasons": unique_reasons,
+        "source": str(source or ""),
+        "dimension": str(dimension or ""),
+        "question_length": len(compact_question),
+        "option_count": len(options),
+        "generic_option_ratio": round(generic_option_ratio, 4),
+        "contextual_option_count": len(contextual_options),
+        "interview_mode": get_mode_identifier(session) if isinstance(session, dict) else "",
+    }
+
+
 def evaluate_dimension_completion_v2(session: dict, dimension: str) -> dict:
     """维度完成门禁（V2）：题量 + 质量 + 强制追问。"""
     mode_config = get_interview_mode_config(session)
@@ -29935,6 +30079,25 @@ def get_next_question(session_id):
             print(f"⚠️ 丢弃重复缓存问题: source={source}, matched={matched_question}")
         return True
 
+    def _is_low_quality_visible_question(payload: dict, source: str) -> bool:
+        quality_gate = evaluate_visible_question_quality_gate(
+            payload if isinstance(payload, dict) else {},
+            session=session,
+            dimension=dimension,
+            source=source,
+        )
+        if quality_gate.get("passed"):
+            return False
+        if ENABLE_DEBUG_LOG:
+            print(f"⚠️ 丢弃低质可见问题: source={source}, reasons={quality_gate.get('reasons')}")
+        return True
+
+    def _should_discard_cached_question(payload: dict, source: str) -> bool:
+        return (
+            _is_duplicate_cached_question(payload, source)
+            or _is_low_quality_visible_question(payload, source)
+        )
+
     report_resume_question = (
         build_report_follow_up_resume_question(session, dimension)
         or build_report_low_signal_resume_question(session, dimension)
@@ -29950,7 +30113,7 @@ def get_next_question(session_id):
 
     cached_question_payload = _get_question_result_cache(question_cache_key)
     if isinstance(cached_question_payload, dict):
-        if _is_duplicate_cached_question(cached_question_payload, "question_result_cache"):
+        if _should_discard_cached_question(cached_question_payload, "question_result_cache"):
             _delete_question_result_cache(question_cache_key)
         else:
             if ENABLE_DEBUG_LOG:
@@ -29966,7 +30129,7 @@ def get_next_question(session_id):
     if waited_prefetch:
         cached_question_payload = _get_question_result_cache(question_cache_key)
         if isinstance(cached_question_payload, dict):
-            if _is_duplicate_cached_question(cached_question_payload, "waited_question_result_cache"):
+            if _should_discard_cached_question(cached_question_payload, "waited_question_result_cache"):
                 _delete_question_result_cache(question_cache_key)
             else:
                 if ENABLE_DEBUG_LOG:
@@ -30062,7 +30225,7 @@ def get_next_question(session_id):
             "missing_aspects": get_dimension_missing_aspects(session, dimension),
         })
 
-        if _is_duplicate_cached_question(prefetched, "prefetch_cache"):
+        if _should_discard_cached_question(prefetched, "prefetch_cache"):
             _delete_question_result_cache(question_cache_key)
         else:
             prefetched["decision_meta"] = prefetched_meta
@@ -30323,6 +30486,70 @@ def get_next_question(session_id):
                     )
                     return jsonify(fallback)
 
+            quality_gate = evaluate_visible_question_quality_gate(
+                result,
+                session=session,
+                dimension=dimension,
+                source="ai_generation",
+            )
+            if not quality_gate.get("passed"):
+                if ENABLE_DEBUG_LOG:
+                    print(f"⚠️ AI 生成问题未通过质量闸门，升档 full 重试: reasons={quality_gate.get('reasons')}")
+                retry_runtime_profile = dict(runtime_profile)
+                retry_runtime_profile["allow_fast_path"] = False
+                decision_meta["quality_gate_triggered"] = True
+                decision_meta["quality_gate_reasons"] = list(quality_gate.get("reasons") or [])
+                retry_response, retry_result, retry_tier = generate_question_with_tiered_strategy(
+                    prompt,
+                    truncated_docs=truncated_docs,
+                    fast_truncated_docs=fast_truncated_docs,
+                    debug=ENABLE_DEBUG_LOG,
+                    base_call_type="question_quality_retry",
+                    allow_fast_path=False,
+                    fast_prompt=prompt,
+                    runtime_profile=retry_runtime_profile,
+                )
+                if ENABLE_DEBUG_LOG:
+                    print(f"⚙️ 质量闸门重试通道: {retry_tier}")
+                retry_duplicate_log = find_similar_interview_question_log(all_dim_logs, retry_result.get("question") if retry_result else "")
+                retry_quality_gate = evaluate_visible_question_quality_gate(
+                    retry_result if isinstance(retry_result, dict) else {},
+                    session=session,
+                    dimension=dimension,
+                    source="ai_generation_quality_retry",
+                )
+                if retry_result and not retry_duplicate_log and retry_quality_gate.get("passed"):
+                    tier_used = retry_tier
+                    response = retry_response
+                    selected_lane = retry_tier.split(":", 1)[1] if ":" in retry_tier else ""
+                    decision_meta["tier_used"] = retry_tier
+                    decision_meta["selected_lane"] = selected_lane
+                    decision_meta["quality_gate_retry_tier"] = retry_tier
+                    decision_meta["quality_gate_retry_reasons"] = list(quality_gate.get("reasons") or [])
+                    retry_result["dimension"] = dimension
+                    retry_result["ai_generated"] = True
+                    retry_result["decision_meta"] = decision_meta
+                    retry_result["question_generation_tier"] = retry_tier
+                    retry_result["question_selected_lane"] = selected_lane
+                    retry_result["question_runtime_profile"] = runtime_profile.get("profile_name", "")
+                    retry_result["question_quality_retry_triggered"] = True
+                    retry_result["question_quality_retry_reasons"] = list(quality_gate.get("reasons") or [])
+                    result = retry_result
+                    question_mode_metrics["ai_recommendation"] = bool(result.get("ai_recommendation"))
+                else:
+                    clear_thinking_status(session_id)
+                    fallback = get_fallback_question(session, dimension)
+                    fallback["detail"] = "AI 生成的问题质量不足，已切换为备用题目"
+                    _record_question_generation_fallback("quality_gate_failed")
+                    question_runtime_durations["parse_repair_ms"] = round(_elapsed_ms(parse_repair_started_at), 2)
+                    _record_question_runtime(
+                        "failed",
+                        runtime_profile=runtime_profile.get("profile_name", ""),
+                        tier_used=tier_used,
+                        selection_reason=runtime_profile.get("selection_reason", ""),
+                    )
+                    return jsonify(fallback)
+
             # ========== 后端强制校验 is_follow_up ==========
             # 防止 AI 绕过追问预算控制，自行将问题标记为追问
             if result.get("is_follow_up", False):
@@ -30392,6 +30619,24 @@ def get_next_question(session_id):
             repaired_result["question_selected_lane"] = selected_lane
             repaired_result["question_runtime_profile"] = runtime_profile.get("profile_name", "")
             question_mode_metrics["ai_recommendation"] = bool(repaired_result.get("ai_recommendation"))
+            repair_quality_gate = evaluate_visible_question_quality_gate(
+                repaired_result,
+                session=session,
+                dimension=dimension,
+                source="ai_generation_repair",
+            )
+            if not repair_quality_gate.get("passed"):
+                fallback = get_fallback_question(session, dimension)
+                fallback["detail"] = "AI 修复后的问题质量不足，已切换为备用题目"
+                _record_question_generation_fallback("quality_gate_repair_failed")
+                question_runtime_durations["parse_repair_ms"] = round(_elapsed_ms(parse_repair_started_at), 2)
+                _record_question_runtime(
+                    "failed",
+                    runtime_profile=runtime_profile.get("profile_name", ""),
+                    tier_used=f"{tier_used}:repair",
+                    selection_reason=runtime_profile.get("selection_reason", ""),
+                )
+                return jsonify(fallback)
             postprocess_started_at = _time.perf_counter()
             trigger_prefetch_if_needed(session, dimension, session_signature=session_signature)
             _set_question_result_cache(question_cache_key, repaired_result)

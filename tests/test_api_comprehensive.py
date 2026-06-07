@@ -3135,10 +3135,14 @@ class ComprehensiveApiTests(unittest.TestCase):
                 "fast_prompt": "fast prompt",
             }
             self.server.generate_question_with_tiered_strategy = lambda *args, **kwargs: (
-                "{\"question\":\"排队后的下一题\"}",
+                "{\"question\":\"排队恢复后，当前最需要确认的系统接口责任边界是哪一类？\"}",
                 {
-                    "question": "排队后的下一题",
-                    "options": ["选项一", "选项二"],
+                    "question": "排队恢复后，当前最需要确认的系统接口责任边界是哪一类？",
+                    "options": [
+                        "业务系统与集成平台的数据责任边界",
+                        "研发团队与运维团队的接口维护边界",
+                        "项目负责人和产品负责人的决策边界",
+                    ],
                     "multi_select": False,
                     "is_follow_up": False,
                 },
@@ -3160,7 +3164,7 @@ class ComprehensiveApiTests(unittest.TestCase):
             elapsed_ms = (time.perf_counter() - started_at) * 1000.0
             self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
             payload = next_q.get_json() or {}
-            self.assertEqual(payload.get("question"), "排队后的下一题")
+            self.assertEqual(payload.get("question"), "排队恢复后，当前最需要确认的系统接口责任边界是哪一类？")
             self.assertEqual(payload.get("question_generation_tier"), "fast:question")
             self.assertGreater(elapsed_ms, 20.0)
         finally:
@@ -3189,7 +3193,7 @@ class ComprehensiveApiTests(unittest.TestCase):
         try:
             self.server.resolve_ai_client = lambda call_type="question": object()
             self.server.generate_question_with_tiered_strategy = lambda *_args, **_kwargs: (
-                '{"question":"当前最需要优先确认的重点是什么？","options":["预算范围","上线节奏"',
+                '{"question":"需求评审进入方案设计前，最需要补齐哪类决策边界证据？","options":["业务方与研发团队的需求边界","系统接口与数据归属边界"',
                 None,
                 "fast:summary",
             )
@@ -3204,7 +3208,7 @@ class ComprehensiveApiTests(unittest.TestCase):
             self.assertTrue(payload.get("ai_generated"))
             self.assertTrue(payload.get("repair_applied"))
             self.assertGreaterEqual(len(payload.get("options", [])), 2)
-            self.assertEqual(payload.get("question"), "当前最需要优先确认的重点是什么？")
+            self.assertEqual(payload.get("question"), "需求评审进入方案设计前，最需要补齐哪类决策边界证据？")
         finally:
             self.server.resolve_ai_client = old_resolve_ai_client
             self.server.generate_question_with_tiered_strategy = old_generate_question
@@ -3288,8 +3292,12 @@ class ComprehensiveApiTests(unittest.TestCase):
                 with self.server.prefetch_cache_lock:
                     self.server.prefetch_cache.setdefault(session_id, {})[dimension] = {
                         "question_data": {
-                            "question": "预生成首题",
-                            "options": ["选项A", "选项B"],
+                            "question": "在首题访谈前，当前最需要确认的需求评审边界是哪一类？",
+                            "options": [
+                                "业务方与研发团队的需求边界",
+                                "系统接口与数据归属边界",
+                                "产品负责人和项目负责人的决策边界",
+                            ],
                             "multi_select": False,
                             "dimension": dimension,
                             "ai_generated": True,
@@ -3312,7 +3320,7 @@ class ComprehensiveApiTests(unittest.TestCase):
 
             self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
             payload = next_q.get_json()
-            self.assertEqual(payload.get("question"), "预生成首题")
+            self.assertEqual(payload.get("question"), "在首题访谈前，当前最需要确认的需求评审边界是哪一类？")
             self.assertTrue(payload.get("prefetched"))
             self.assertEqual(payload.get("dimension"), dimension)
         finally:
@@ -3349,8 +3357,12 @@ class ComprehensiveApiTests(unittest.TestCase):
             def _complete_prefetch():
                 time.sleep(0.12)
                 prefetched_question = {
-                    "question": "提交后命中的预取题",
-                    "options": ["选项A", "选项B"],
+                    "question": "提交回答后，下一步最需要补充哪类系统边界证据？",
+                    "options": [
+                        "跨系统接口的数据来源边界",
+                        "业务团队和研发团队的责任边界",
+                        "上线部署与运维交接边界",
+                    ],
                     "multi_select": False,
                     "dimension": dimension,
                     "ai_generated": True,
@@ -3377,7 +3389,7 @@ class ComprehensiveApiTests(unittest.TestCase):
 
             self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
             payload = next_q.get_json() or {}
-            self.assertEqual(payload.get("question"), "提交后命中的预取题")
+            self.assertEqual(payload.get("question"), "提交回答后，下一步最需要补充哪类系统边界证据？")
             self.assertTrue(payload.get("cached"))
         finally:
             self.server.QUESTION_PREFETCH_INFLIGHT_WAIT_SECONDS = old_wait
@@ -3463,6 +3475,42 @@ class ComprehensiveApiTests(unittest.TestCase):
         self.assertNotEqual(payload.get("question"), duplicate_question)
         self.assertFalse(payload.get("prefetched", False))
 
+    def test_next_question_discards_low_quality_prefetch(self):
+        self._register()
+        created = self._create_session(topic="浅题预生成丢弃", interview_mode="standard")
+        session_id = created["session_id"]
+        dimension = list(created["dimensions"].keys())[0]
+        session_file = self.server.SESSIONS_DIR / f"{session_id}.json"
+        session_signature = self.server.get_file_signature(session_file)
+        shallow_question = "当前最需要优先确认的重点是什么？"
+
+        with self.server.prefetch_cache_lock:
+            self.server.prefetch_cache.setdefault(session_id, {})[dimension] = {
+                "question_data": {
+                    "question": shallow_question,
+                    "options": ["效率", "成本", "体验", "质量"],
+                    "multi_select": False,
+                    "dimension": dimension,
+                    "ai_generated": True,
+                    "question_runtime_profile": "prefetch_probe_light",
+                    "question_generation_tier": "fast:question",
+                },
+                "created_at": time.time(),
+                "topic": created.get("topic"),
+                "session_signature": session_signature,
+                "valid": True,
+            }
+
+        next_q = self.client.post(
+            f"/api/sessions/{session_id}/next-question",
+            json={"dimension": dimension},
+        )
+
+        self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
+        payload = next_q.get_json() or {}
+        self.assertNotEqual(payload.get("question"), shallow_question)
+        self.assertFalse(payload.get("prefetched", False))
+
     def test_next_question_discards_semantic_duplicate_result_cache(self):
         self._register()
         created = self._create_session(topic="重复结果缓存丢弃", interview_mode="deep")
@@ -3498,6 +3546,85 @@ class ComprehensiveApiTests(unittest.TestCase):
         payload = next_q.get_json() or {}
         self.assertNotEqual(payload.get("question"), duplicate_question)
         self.assertFalse(payload.get("cached", False))
+
+    def test_next_question_retries_full_when_fast_question_fails_quality_gate(self):
+        self._register()
+        created = self._create_session(topic="浅题升档重试", interview_mode="standard")
+        session_id = created["session_id"]
+        dimension = list(created["dimensions"].keys())[0]
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        old_prepare_runtime = self.server._prepare_question_generation_runtime
+        old_generate_question = self.server.generate_question_with_tiered_strategy
+        old_trigger_prefetch = self.server.trigger_prefetch_if_needed
+        calls = []
+        try:
+            self.server.resolve_ai_client = lambda call_type="question": object()
+            self.server._prepare_question_generation_runtime = lambda *args, **kwargs: {
+                "full_prompt": "FULL_PROMPT",
+                "truncated_docs": [],
+                "fast_truncated_docs": [],
+                "decision_meta": {},
+                "runtime_profile": {
+                    "profile_name": "question_probe_light",
+                    "selection_reason": "probe_light",
+                    "allow_fast_path": True,
+                    "fast_output_mode": "light",
+                    "full_output_mode": "full",
+                },
+                "fast_prompt": "LIGHT_PROMPT",
+            }
+
+            def _generate_question(*_args, **kwargs):
+                calls.append(dict(kwargs))
+                if len(calls) == 1:
+                    return (
+                        '{"question":"当前最需要优先确认的重点是什么？"}',
+                        {
+                            "question": "当前最需要优先确认的重点是什么？",
+                            "options": ["效率", "成本", "体验", "质量"],
+                            "multi_select": False,
+                            "is_follow_up": False,
+                        },
+                        "fast:question",
+                    )
+                return (
+                    '{"question":"在需求评审进入方案设计前，哪类跨团队边界最容易导致负责人无法拍板？"}',
+                    {
+                        "question": "在需求评审进入方案设计前，哪类跨团队边界最容易导致负责人无法拍板？",
+                        "options": [
+                            "业务方与研发团队的需求边界",
+                            "研发与运维团队的部署责任边界",
+                            "系统集成接口的数据归属边界",
+                            "产品负责人和项目负责人的决策权限边界",
+                        ],
+                        "multi_select": False,
+                        "is_follow_up": False,
+                    },
+                    "full:question",
+                )
+
+            self.server.generate_question_with_tiered_strategy = _generate_question
+            self.server.trigger_prefetch_if_needed = lambda *args, **kwargs: None
+
+            next_q = self.client.post(
+                f"/api/sessions/{session_id}/next-question",
+                json={"dimension": dimension},
+            )
+
+            self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
+            payload = next_q.get_json() or {}
+            self.assertEqual(payload.get("question_generation_tier"), "full:question")
+            self.assertTrue(payload.get("question_quality_retry_triggered"))
+            self.assertEqual(len(calls), 2)
+            self.assertFalse(calls[1].get("allow_fast_path"))
+            self.assertEqual(calls[1].get("base_call_type"), "question_quality_retry")
+            self.assertIn("跨团队边界", payload.get("question", ""))
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+            self.server._prepare_question_generation_runtime = old_prepare_runtime
+            self.server.generate_question_with_tiered_strategy = old_generate_question
+            self.server.trigger_prefetch_if_needed = old_trigger_prefetch
 
     def test_complete_dimension_requires_coverage_threshold(self):
         self._register()

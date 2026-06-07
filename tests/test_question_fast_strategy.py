@@ -1955,6 +1955,40 @@ class QuestionFastStrategyTests(unittest.TestCase):
             )
         )
 
+    def test_visible_question_quality_gate_rejects_generic_question_and_options(self):
+        result = self.server.evaluate_visible_question_quality_gate(
+            {
+                "question": "当前最需要优先确认的重点是什么？",
+                "options": ["效率", "成本", "体验", "质量"],
+                "multi_select": False,
+            },
+            session={"topic": "需求访谈智能体规划访谈"},
+            dimension="customer_needs",
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertIn("generic_question", result["reasons"])
+        self.assertIn("generic_options", result["reasons"])
+
+    def test_visible_question_quality_gate_accepts_contextual_question_and_options(self):
+        result = self.server.evaluate_visible_question_quality_gate(
+            {
+                "question": "在需求评审进入方案设计前，哪类跨团队边界最容易导致负责人无法拍板？",
+                "options": [
+                    "业务方与研发团队的需求边界",
+                    "研发与运维团队的部署责任边界",
+                    "系统集成接口的数据归属边界",
+                    "产品负责人和项目负责人的决策权限边界",
+                ],
+                "multi_select": False,
+            },
+            session={"topic": "需求访谈智能体规划访谈"},
+            dimension="customer_needs",
+        )
+
+        self.assertTrue(result["passed"], result)
+        self.assertEqual(result["reasons"], [])
+
     def test_deep_dimension_does_not_force_complete_when_quality_missing(self):
         original_budget = self.server.get_follow_up_budget_status
         original_saturation = self.server.calculate_dimension_saturation

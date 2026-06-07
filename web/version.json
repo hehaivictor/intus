@@ -1,7 +1,18 @@
 {
-  "version": "6.1.14",
+  "version": "6.1.15",
   "releaseDate": "2026-06-07",
   "changelog": [
+    {
+      "version": "6.1.15",
+      "date": "2026-06-07",
+      "type": "patch",
+      "title": "修复 Mermaid 虚线标签渲染失败",
+      "changes": [
+        "前端：渲染前归一化模型输出的隐式虚线标签",
+        "后端：报告 Mermaid 清洗同步兼容虚线标签语法",
+        "测试：补充前后端 Mermaid 清洗回归用例"
+      ]
+    },
     {
       "version": "6.1.14",
       "date": "2026-06-07",

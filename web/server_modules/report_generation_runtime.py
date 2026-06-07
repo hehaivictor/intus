@@ -1436,6 +1436,57 @@ def run_report_generation_job(
             )
             return report_file, filename
 
+        def persist_report_failure_diagnostics(
+            quality_meta: Optional[dict] = None,
+            error_detail: str = "",
+            failure_reason: str = "legacy_fallback_failed",
+            runtime_path: str = "model_generation_failed",
+            next_hint: str = "请稍后重试，或检查模型服务后重新生成报告",
+        ) -> None:
+            """记录模型报告失败诊断，不生成、不绑定模板报告。"""
+            error_text = str(error_detail or "模型报告生成失败，未生成可交付内容").strip()
+            if len(error_text) > 220:
+                error_text = error_text[:217] + "..."
+            if isinstance(quality_meta, dict):
+                session["last_report_quality_meta"] = quality_meta
+
+            with named_file_lock("sessions", session_id):
+                latest_session = safe_load_session(session_file)
+                if isinstance(latest_session, dict) and ensure_session_owner(latest_session, user_id):
+                    latest_session["updated_at"] = get_utc_now()
+                    if isinstance(quality_meta, dict):
+                        latest_session["last_report_quality_meta"] = quality_meta
+                    if isinstance(session.get("last_report_v3_debug"), dict):
+                        latest_session["last_report_v3_debug"] = session["last_report_v3_debug"]
+                    save_session_json_and_sync(session_file, latest_session)
+
+            update_report_generation_status(
+                session_id,
+                "failed",
+                message=f"报告生成失败：{error_text}",
+                active=False,
+                detail_key="failed",
+                next_hint=next_hint,
+            )
+            set_report_generation_metadata(session_id, {
+                "request_id": request_id,
+                "report_name": "",
+                "report_path": "",
+                "ai_generated": False,
+                "v3_enabled": False,
+                "report_quality_meta": quality_meta if isinstance(quality_meta, dict) else {},
+                "source_report_name": normalized_source_report_name,
+                "report_variant_label": selected_report_variant_label,
+                "error": error_text,
+                "completed_at": get_utc_now(),
+            })
+            _record_report_runtime(
+                "failed",
+                runtime_profile=selected_report_profile,
+                path=runtime_path,
+                reason=failure_reason,
+            )
+
         def build_v3_failure_debug(result: Optional[dict]) -> dict:
             if isinstance(result, dict):
                 return {
@@ -1585,6 +1636,9 @@ def run_report_generation_job(
             selected_report_runtime_cfg,
             preferred_lane="report",
         )
+        fallback_evidence_pack = None
+        model_failure_error_detail = "模型报告生成失败，当前无可用报告模型客户端，已阻止模板报告伪装成正式报告"
+        model_failure_reason = "ai_client_unavailable"
         if resolve_ai_client(call_type="report"):
             if fast_short_circuit_meta.get("triggered"):
                 v3_result = {
@@ -1912,11 +1966,12 @@ def run_report_generation_job(
                 next_hint="回退成功后将直接保存报告",
                 progress_override=78,
             )
-            fallback_evidence_pack = None
             if isinstance(failover_result, dict) and isinstance(failover_result.get("evidence_pack"), dict) and failover_result.get("evidence_pack"):
                 fallback_evidence_pack = failover_result.get("evidence_pack")
             elif isinstance(v3_result, dict) and isinstance(v3_result.get("evidence_pack"), dict) and v3_result.get("evidence_pack"):
                 fallback_evidence_pack = v3_result.get("evidence_pack")
+            model_failure_error_detail = "模型报告生成失败，V3 与标准回退链路均未返回可用内容，已阻止模板报告伪装成正式报告"
+            model_failure_reason = "legacy_fallback_failed"
 
             compact_legacy_prompt = bool(selected_report_runtime_cfg.get("release_conservative_mode", False))
             short_circuit_legacy_fallback = primary_failure.get("reason") == "release_conservative_short_circuit"
@@ -2093,6 +2148,22 @@ def run_report_generation_job(
                     reason=fallback_runtime_reason,
                 )
                 return
+
+        if not bool(globals().get("REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED", False)):
+            quality_meta = _call_runtime_patchpoint(
+                "_server_build_report_quality_meta_fallback",
+                build_report_quality_meta_fallback,
+                session,
+                mode="model_generation_failed",
+                evidence_pack=fallback_evidence_pack,
+            )
+            persist_report_failure_diagnostics(
+                quality_meta=quality_meta,
+                error_detail=model_failure_error_detail,
+                failure_reason=model_failure_reason,
+                runtime_path="model_generation_failed",
+            )
+            return
 
         update_report_generation_status(
             session_id,

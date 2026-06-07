@@ -240,10 +240,12 @@
 
                 await this.loadReports();
                 const reportName = String(data?.report_name || '').trim();
-                const aiGenerated = data?.ai_generated;
-                const aiLabel = aiGenerated === true ? '（AI 生成）' : (aiGenerated === false ? '（模板生成）' : '');
+                const aiLabel = this.getReportGenerationCompletionLabel(data);
                 if (wasTracking) {
-                    this.showToast(`访谈报告生成成功 ${aiLabel}`.trim(), 'success');
+                    this.showToast(
+                        `访谈报告生成成功 ${aiLabel}`.trim(),
+                        this.getReportGenerationCompletionToastType(data)
+                    );
                 }
 
                 if (isCurrentSession) {
@@ -252,9 +254,7 @@
                 return;
             }
 
-            const message = this.normalizeReportGenerationError({
-                message: data?.error || data?.message || '访谈报告生成失败'
-            });
+            const message = this.getReportGenerationFailureMessage(data);
             this.finishReportGenerationFeedback('error', message);
             if (wasTracking) {
                 this.showToast(message, 'error');
@@ -480,6 +480,40 @@
             );
         },
 
+        isModelGenerationFailedResult(result = {}) {
+            const runtimePath = String(result?.runtime_summary?.path || '').trim();
+            const qualityMode = String(result?.report_quality_meta?.mode || '').trim();
+            return runtimePath === 'model_generation_failed' || qualityMode === 'model_generation_failed';
+        },
+
+        isTemplateFallbackReportResult(result = {}) {
+            const runtimePath = String(result?.runtime_summary?.path || '').trim();
+            const qualityMode = String(result?.report_quality_meta?.mode || '').trim();
+            return result?.ai_generated === false
+                || runtimePath === 'simple_template_fallback'
+                || qualityMode === 'simple_template_fallback';
+        },
+
+        getReportGenerationCompletionLabel(result = {}) {
+            if (this.isTemplateFallbackReportResult(result)) {
+                return '（模板兜底，非正式 AI 报告）';
+            }
+            return result?.ai_generated === true ? '（AI 生成）' : '';
+        },
+
+        getReportGenerationCompletionToastType(result = {}) {
+            return this.isTemplateFallbackReportResult(result) ? 'warning' : 'success';
+        },
+
+        getReportGenerationFailureMessage(result = {}) {
+            if (this.isModelGenerationFailedResult(result)) {
+                return '模型报告生成失败，未生成可交付报告，请检查模型服务后重试';
+            }
+            return this.normalizeReportGenerationError({
+                message: result?.error || result?.message || '访谈报告生成失败'
+            });
+        },
+
         normalizeReportGenerationError(error) {
             const raw = String(error?.detail || error?.message || '').trim();
             if (!raw) return '访谈报告生成失败，请稍后重试';
@@ -628,8 +662,11 @@
                 const result = await this.requestGenerateReportWithRetry(sessionId, action, 1, options);
 
                 if (result?.success && !result?.processing && result?.report_name) {
-                    const aiMsg = result.ai_generated ? '（AI 生成）' : '（模板生成）';
-                    this.showToast(`访谈报告生成成功 ${aiMsg}`, 'success');
+                    const aiMsg = this.getReportGenerationCompletionLabel(result);
+                    this.showToast(
+                        `访谈报告生成成功 ${aiMsg}`.trim(),
+                        this.getReportGenerationCompletionToastType(result)
+                    );
                     this.finishReportGenerationFeedback('success');
                     this.currentSession.status = 'completed';
                     await this.openGeneratedReportForSession(sessionId, result.report_name, { forceReload: true });

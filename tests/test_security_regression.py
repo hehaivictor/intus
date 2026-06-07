@@ -2409,6 +2409,102 @@ class SecurityRegressionTests(unittest.TestCase):
             for key, value in fn_backup.items():
                 setattr(self.server, key, value)
 
+    def test_run_report_generation_job_blocks_simple_template_as_success_when_ai_fails(self):
+        user = self._register_user()
+        standard_code = self._generate_license_batch(level_key="standard", note="模板兜底阻断")["licenses"][0]["code"]
+        self._activate_license(standard_code)
+        session_id = self._create_session(topic="模板兜底阻断")
+
+        fn_keys = [
+            "resolve_ai_client",
+            "get_release_conservative_report_short_circuit_meta",
+            "generate_report_v3_pipeline",
+            "attempt_salvage_v3_review_failure",
+            "build_report_prompt_with_options",
+            "call_claude",
+            "generate_simple_report",
+            "save_report_content_and_sync",
+            "ensure_solution_payload_ready",
+            "can_use_v3_failover_lane",
+        ]
+        value_keys = ["REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED"]
+        fn_backup = {key: getattr(self.server, key) for key in fn_keys}
+        value_backup = {key: getattr(self.server, key, None) for key in value_keys}
+        simple_report_calls = []
+        saved_report_calls = []
+        try:
+            self.server.REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = False
+            self.server.resolve_ai_client = lambda *args, **kwargs: object()
+            self.server.get_release_conservative_report_short_circuit_meta = lambda *_args, **_kwargs: {"triggered": False}
+            self.server.generate_report_v3_pipeline = lambda *_args, **_kwargs: {
+                "status": "failed",
+                "reason": "draft_generation_failed",
+                "error": "draft_attempts_exhausted(2),raw_length=0",
+                "parse_stage": "draft",
+                "profile": "balanced",
+                "lane": "report",
+                "phase_lanes": {"draft": "report", "review": "report"},
+                "raw_excerpt": "",
+                "repair_applied": False,
+                "parse_meta": {},
+                "review_issues": [],
+                "final_issue_count": 0,
+                "final_issue_types": [],
+                "failure_stage": "draft",
+                "evidence_pack": {"facts": [{"q_id": "Q1"}], "overall_coverage": 0.5},
+                "timings": {"evidence_pack_ms": 1.0, "draft_gen_ms": 2.0, "review_ms": 0.0},
+            }
+            self.server.attempt_salvage_v3_review_failure = lambda *_args, **_kwargs: {
+                "attempted": False,
+                "success": False,
+                "note": "not_applicable",
+                "error": "",
+            }
+            self.server.build_report_prompt_with_options = lambda *_args, **_kwargs: "legacy prompt"
+            self.server.call_claude = lambda *_args, **_kwargs: ""
+            self.server.can_use_v3_failover_lane = lambda: False
+
+            def _unexpected_simple_report(*_args, **_kwargs):
+                simple_report_calls.append(True)
+                return "# 模板报告"
+
+            def _unexpected_save(*args, **kwargs):
+                saved_report_calls.append((args, kwargs))
+                return self.server.REPORTS_DIR / "should-not-exist.md"
+
+            self.server.generate_simple_report = _unexpected_simple_report
+            self.server.save_report_content_and_sync = _unexpected_save
+            self.server.ensure_solution_payload_ready = lambda *_args, **_kwargs: None
+
+            self.server.run_report_generation_job(
+                session_id,
+                int(user["id"]),
+                "req-block-simple-template",
+                "balanced",
+                "generate",
+                "",
+            )
+
+            status_payload = self.server.build_report_generation_payload(
+                self.server.get_report_generation_record(session_id)
+            )
+            session_file = self.server.SESSIONS_DIR / f"{session_id}.json"
+            saved = self.server.safe_load_session(session_file)
+
+            self.assertEqual("failed", status_payload.get("state"))
+            self.assertIn("模型", status_payload.get("error", ""))
+            self.assertFalse(simple_report_calls)
+            self.assertFalse(saved_report_calls)
+            self.assertNotEqual("completed", saved.get("status"))
+            self.assertFalse(saved.get("current_report_name"))
+            self.assertEqual("model_generation_failed", (saved.get("last_report_quality_meta") or {}).get("mode"))
+            self.assertEqual("draft_generation_failed", (saved.get("last_report_v3_debug") or {}).get("reason"))
+        finally:
+            for key, value in fn_backup.items():
+                setattr(self.server, key, value)
+            for key, value in value_backup.items():
+                setattr(self.server, key, value)
+
     def test_filter_model_review_issues_v3_skips_hallucinated_template_rules(self):
         draft = {
             "overview": "ok",

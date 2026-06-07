@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "dd97549",
+  "committedAt": "2026-06-07T11:24:54+08:00",
+  "versionType": "patch",
+  "title": "阻断模板兜底伪成功",
+  "changes": [
+    "后端：模型报告失败时进入失败态，不再保存模板报告",
+    "前端：区分模型失败与显式模板兜底提示",
+    "测试：补充 AI 失败不绑定模板报告的回归用例"
+  ],
+  "changedFiles": [
+    "tests/test_security_regression.py",
+    "web/app_modules/report_detail_runtime.js",
+    "web/server.py",
+    "web/server_modules/report_generation_runtime.py"
+  ]
+}

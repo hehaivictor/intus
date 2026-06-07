@@ -925,6 +925,7 @@ if REPORT_V3_PROFILE not in {"balanced", "quality"}:
     REPORT_V3_PROFILE = "balanced"
 REPORT_V3_RELEASE_CONSERVATIVE_MODE = _cfg_bool("REPORT_V3_RELEASE_CONSERVATIVE_MODE", True)
 REPORT_V3_RELEASE_CONSERVATIVE_MODE_INITIAL = REPORT_V3_RELEASE_CONSERVATIVE_MODE
+REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = _cfg_bool("REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED", False)
 report_default_review_timeout = min(REPORT_API_TIMEOUT, 120.0 if REPORT_V3_PROFILE == "balanced" else 150.0)
 REPORT_REVIEW_API_TIMEOUT = _cfg_float("REPORT_REVIEW_API_TIMEOUT", report_default_review_timeout)
 REPORT_REVIEW_API_TIMEOUT = max(30.0, min(REPORT_REVIEW_API_TIMEOUT, REPORT_API_TIMEOUT))
@@ -4136,7 +4137,7 @@ REPORT_GENERATION_STAGES = {
     "queued": {"index": 0, "progress": 5, "label": "排队中", "message": "已提交请求，准备生成报告..."},
     "building_prompt": {"index": 1, "progress": 20, "label": "准备中", "message": "正在整理访谈与资料上下文..."},
     "generating": {"index": 2, "progress": 65, "label": "生成中", "message": "正在调用 AI 生成报告正文..."},
-    "fallback": {"index": 3, "progress": 78, "label": "回退中", "message": "AI 响应较慢，正在切换模板生成..."},
+    "fallback": {"index": 3, "progress": 78, "label": "回退中", "message": "AI 响应异常，正在尝试备用生成链路..."},
     "saving": {"index": 4, "progress": 90, "label": "保存中", "message": "正在保存报告并更新会话状态..."},
     "completed": {"index": 5, "progress": 100, "label": "已完成", "message": "报告生成完成"},
     "failed": {"index": 5, "progress": 100, "label": "失败", "message": "报告生成失败"},
@@ -4153,7 +4154,7 @@ REPORT_GENERATION_DETAIL_STATES = {
     "v3_salvage": {"label": "挽救当前草案", "next_hint": "成功后将直接保存报告"},
     "draft_short_circuit": {"label": "跳过 V3 草案", "next_hint": "已直接进入紧凑回退生成"},
     "legacy_fallback": {"label": "紧凑回退生成", "next_hint": "成功后会直接保存报告"},
-    "simple_template_fallback": {"label": "模板兜底生成", "next_hint": "完成后会保存基础报告"},
+    "simple_template_fallback": {"label": "模板兜底生成（显式开启）", "next_hint": "完成后会保存基础报告"},
     "persist_report": {"label": "写入报告文件", "next_hint": "保存完成后即可查看报告"},
     "finished": {"label": "报告已生成", "next_hint": "可返回列表或直接查看报告"},
     "failed": {"label": "生成失败", "next_hint": "可稍后重试或切换更保守策略"},
@@ -25236,6 +25237,7 @@ def _sync_report_generation_runtime_bindings() -> dict:
         "REPORT_API_TIMEOUT": REPORT_API_TIMEOUT,
         "REPORT_DRAFT_API_TIMEOUT": REPORT_DRAFT_API_TIMEOUT,
         "REPORT_REVIEW_API_TIMEOUT": REPORT_REVIEW_API_TIMEOUT,
+        "REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED": REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED,
         "REPORT_V3_FAILOVER_ENABLED": REPORT_V3_FAILOVER_ENABLED,
         "REPORT_V3_FAILOVER_LANE": REPORT_V3_FAILOVER_LANE,
         "REPORT_V3_PROFILE": REPORT_V3_PROFILE,

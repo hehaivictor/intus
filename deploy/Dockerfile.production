@@ -36,10 +36,10 @@ RUN pip install --no-cache-dir \
 
 COPY . /app
 
-RUN leaked_env_files="$(find /app -type f \( -name '.env' -o -name '.env.*' -o -name '*.env' \) ! -path '/app/web/.env.example' -print)" \
-    && if [ -n "$leaked_env_files" ]; then \
-      echo "Sensitive env files must not be baked into the image:" >&2; \
-      printf '%s\n' "$leaked_env_files" >&2; \
+RUN leaked_sensitive_files="$(find /app -type f \( -name '.env' -o -name '.env.*' -o -name '*.env' -o -name '*.local.yml' -o -name '*.local.yaml' \) ! -path '/app/web/.env.example' -print)" \
+    && if [ -n "$leaked_sensitive_files" ]; then \
+      echo "Sensitive local config files must not be baked into the image:" >&2; \
+      printf '%s\n' "$leaked_sensitive_files" >&2; \
       exit 1; \
     fi
 

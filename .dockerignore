@@ -38,3 +38,7 @@ web/.env
 web/.env.*
 !web/.env.example
 deploy/*.env
+
+# Local deployment handoff files may contain literal runtime values.
+deploy/*.local.yml
+deploy/*.local.yaml

@@ -957,13 +957,16 @@ class ComprehensiveScriptTests(unittest.TestCase):
             "把一句业务问题，推进成可交付的访谈结论",
             "适用于需求澄清、用户研究、技术方案和招投标",
             "样例输入",
-            "原材料价格查询智能体",
+            "会员流失预警与挽回助手",
+            "门店运营、客服和数据团队",
+            "流失判定、触发场景、可用数据、干预动作、效果指标和上线约束",
             "结构化问题清单",
             "可复盘答案记录",
             "可交付报告",
         ]:
             with self.subTest(text=text):
                 self.assertIn(text, index_html)
+        self.assertNotIn("原材料价格查询智能体", index_html)
 
         for selector in [
             ".dv-auth-layout",

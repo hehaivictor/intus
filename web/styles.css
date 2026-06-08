@@ -83,6 +83,105 @@ body {
     padding: clamp(1.5rem, 4vw, 3rem) 1rem;
 }
 
+.dv-auth-layout {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+}
+
+.dv-auth-value-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 32rem;
+}
+
+.dv-auth-eyebrow {
+    margin: 0;
+    color: var(--dv-color-text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    font-weight: 650;
+}
+
+.dv-auth-value-panel h2 {
+    margin: 0;
+    color: var(--dv-color-text-primary);
+    font-family: var(--dv-font-display);
+    font-size: clamp(1.75rem, 4vw, 2.625rem);
+    line-height: 1.22;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.dv-auth-value-copy {
+    margin: 0;
+    max-width: 29rem;
+    color: var(--dv-color-text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.8;
+}
+
+.dv-auth-scenario-list,
+.dv-auth-output-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dv-auth-scenario-list {
+    margin-top: 0.125rem;
+}
+
+.dv-auth-output-list {
+    margin-top: 0.125rem;
+}
+
+.dv-auth-scenario-list span,
+.dv-auth-output-list span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    border: 1px solid var(--dv-color-border);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--dv-color-text-secondary);
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    font-weight: 650;
+}
+
+.dv-auth-example {
+    border: 1px solid var(--dv-color-border);
+    border-radius: var(--dv-radius-md);
+    background: #ffffff;
+    padding: 0.875rem 1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.dv-auth-example span {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--dv-color-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    font-weight: 650;
+}
+
+.dv-auth-example p {
+    margin: 0;
+    color: var(--dv-color-text-primary);
+    font-size: 0.875rem;
+    line-height: 1.75;
+}
+
+.dv-auth-output-list span {
+    background: #FAFAFA;
+}
+
 .dv-auth-panel {
     width: 100%;
     max-width: 28rem;
@@ -195,8 +294,30 @@ input.dv-auth-input[aria-invalid="true"] {
 
 @media (max-width: 640px) {
     .dv-auth-shell {
-        min-height: calc(100vh - 8rem);
+        min-height: calc(100vh - 7rem);
         padding: 1rem;
+    }
+
+    .dv-auth-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .dv-auth-value-panel {
+        gap: 0.75rem;
+    }
+
+    .dv-auth-value-panel h2 {
+        font-size: 1.55rem;
+    }
+
+    .dv-auth-value-copy {
+        font-size: 0.875rem;
+        line-height: 1.7;
+    }
+
+    .dv-auth-example {
+        padding: 0.75rem;
     }
 
     .dv-auth-panel {
@@ -4831,6 +4952,7 @@ html[data-theme="dark"] .logo-icon {
 }
 
 html[data-theme="dark"] .dv-auth-panel,
+html[data-theme="dark"] .dv-auth-example,
 html[data-theme="dark"] .dv-global-search-modal,
 html[data-theme="dark"] .dv-library-hero,
 html[data-theme="dark"] .dv-library-toolbar,
@@ -4881,6 +5003,27 @@ html[data-theme="dark"] .dv-sidebar-session-options button.is-active,
 html[data-theme="dark"] .dv-sidebar-session-more:hover {
     background: #1f1f23;
     border-color: #3f3f46;
+}
+
+html[data-theme="dark"] .dv-auth-value-panel h2,
+html[data-theme="dark"] .dv-auth-example p {
+    color: #f4f4f5;
+}
+
+html[data-theme="dark"] .dv-auth-value-copy,
+html[data-theme="dark"] .dv-auth-scenario-list span,
+html[data-theme="dark"] .dv-auth-output-list span {
+    color: #d4d4d8;
+}
+
+html[data-theme="dark"] .dv-auth-scenario-list span,
+html[data-theme="dark"] .dv-auth-output-list span {
+    background: #20262e;
+    border-color: #3f3f46;
+}
+
+html[data-theme="dark"] .dv-auth-output-list span {
+    background: #18181b;
 }
 
 html[data-theme="dark"] .dv-workbench-quote-dot {

@@ -211,6 +211,8 @@ AI_RECOMMENDATION_REQUIRE_EVIDENCE_DEEP = True
 # ============ 报告生成链路 ===========
 # 集中放置报告 V3 的档位、双阶段、质量门与失败兜底策略。
 # 留空为 `None` 的高级参数，会由 `server.py` 按 `balanced/quality` 档位自动补默认值。
+# 作用：控制模型报告失败时是否允许退回简单模板报告；默认关闭，避免模板报告伪装成正式报告。
+REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = False
 # 作用：设置报告 V3 默认使用的运行档位。
 REPORT_V3_PROFILE = "balanced"
 # 作用：设置报告链路默认调用超时时间（秒）。

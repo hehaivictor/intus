@@ -220,7 +220,7 @@
         .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
         .wave-dots span:nth-child(6) { animation-delay: 0.5s; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=20260519-auth-input-radius-v1">
+    <link rel="stylesheet" href="styles.css?v=20260608-auth-value-panel-v1">
     <!-- Markdown 渲染 - 本地化 -->
     <script src="vendor/js/marked.min.js"></script>
     <!-- Mermaid 图表渲染 - 本地化 -->
@@ -833,14 +833,38 @@
 
         <template x-if="!authChecking && !authReady">
             <main class="dv-auth-shell">
-                <div class="dv-auth-panel space-y-6">
-                    <div class="dv-auth-panel-header">
-                        <h2 class="dv-auth-title">欢迎回来</h2>
-                        <p class="dv-auth-subtitle">登录后即可使用访谈与报告功能</p>
-                    </div>
+                <div class="dv-auth-layout">
+                    <section class="dv-auth-value-panel" aria-labelledby="auth-value-title">
+                        <p class="dv-auth-eyebrow">适用于需求澄清、用户研究、技术方案和招投标</p>
+                        <h2 id="auth-value-title">把一句业务问题，推进成可交付的访谈结论</h2>
+                        <p class="dv-auth-value-copy">
+                            Intus 会围绕目标、流程、约束和风险持续追问，沉淀可复盘的答案与报告。
+                        </p>
+                        <div class="dv-auth-scenario-list" aria-label="适用场景">
+                            <span>产品需求</span>
+                            <span>用户研究</span>
+                            <span>技术方案</span>
+                            <span>招投标</span>
+                        </div>
+                        <div class="dv-auth-example">
+                            <span>样例输入</span>
+                            <p>原材料价格查询智能体，辅助董事长采购决策，并覆盖价格来源、更新频率、异常预警、审批协同。</p>
+                        </div>
+                        <div class="dv-auth-output-list" aria-label="交付物">
+                            <span>结构化问题清单</span>
+                            <span>可复盘答案记录</span>
+                            <span>可交付报告</span>
+                        </div>
+                    </section>
 
-                    <form class="space-y-4" @submit.prevent="submitAuth()" novalidate>
-                        <div x-show="smsLoginEnabled" x-cloak class="space-y-4">
+                    <div class="dv-auth-panel space-y-6">
+                        <div class="dv-auth-panel-header">
+                            <h2 class="dv-auth-title">欢迎回来</h2>
+                            <p class="dv-auth-subtitle">登录后即可使用访谈与报告功能</p>
+                        </div>
+
+                        <form class="space-y-4" @submit.prevent="submitAuth()" novalidate>
+                            <div x-show="smsLoginEnabled" x-cloak class="space-y-4">
                             <div class="relative" @click.outside="closeAuthAccountSuggestions()">
                                 <label for="auth-account" class="block text-sm font-medium text-primary mb-1">手机号</label>
                                 <input id="auth-account"
@@ -955,6 +979,7 @@
                             </button>
                         </div>
                     </form>
+                </div>
                 </div>
             </main>
         </template>

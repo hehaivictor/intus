@@ -159,6 +159,40 @@
             border: none;
             padding: 0;
         }
+        .sidebar-toggle {
+            display: none;
+            width: 100%;
+            min-height: 44px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text);
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+            cursor: pointer;
+        }
+        .sidebar-toggle::after {
+            content: "▾";
+            color: #94a3b8;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-toggle-hint {
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .sidebar-nav {
+            display: block;
+        }
+        .sidebar.is-open .sidebar-toggle::after {
+            transform: rotate(180deg);
+        }
         .sidebar-card {
             background: #ffffff;
             border: 1px solid var(--line);
@@ -843,6 +877,8 @@
         }
 
         html[data-theme="dark"] .sidebar-card,
+        html[data-theme="dark"] .sidebar-toggle,
+        html[data-theme="dark"] .sidebar-nav,
         html[data-theme="dark"] .content,
         html[data-theme="dark"] .search,
         html[data-theme="dark"] .search-panel,
@@ -976,12 +1012,30 @@
         }
 
         @media (max-width: 980px) {
-            .layout { grid-template-columns: 1fr; }
+            .layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 18px 16px 64px;
+            }
             .sidebar { position: relative; top: 0; }
+            .sidebar-toggle { display: flex; }
+            .sidebar-nav {
+                display: none;
+                max-height: 56vh;
+                overflow: auto;
+                margin-top: 8px;
+                padding: 12px;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: #ffffff;
+                box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            }
+            .sidebar.is-open .sidebar-nav { display: block; }
+            .sidebar h4 { margin-bottom: 8px; }
         }
         @media (max-width: 640px) {
             .topbar-inner { flex-direction: column; align-items: flex-start; }
-            .content { padding: 20px; }
+            .content { padding: 18px; }
         }
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; scroll-behavior: auto !important; }
@@ -1026,53 +1080,59 @@
 
     <main class="layout">
         <aside class="sidebar">
-            <h4>目录</h4>
-            <div class="nav-group">
-                <div class="nav-title">入门</div>
-                <div class="nav-sub">
-                    <a class="nav-link" href="#intro">介绍</a>
-                    <a class="nav-link" href="#getting-started">快速开始</a>
+            <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="helpToc">
+                <span>目录</span>
+                <span class="sidebar-toggle-hint">展开</span>
+            </button>
+            <div class="sidebar-nav" id="helpToc">
+                <h4>目录</h4>
+                <div class="nav-group">
+                    <div class="nav-title">入门</div>
+                    <div class="nav-sub">
+                        <a class="nav-link" href="#intro">介绍</a>
+                        <a class="nav-link" href="#getting-started">快速开始</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <div class="nav-title">能力与流程</div>
-                <div class="nav-sub">
-                    <a class="nav-link" href="#features">核心功能</a>
-                    <a class="nav-link" href="#coverage">功能覆盖清单</a>
-                    <a class="nav-link" href="#workflow">访谈流程</a>
-                    <a class="nav-link" href="#interview-mode">访谈模式</a>
-                    <a class="nav-link" href="#follow-up-strategy">追问策略</a>
-                    <a class="nav-link" href="#scenarios">场景与模板</a>
+                <div class="nav-group">
+                    <div class="nav-title">能力与流程</div>
+                    <div class="nav-sub">
+                        <a class="nav-link" href="#features">核心功能</a>
+                        <a class="nav-link" href="#coverage">功能覆盖清单</a>
+                        <a class="nav-link" href="#workflow">访谈流程</a>
+                        <a class="nav-link" href="#interview-mode">访谈模式</a>
+                        <a class="nav-link" href="#follow-up-strategy">追问策略</a>
+                        <a class="nav-link" href="#scenarios">场景与模板</a>
+                    </div>
+                    <div class="nav-sub nav-sub--scenario">
+                        <a class="nav-link" href="#scenario-product">产品需求</a>
+                        <a class="nav-link" href="#scenario-user">用户研究</a>
+                        <a class="nav-link" href="#scenario-tech">技术方案</a>
+                        <a class="nav-link" href="#scenario-business">业务模式</a>
+                        <a class="nav-link" href="#scenario-competitive">竞品分析</a>
+                        <a class="nav-link" href="#scenario-diagnosis">问题诊断</a>
+                        <a class="nav-link" href="#scenario-bidding">招投标</a>
+                        <a class="nav-link" href="#scenario-assessment">面试评估</a>
+                        <a class="nav-link" href="#scenario-custom">自定义场景</a>
+                    </div>
                 </div>
-                <div class="nav-sub nav-sub--scenario">
-                    <a class="nav-link" href="#scenario-product">产品需求</a>
-                    <a class="nav-link" href="#scenario-user">用户研究</a>
-                    <a class="nav-link" href="#scenario-tech">技术方案</a>
-                    <a class="nav-link" href="#scenario-business">业务模式</a>
-                    <a class="nav-link" href="#scenario-competitive">竞品分析</a>
-                    <a class="nav-link" href="#scenario-diagnosis">问题诊断</a>
-                    <a class="nav-link" href="#scenario-bidding">招投标</a>
-                    <a class="nav-link" href="#scenario-assessment">面试评估</a>
-                    <a class="nav-link" href="#scenario-custom">自定义场景</a>
+                <div class="nav-group">
+                    <div class="nav-title">交付与协作</div>
+                    <div class="nav-sub">
+                        <a class="nav-link" href="#reports">报告与导出</a>
+                        <a class="nav-link" href="#report-template-diff">报告模板差异</a>
+                        <a class="nav-link" href="#chart-meaning">图表含义</a>
+                        <a class="nav-link" href="#collaboration">协作与复用</a>
+                        <a class="nav-link" href="#best-practices">最佳实践</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <div class="nav-title">交付与协作</div>
-                <div class="nav-sub">
-                    <a class="nav-link" href="#reports">报告与导出</a>
-                    <a class="nav-link" href="#report-template-diff">报告模板差异</a>
-                    <a class="nav-link" href="#chart-meaning">图表含义</a>
-                    <a class="nav-link" href="#collaboration">协作与复用</a>
-                    <a class="nav-link" href="#best-practices">最佳实践</a>
-                </div>
-            </div>
-            <div class="nav-group">
-                <div class="nav-title">支持</div>
-                <div class="nav-sub">
-                    <a class="nav-link" href="#doc-parsing">文档解析规则</a>
-                    <a class="nav-link" href="#exceptions">异常处理</a>
-                    <a class="nav-link" href="#faq">常见问题</a>
-                    <a class="nav-link" href="#support">支持与反馈</a>
+                <div class="nav-group">
+                    <div class="nav-title">支持</div>
+                    <div class="nav-sub">
+                        <a class="nav-link" href="#doc-parsing">文档解析规则</a>
+                        <a class="nav-link" href="#exceptions">异常处理</a>
+                        <a class="nav-link" href="#faq">常见问题</a>
+                        <a class="nav-link" href="#support">支持与反馈</a>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -2013,6 +2073,22 @@
             });
         };
 
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.querySelector('.sidebar-toggle');
+        const sidebarToggleHint = sidebarToggle?.querySelector('.sidebar-toggle-hint');
+        const setSidebarOpen = isOpen => {
+            if (!sidebar || !sidebarToggle) return;
+            sidebar.classList.toggle('is-open', isOpen);
+            sidebarToggle.setAttribute('aria-expanded', String(isOpen));
+            if (sidebarToggleHint) sidebarToggleHint.textContent = isOpen ? '收起' : '展开';
+        };
+        if (sidebar && sidebarToggle) {
+            setSidebarOpen(false);
+            sidebarToggle.addEventListener('click', () => {
+                setSidebarOpen(!sidebar.classList.contains('is-open'));
+            });
+        }
+
         updateProgress();
         window.addEventListener('scroll', scheduleReadingStateUpdate, { passive: true });
         window.addEventListener('resize', scheduleReadingStateUpdate);
@@ -2025,6 +2101,9 @@
             event.preventDefault();
             if (!scrollToAnchorId(targetId)) return;
             syncLocationHash(targetId);
+            if (link.closest('.sidebar') && window.matchMedia('(max-width: 980px)').matches) {
+                setSidebarOpen(false);
+            }
             window.setTimeout(scheduleReadingStateUpdate, 260);
         });
 

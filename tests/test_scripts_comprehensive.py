@@ -929,7 +929,8 @@ class ComprehensiveScriptTests(unittest.TestCase):
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
         styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
 
-        self.assertIn("styles.css?v=20260519-auth-input-radius-v1", index_html)
+        self.assertIn("styles.css?v=20260608-auth-value-panel-v1", index_html)
+        self.assertNotIn("styles.css?v=20260519-auth-input-radius-v1", index_html)
         self.assertNotIn("styles.css?v=20260509-report-actions-v1", index_html)
 
         auth_input_start = styles_css.index("input.dv-auth-input {")
@@ -944,6 +945,35 @@ class ComprehensiveScriptTests(unittest.TestCase):
         auth_button_style = styles_css[auth_button_start:auth_button_end]
         self.assertIn("border-radius: var(--dv-radius-md);", auth_button_style)
         self.assertIn("box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);", auth_button_style)
+
+    def test_auth_landing_explains_value_scenarios_and_outputs(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")
+
+        self.assertIn('class="dv-auth-layout"', index_html)
+        self.assertIn('class="dv-auth-value-panel"', index_html)
+        self.assertLess(index_html.index('class="dv-auth-value-panel"'), index_html.index('class="dv-auth-panel space-y-6"'))
+        for text in [
+            "把一句业务问题，推进成可交付的访谈结论",
+            "适用于需求澄清、用户研究、技术方案和招投标",
+            "样例输入",
+            "原材料价格查询智能体",
+            "结构化问题清单",
+            "可复盘答案记录",
+            "可交付报告",
+        ]:
+            with self.subTest(text=text):
+                self.assertIn(text, index_html)
+
+        for selector in [
+            ".dv-auth-layout",
+            ".dv-auth-value-panel",
+            ".dv-auth-scenario-list",
+            ".dv-auth-example",
+            ".dv-auth-output-list",
+        ]:
+            with self.subTest(selector=selector):
+                self.assertIn(f"{selector} {{", styles_css)
 
     def test_help_navigation_opens_new_tab(self):
         app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
@@ -960,6 +990,20 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertNotIn("产品介绍", help_html)
         self.assertNotIn("返回工作台", help_html)
         self.assertNotIn("top-actions", help_html)
+
+    def test_help_mobile_toc_collapses_before_content(self):
+        help_html = (ROOT_DIR / "web" / "help.html").read_text(encoding="utf-8")
+
+        self.assertIn('class="sidebar-toggle"', help_html)
+        self.assertIn('aria-controls="helpToc"', help_html)
+        self.assertIn('id="helpToc"', help_html)
+        self.assertLess(help_html.index('class="sidebar-toggle"'), help_html.index('id="helpToc"'))
+        self.assertIn(".sidebar-toggle {", help_html)
+        self.assertIn(".sidebar-nav {", help_html)
+        self.assertIn(".sidebar.is-open .sidebar-nav", help_html)
+        self.assertIn("setSidebarOpen(false)", help_html)
+        self.assertIn("sidebarToggle.setAttribute('aria-expanded'", help_html)
+        self.assertIn("window.matchMedia('(max-width: 980px)').matches", help_html)
 
     def test_interview_header_removes_exit_button(self):
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")

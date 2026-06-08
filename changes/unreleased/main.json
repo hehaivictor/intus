@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "dd03aec",
+  "committedAt": "2026-06-08T17:43:47+08:00",
+  "versionType": "patch",
+  "title": "修复发布前测试发现的访谈质量与首页体验问题",
+  "changes": [
+    "修复访谈草稿本地兜底的结构化描述保留，避免丢失目标、角色和重点约束。",
+    "优化帮助页移动端目录为默认折叠，避免正文入口被长目录下压。",
+    "补充未登录首页价值说明、适用场景、样例输入和交付物提示，并更新样式缓存版本。",
+    "关闭报告简单模板默认兜底，避免模型失败时生成低质量报告伪装为正式结果。",
+    "补充对应 API 与静态页面回归测试，覆盖本轮质量和体验问题。"
+  ],
+  "changedFiles": [
+    "tests/test_api_comprehensive.py",
+    "tests/test_scripts_comprehensive.py",
+    "web/config.py",
+    "web/help.html",
+    "web/index.html",
+    "web/server.py",
+    "web/styles.css"
+  ]
+}

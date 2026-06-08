@@ -28543,14 +28543,29 @@ def build_session_draft_description_from_input(user_input: str) -> str:
         return ""
 
     lines = []
+
+    def add_line(label: str, value: object) -> None:
+        cleaned = normalize_session_draft_text(value)
+        cleaned = cleaned.strip("，,。；;、 ")
+        if not cleaned:
+            return
+        line = f"{label}：{cleaned}"
+        if line not in lines:
+            lines.append(line)
+
     background_match = re.search(
         r"^(?P<subject>[^，,。；;]{2,24}?)(?:想要|想|希望|计划|需要|要)(?:做|建设|打造|开发|引入|构建|上线|建立)",
         text,
     )
+    if not background_match:
+        background_match = re.search(
+            r"^(?P<subject>[^，,。；;]{2,24}?)(?:想要|想|希望|计划|需要|要)(?=实时|自动|智能|查询|监测|跟踪|分析|预测|推荐|生成|识别|管理|能够|可以|可)",
+            text,
+        )
     if background_match:
         subject = normalize_session_draft_text(background_match.group("subject"))
         if subject:
-            lines.append(f"业务背景：{subject}")
+            add_line("业务背景", subject)
 
     ability_match = re.search(
         r"(?:能够|可以|可)(?P<ability>[^，,。；;]{2,48}?智能体)",
@@ -28559,7 +28574,17 @@ def build_session_draft_description_from_input(user_input: str) -> str:
     if ability_match:
         ability = normalize_session_draft_text(ability_match.group("ability"))
         if ability:
-            lines.append(f"核心能力：{ability}")
+            add_line("核心能力", ability)
+
+    capability_match = re.search(
+        r"(?P<capability>(?:实时|自动|智能)?(?:查询|监测|跟踪|分析|预测|推荐|生成|识别|管理)[^，,。；;]{2,48}?)(?:的)?智能体",
+        text,
+    )
+    if capability_match:
+        capability = normalize_session_draft_text(capability_match.group("capability"))
+        if capability:
+            add_line("核心能力", f"{capability}的智能体")
+            add_line("核心目标", capability)
 
     goal_match = re.search(
         r"(?:可以)?辅助(?P<goal>[^，,。；;]{2,36}?)(?:，|,|。|；|;|具体|$)",
@@ -28568,13 +28593,17 @@ def build_session_draft_description_from_input(user_input: str) -> str:
     if goal_match:
         goal = normalize_session_draft_text(goal_match.group("goal"))
         if goal:
-            lines.append(f"使用目标：辅助{goal}")
+            add_line("使用目标", f"辅助{goal}")
+            if "决策" in goal or "负责人" in goal or "老板" in goal or "董事长" in goal:
+                add_line("决策角色", goal)
 
     focus_match = re.search(r"具体(?P<focus>需要哪些[^，,。；;]{1,24})", text)
+    if not focus_match:
+        focus_match = re.search(r"(?:并)?(?:覆盖|关注|包括|围绕)(?P<focus>[^。；;]{2,80})", text)
     if focus_match:
         focus = normalize_session_draft_text(focus_match.group("focus"))
         if focus:
-            lines.append(f"待确认重点：{focus}")
+            add_line("待确认重点", focus)
 
     if lines:
         return normalize_session_draft_text("；".join(lines), SESSION_DRAFT_DESCRIPTION_MAX_CHARS)

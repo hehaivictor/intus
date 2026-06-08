@@ -496,6 +496,7 @@ class ComprehensiveApiTests(unittest.TestCase):
         source_report_name="",
     ):
         real_datetime = self.server.datetime
+        old_template_fallback = getattr(self.server, "REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED", False)
 
         class FixedDateTime(real_datetime):
             @classmethod
@@ -505,6 +506,7 @@ class ComprehensiveApiTests(unittest.TestCase):
                 return fixed_now.replace(tzinfo=None)
 
         self.server.datetime = FixedDateTime
+        self.server.REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = True
         try:
             response = self.client.post(
                 f"/api/sessions/{session_id}/generate-report",
@@ -518,6 +520,7 @@ class ComprehensiveApiTests(unittest.TestCase):
             return self._wait_report_generation(session_id)
         finally:
             self.server.datetime = real_datetime
+            self.server.REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = old_template_fallback
 
     def test_auth_lifecycle(self):
         self._register()
@@ -2959,6 +2962,8 @@ class ComprehensiveApiTests(unittest.TestCase):
         old_generate_question = self.server.generate_question_with_tiered_strategy
         old_evaluate_completion = self.server.evaluate_dimension_completion_v2
         generate_calls = []
+        prefetched_question = "围绕当前维度，下一步应优先确认哪类业务流程责任边界？"
+        prefetched_options = ["发起查询与汇报责任", "异常价格复核责任"]
 
         try:
             self.server.trigger_current_dimension_prefetch = self.__class__.real_trigger_current_dimension_prefetch
@@ -2967,10 +2972,17 @@ class ComprehensiveApiTests(unittest.TestCase):
             def _generate_prefetched_question(*_args, **kwargs):
                 generate_calls.append(kwargs.get("base_call_type"))
                 return (
-                    '{"question":"预取后的下一题","options":["选项A","选项B"],"multi_select":false}',
+                    json.dumps(
+                        {
+                            "question": prefetched_question,
+                            "options": prefetched_options,
+                            "multi_select": False,
+                        },
+                        ensure_ascii=False,
+                    ),
                     {
-                        "question": "预取后的下一题",
-                        "options": ["选项A", "选项B"],
+                        "question": prefetched_question,
+                        "options": prefetched_options,
                         "multi_select": False,
                     },
                     "fast:summary",
@@ -3008,7 +3020,7 @@ class ComprehensiveApiTests(unittest.TestCase):
             )
             self.assertEqual(next_q.status_code, 200, next_q.get_data(as_text=True))
             payload = next_q.get_json() or {}
-            self.assertEqual(payload.get("question"), "预取后的下一题")
+            self.assertEqual(payload.get("question"), prefetched_question)
             self.assertTrue(payload.get("prefetched") or payload.get("cached"))
             self.assertEqual(payload.get("dimension"), dimension)
             self.assertEqual(generate_calls, ["prefetch_current"])
@@ -4376,6 +4388,37 @@ class ComprehensiveApiTests(unittest.TestCase):
         finally:
             self.server.resolve_ai_client = old_resolve_ai_client
 
+    def test_session_draft_from_input_fallback_preserves_operational_details(self):
+        self._register()
+
+        raw_input = (
+            "博大纺织需要实时查询原材料价格的智能体，辅助董事长采购决策，"
+            "并覆盖价格来源、更新频率、异常预警、审批协同。"
+        )
+
+        old_resolve_ai_client = self.server.resolve_ai_client
+        try:
+            self.server.resolve_ai_client = lambda call_type="", **_kwargs: None
+            response = self.client.post("/api/sessions/draft-from-input", json={"input": raw_input})
+            self.assertEqual(response.status_code, 200, response.get_data(as_text=True))
+            payload = response.get_json() or {}
+            self.assertEqual(payload.get("source"), "local_fallback")
+            self.assertIn("原材料价格", payload.get("topic", ""))
+
+            description = payload.get("description", "")
+            expected_fragments = [
+                "业务背景：博大纺织",
+                "核心目标：实时查询原材料价格",
+                "决策角色：董事长采购决策",
+                "待确认重点：价格来源、更新频率、异常预警、审批协同",
+            ]
+            for fragment in expected_fragments:
+                with self.subTest(fragment=fragment):
+                    self.assertIn(fragment, description)
+            self.assertTrue(payload.get("description_generated"))
+        finally:
+            self.server.resolve_ai_client = old_resolve_ai_client
+
     def test_session_draft_from_input_repairs_generic_agent_ai_draft(self):
         self._register()
 
@@ -5690,15 +5733,20 @@ class ComprehensiveApiTests(unittest.TestCase):
         )
         self.assertEqual(submit_resp.status_code, 200, submit_resp.get_data(as_text=True))
 
-        gen_resp = self.client.post(
-            f"/api/sessions/{session_id}/generate-report",
-            json={"report_profile": "quality"},
-        )
-        self.assertEqual(gen_resp.status_code, 202, gen_resp.get_data(as_text=True))
-        first_payload = gen_resp.get_json() or {}
-        self.assertEqual(first_payload.get("report_profile"), "quality")
+        old_template_fallback = getattr(self.server, "REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED", False)
+        self.server.REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = True
+        try:
+            gen_resp = self.client.post(
+                f"/api/sessions/{session_id}/generate-report",
+                json={"report_profile": "quality"},
+            )
+            self.assertEqual(gen_resp.status_code, 202, gen_resp.get_data(as_text=True))
+            first_payload = gen_resp.get_json() or {}
+            self.assertEqual(first_payload.get("report_profile"), "quality")
 
-        status_payload = self._wait_report_generation(session_id)
+            status_payload = self._wait_report_generation(session_id)
+        finally:
+            self.server.REPORT_SIMPLE_TEMPLATE_FALLBACK_ENABLED = old_template_fallback
         self.assertEqual(status_payload.get("report_profile"), "quality")
         report_name = status_payload.get("report_name")
         self.assertTrue(report_name)

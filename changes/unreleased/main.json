@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "ca66b6d",
+  "committedAt": "2026-06-09T15:47:36+08:00",
+  "versionType": "minor",
+  "title": "统一主题配色并优化访谈展示",
+  "changes": [
+    "主题：落地石墨黑加松石青方案，默认浅色并修复运行态配置空值回退。",
+    "访谈：精简题干说明，补齐问号规范，避免选项长文本截断。",
+    "页面：补强登录页、帮助页、方案页和深色模式下的可读性。",
+    "测试：新增主题配置继承、题干规范和浏览器深色适配回归。"
+  ],
+  "changedFiles": [
+    "scripts/agent_browser_smoke_runner.mjs",
+    "tests/test_api_comprehensive.py",
+    "tests/test_runtime_token_config.py",
+    "tests/test_scripts_comprehensive.py",
+    "web/app.js",
+    "web/app_modules/interview_runtime.js",
+    "web/help.html",
+    "web/index.html",
+    "web/intro.html",
+    "web/server.py",
+    "web/server_modules/interview_runtime.py",
+    "web/site-config.js",
+    "web/solution.css",
+    "web/solution.html"
+  ]
+}

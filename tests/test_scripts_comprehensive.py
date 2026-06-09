@@ -978,6 +978,64 @@ class ComprehensiveScriptTests(unittest.TestCase):
             with self.subTest(selector=selector):
                 self.assertIn(f"{selector} {{", styles_css)
 
+    def test_interview_options_wrap_long_text_without_truncation(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn('class="flex items-start gap-3"', index_html)
+        self.assertIn('class="min-w-0 flex-1 font-medium whitespace-normal break-words leading-snug"', index_html)
+        self.assertIn('class="ml-1 shrink-0 tag-pill tag-pill--xs"', index_html)
+
+    def test_interview_runtime_normalizes_visible_question_mark(self):
+        runtime_js = (ROOT_DIR / "web" / "app_modules" / "interview_runtime.js").read_text(encoding="utf-8")
+
+        self.assertIn("normalizeVisibleQuestionText(question)", runtime_js)
+        self.assertIn("const questionText = this.normalizeVisibleQuestionText(result.question || '');", runtime_js)
+        self.assertIn("text: this.normalizeVisibleQuestionText(lastLog.question || ''),", runtime_js)
+
+    def test_default_theme_is_light_without_saved_preference(self):
+        index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
+        app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
+        intro_html = (ROOT_DIR / "web" / "intro.html").read_text(encoding="utf-8")
+        help_html = (ROOT_DIR / "web" / "help.html").read_text(encoding="utf-8")
+        solution_html = (ROOT_DIR / "web" / "solution.html").read_text(encoding="utf-8")
+        site_config_js = (ROOT_DIR / "web" / "site-config.js").read_text(encoding="utf-8")
+
+        for page_html in (index_html, intro_html, help_html, solution_html):
+            self.assertIn("let mode = 'light';", page_html)
+
+        self.assertIn('"defaultMode": "light"', site_config_js)
+        self.assertIn("themeMode: 'light'", app_js)
+        self.assertIn("|| 'light';", app_js)
+        self.assertIn("if (!validModes.includes(mode)) mode = 'light';", app_js)
+        self.assertIn("if (mode === 'light' || mode === 'dark') return mode;", app_js)
+
+    def test_default_site_config_uses_graphite_teal_theme(self):
+        site_config_js = (ROOT_DIR / "web" / "site-config.js").read_text(encoding="utf-8")
+
+        self.assertIn('"primary": "#0F766E"', site_config_js)
+        self.assertIn('"progressComplete": "#0F766E"', site_config_js)
+        self.assertIn('"brand": "#0F766E"', site_config_js)
+        self.assertIn('"brandHover": "#0D9488"', site_config_js)
+        self.assertIn('"label": "石墨松石"', site_config_js)
+        self.assertIn('"ringColorLight": "rgba(15, 118, 110, 0.18)"', site_config_js)
+
+    def test_solution_page_uses_shared_theme_storage_with_legacy_fallback(self):
+        solution_html = (ROOT_DIR / "web" / "solution.html").read_text(encoding="utf-8")
+
+        self.assertIn("const storageKey = 'intus_theme_mode';", solution_html)
+        self.assertIn("const legacyStorageKey = 'dv-theme-mode';", solution_html)
+        self.assertLess(solution_html.index("localStorage.getItem(storageKey)"), solution_html.index("localStorage.getItem(legacyStorageKey)"))
+
+    def test_browser_compat_covers_static_pages_in_dark_mode(self):
+        runner_js = (ROOT_DIR / "scripts" / "agent_browser_smoke_runner.mjs").read_text(encoding="utf-8")
+
+        self.assertIn("STATIC_PAGE_TEXT_SELECTORS", runner_js)
+        self.assertIn("STATIC_PAGE_SURFACE_SELECTORS", runner_js)
+        self.assertIn("help.html", runner_js)
+        self.assertIn("intro.html", runner_js)
+        self.assertIn("solution.html?report=demo-report", runner_js)
+        self.assertIn("静态页", runner_js)
+
     def test_help_navigation_opens_new_tab(self):
         app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")

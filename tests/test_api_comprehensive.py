@@ -263,6 +263,81 @@ class ComprehensiveApiTests(unittest.TestCase):
         self.assertNotIn("千里之行始于足下，万象之理源于细微", texts)
         self.assertNotIn("水下80%，才是真相", texts)
 
+    def test_runtime_site_config_store_inherits_default_theme_tokens(self):
+        old_get_site_config_file_path = self.server.get_admin_site_config_file_path
+        site_config_path = self.server.DATA_DIR / "runtime-default-site-config.js"
+        default_values = {
+            "quotes": {"enabled": True, "interval": 10000, "items": []},
+            "colors": {
+                "primary": "#0F766E",
+                "success": "#16A34A",
+                "progressComplete": "#0F766E",
+            },
+            "designTokens": {
+                "light": {
+                    "colors": {
+                        "brand": "#0F766E",
+                        "brandHover": "#0D9488",
+                        "textPrimary": "#111827",
+                    }
+                },
+                "dark": {"colors": {"brand": "#2DD4BF", "brandHover": "#5EEAD4"}},
+            },
+            "visualPresets": {
+                "default": "rational",
+                "locked": True,
+                "options": {
+                    "rational": {
+                        "label": "石墨松石",
+                        "light": {"colors": {"brand": "#0F766E"}},
+                    }
+                },
+            },
+            "theme": {"defaultMode": "light"},
+        }
+        site_config_path.write_text(
+            self.server._render_admin_site_config_file(default_values),
+            encoding="utf-8",
+        )
+
+        with self.server.get_meta_index_connection() as conn:
+            previous_rows = [
+                dict(row)
+                for row in conn.execute(
+                    "SELECT config_name, payload_json, updated_at FROM site_config_store"
+                ).fetchall()
+            ]
+
+        try:
+            self.server.get_admin_site_config_file_path = lambda: site_config_path
+            with self.server.get_meta_index_connection() as conn:
+                conn.execute("DELETE FROM site_config_store")
+                self.server._upsert_site_config_store_values(
+                    conn,
+                    {"quotes": {"enabled": False}},
+                )
+
+            values = self.server.load_runtime_site_config_values()
+
+            self.assertFalse(values["quotes"]["enabled"])
+            self.assertEqual("#0F766E", values["colors"]["primary"])
+            self.assertEqual("#0F766E", values["designTokens"]["light"]["colors"]["brand"])
+            self.assertEqual("#2DD4BF", values["designTokens"]["dark"]["colors"]["brand"])
+            self.assertEqual("石墨松石", values["visualPresets"]["options"]["rational"]["label"])
+            self.assertEqual("light", values["theme"]["defaultMode"])
+        finally:
+            self.server.get_admin_site_config_file_path = old_get_site_config_file_path
+            with self.server.get_meta_index_connection() as conn:
+                conn.execute("DELETE FROM site_config_store")
+                for row in previous_rows:
+                    conn.execute(
+                        """
+                        INSERT INTO site_config_store(config_name, payload_json, updated_at)
+                        VALUES (?, ?, ?)
+                        """,
+                        (row["config_name"], row["payload_json"], row["updated_at"]),
+                    )
+
     def _generate_license_batch(
         self,
         *,

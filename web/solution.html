@@ -10,14 +10,17 @@
     <meta name="robots" content="noindex,nofollow,noarchive">
     <script>
         (function () {
-            const storageKey = 'dv-theme-mode';
+            const storageKey = 'intus_theme_mode';
+            const legacyStorageKey = 'dv-theme-mode';
             const validModes = ['light', 'dark', 'system'];
-            let mode = 'system';
+            let mode = 'light';
             try {
                 const saved = localStorage.getItem(storageKey);
                 if (validModes.includes(saved)) mode = saved;
+                const legacySaved = localStorage.getItem(legacyStorageKey);
+                if (!validModes.includes(saved) && validModes.includes(legacySaved)) mode = legacySaved;
             } catch (error) {
-                mode = 'system';
+                mode = 'light';
             }
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             const effective = mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;

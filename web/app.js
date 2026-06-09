@@ -112,7 +112,7 @@ function intusApp() {
             sessionId: '',
             reportName: '',
         },
-        themeMode: 'system',
+        themeMode: 'light',
         effectiveTheme: 'light',
         visualPreset: (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG?.visualPresets?.default) || 'rational',
         showAccountMenu: false,
@@ -2696,7 +2696,7 @@ function intusApp() {
             fallbackTarget.focus({ preventScroll: true });
         },
 
-        applyDesignTokens(mode = 'system', effectiveTheme = this.effectiveTheme || 'light') {
+        applyDesignTokens(mode = 'light', effectiveTheme = this.effectiveTheme || 'light') {
             if (typeof document === 'undefined') return;
 
             const tokens = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG?.designTokens)
@@ -2920,8 +2920,8 @@ function intusApp() {
 
         initTheme() {
             const validModes = ['light', 'dark', 'system'];
-            const configuredMode = (typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG?.theme?.defaultMode : null) || 'system';
-            let mode = validModes.includes(configuredMode) ? configuredMode : 'system';
+            const configuredMode = (typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG?.theme?.defaultMode : null) || 'light';
+            let mode = validModes.includes(configuredMode) ? configuredMode : 'light';
 
             const bootstrap = window.__DV_THEME_BOOTSTRAP__;
             if (bootstrap && validModes.includes(bootstrap.mode)) {
@@ -2997,7 +2997,7 @@ function intusApp() {
 
         applyThemeMode(mode, options = {}) {
             const validModes = ['light', 'dark', 'system'];
-            if (!validModes.includes(mode)) mode = 'system';
+            if (!validModes.includes(mode)) mode = 'light';
 
             const persist = options.persist !== false;
             const rerenderCharts = options.rerenderCharts !== false;

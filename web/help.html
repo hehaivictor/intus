@@ -918,6 +918,17 @@
             color: #8db8ff;
         }
 
+        html[data-theme="dark"] .nav-idx,
+        html[data-theme="dark"] .sec-index {
+            color: #9cc4ff;
+        }
+
+        html[data-theme="dark"] .sec-meta,
+        html[data-theme="dark"] label,
+        html[data-theme="dark"] li {
+            color: #aeb9c7;
+        }
+
         html[data-theme="dark"] .compare-table,
         html[data-theme="dark"] .compare-table th,
         html[data-theme="dark"] .compare-table td,
@@ -1045,12 +1056,12 @@
         (function () {
             const storageKey = 'intus_theme_mode';
             const validModes = ['light', 'dark', 'system'];
-            let mode = 'system';
+            let mode = 'light';
             try {
                 const saved = localStorage.getItem(storageKey);
                 if (validModes.includes(saved)) mode = saved;
             } catch (error) {
-                mode = 'system';
+                mode = 'light';
             }
 
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;

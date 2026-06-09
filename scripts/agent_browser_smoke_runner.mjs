@@ -2767,6 +2767,23 @@ const DARK_TEXT_SELECTORS = [
   '.theme-menu-item',
 ];
 
+const STATIC_PAGE_SURFACE_SELECTORS = [
+  { selector: 'body', label: '页面背景', optional: false },
+  { selector: '.topbar', label: '帮助页顶部栏', optional: true },
+  { selector: '.content', label: '帮助页正文容器', optional: true },
+  { selector: '.sidebar-nav', label: '帮助页目录', optional: true },
+  { selector: '.hero-section', label: '介绍页首屏', optional: true },
+  { selector: '.section', label: '介绍页内容区', optional: true },
+  { selector: '.solution-state-card', label: '方案页状态卡片', optional: true },
+  { selector: '.solution-topbar-inner', label: '方案页顶部栏', optional: true },
+  { selector: '.solution-content', label: '方案页正文区域', optional: true },
+  { selector: '.proposal-section', label: '方案页章节', optional: true },
+];
+
+const STATIC_PAGE_TEXT_SELECTORS = [
+  'h1, h2, h3, h4, p, a, button, li, td, th, label, span, input, textarea',
+];
+
 const DARK_NEUTRAL_ACCENT_SELECTORS = [
   { selector: '.dv-report-sidebar-link.is-current', label: '报告详情目录当前项', optional: true },
   { selector: '.dv-report-sidebar-link.is-active', label: '报告详情目录活动项', optional: true },
@@ -2935,9 +2952,9 @@ async function collectPageCompatibility(page, label, options = {}) {
     return issues;
   }, {
     pageLabel: label,
-    surfaceSelectors: DARK_SURFACE_SELECTORS,
-    textSelectors: DARK_TEXT_SELECTORS,
-    neutralAccentSelectors: DARK_NEUTRAL_ACCENT_SELECTORS,
+    surfaceSelectors: options.surfaceSelectors || DARK_SURFACE_SELECTORS,
+    textSelectors: options.textSelectors || DARK_TEXT_SELECTORS,
+    neutralAccentSelectors: options.neutralAccentSelectors || DARK_NEUTRAL_ACCENT_SELECTORS,
     expectDarkSurfaces: Boolean(options.expectDarkSurfaces),
   });
 }
@@ -2984,6 +3001,24 @@ async function scenarioResponsiveThemeCompatibility(browser, baseUrl) {
           await page.locator('button[aria-label="账号与外观设置"]:visible').first().click({ timeout: 15000 });
           await page.waitForSelector('.account-menu:visible', { timeout: 15000 });
           findings.push(...await collectPageCompatibility(page, `${prefix}/设置菜单`, checkOptions));
+
+          const staticCheckOptions = {
+            ...checkOptions,
+            surfaceSelectors: STATIC_PAGE_SURFACE_SELECTORS,
+            textSelectors: STATIC_PAGE_TEXT_SELECTORS,
+            neutralAccentSelectors: [],
+          };
+          await page.goto(`${baseUrl}/help.html`, { waitUntil: 'domcontentloaded' });
+          await page.waitForSelector('text=帮助文档', { timeout: 10000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/静态页/帮助`, staticCheckOptions));
+
+          await page.goto(`${baseUrl}/intro.html`, { waitUntil: 'domcontentloaded' });
+          await page.waitForSelector('text=Intus', { timeout: 10000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/静态页/介绍`, staticCheckOptions));
+
+          await page.goto(`${baseUrl}/solution.html?report=demo-report`, { waitUntil: 'domcontentloaded' });
+          await page.waitForSelector('#solution-shell:not([hidden])', { timeout: 10000 });
+          findings.push(...await collectPageCompatibility(page, `${prefix}/静态页/方案`, staticCheckOptions));
         },
         theme.mode,
         undefined,

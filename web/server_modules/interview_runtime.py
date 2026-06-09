@@ -569,7 +569,8 @@ def build_interview_prompt(
 
 约束：
 - 只输出这个 JSON，不要代码块，不要额外说明
-- options 保持 3-4 个，每项尽量不超过 14 个字
+- question 只写问题本身，不要加入作答说明、解释、示例或选项枚举
+- options 保持 3-4 个，每项用一句完整短句表达，不要为了压缩字数截断含义
 - 不要输出 ai_recommendation、conflict_detected、conflict_description
 - is_follow_up 必须严格照抄模板中的值"""
     else:
@@ -622,8 +623,8 @@ def build_interview_prompt(
     }}
 
 字段说明：
-- question: 字符串，你要问的问题
-- options: 字符串数组，3-4 个选项
+- question: 字符串，只包含你要问的问题本身，不要加入“请从/请结合/并说明”等作答说明、解释、示例或选项枚举
+- options: 字符串数组，3-4 个选项；每项要是完整可决策短句，不要截断含义
 - multi_select: 布尔值，true=可多选，false=单选
 - answer_mode: "pick_only" | "pick_with_reason"
 - requires_rationale: 布尔值，true 表示该题需要更强证据，系统必要时会自动补追问

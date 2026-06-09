@@ -53,41 +53,41 @@ const SITE_CONFIG = {
     ]
   },
   "colors": {
-    "primary": "#18181B",
-    "success": "#22C55E",
-    "progressComplete": "#18181B"
+    "primary": "#0F766E",
+    "success": "#16A34A",
+    "progressComplete": "#0F766E"
   },
   "designTokens": {
     "light": {
       "colors": {
-        "brand": "#18181B",
-        "brandHover": "#27272A",
-        "textPrimary": "#09090B",
-        "textSecondary": "#3F3F46",
-        "textMuted": "#71717A",
+        "brand": "#0F766E",
+        "brandHover": "#0D9488",
+        "textPrimary": "#111827",
+        "textSecondary": "#4B5563",
+        "textMuted": "#6B7280",
         "surface": "#FFFFFF",
-        "surfaceSecondary": "#FAFAFA",
-        "border": "#E4E4E7",
-        "success": "#22C55E",
-        "warning": "#F59E0B",
-        "danger": "#EF4444",
-        "overlay": "rgba(9, 9, 11, 0.46)"
+        "surfaceSecondary": "#F7F8FA",
+        "border": "#E5E7EB",
+        "success": "#16A34A",
+        "warning": "#D97706",
+        "danger": "#DC2626",
+        "overlay": "rgba(17, 24, 39, 0.46)"
       }
     },
     "dark": {
       "colors": {
-        "brand": "#F4F4F5",
-        "brandHover": "#FFFFFF",
-        "textPrimary": "#F4F4F5",
-        "textSecondary": "#D4D4D8",
-        "textMuted": "#A1A1AA",
+        "brand": "#2DD4BF",
+        "brandHover": "#5EEAD4",
+        "textPrimary": "#F9FAFB",
+        "textSecondary": "#D1D5DB",
+        "textMuted": "#9CA3AF",
         "surface": "#18181B",
-        "surfaceSecondary": "#09090B",
+        "surfaceSecondary": "#0F1115",
         "border": "#3F3F46",
         "success": "#4ADE80",
-        "warning": "#FACC15",
-        "danger": "#FB7185",
-        "overlay": "rgba(3, 3, 4, 0.66)"
+        "warning": "#FBBF24",
+        "danger": "#F87171",
+        "overlay": "rgba(3, 7, 18, 0.66)"
       }
     },
     "radius": {
@@ -103,9 +103,9 @@ const SITE_CONFIG = {
       "spacious": "1.5rem"
     },
     "shadow": {
-      "card": "0 1px 2px rgba(9, 9, 11, 0.06)",
-      "modal": "0 24px 56px rgba(9, 9, 11, 0.24)",
-      "focus": "0 0 0 3px rgba(24, 24, 27, 0.14)"
+      "card": "0 10px 28px rgba(17, 24, 39, 0.07)",
+      "modal": "0 24px 56px rgba(17, 24, 39, 0.24)",
+      "focus": "0 0 0 3px rgba(15, 118, 110, 0.18)"
     },
     "zIndex": {
       "dropdown": 40,
@@ -118,26 +118,26 @@ const SITE_CONFIG = {
     "locked": true,
     "options": {
       "rational": {
-        "label": "黑白工作台",
+        "label": "石墨松石",
         "light": {
           "colors": {
-            "brand": "#18181B",
-            "brandHover": "#27272A",
-            "overlay": "rgba(9, 9, 11, 0.46)"
+            "brand": "#0F766E",
+            "brandHover": "#0D9488",
+            "overlay": "rgba(17, 24, 39, 0.46)"
           },
           "shadow": {
-            "card": "0 1px 2px rgba(9, 9, 11, 0.06)",
-            "modal": "0 24px 56px rgba(9, 9, 11, 0.24)"
+            "card": "0 10px 28px rgba(17, 24, 39, 0.07)",
+            "modal": "0 24px 56px rgba(17, 24, 39, 0.24)"
           }
         },
         "dark": {
           "colors": {
-            "brand": "#F4F4F5",
-            "brandHover": "#FFFFFF",
-            "overlay": "rgba(3, 3, 4, 0.66)"
+            "brand": "#2DD4BF",
+            "brandHover": "#5EEAD4",
+            "overlay": "rgba(3, 7, 18, 0.66)"
           },
           "shadow": {
-            "card": "0 1px 2px rgba(0, 0, 0, 0.28)",
+            "card": "0 1px 2px rgba(0, 0, 0, 0.30)",
             "modal": "0 30px 66px rgba(0, 0, 0, 0.58)"
           }
         }
@@ -163,12 +163,12 @@ const SITE_CONFIG = {
   "a11y": {
     "minContrastAA": 4.5,
     "focusRing": {
-      "borderColorLight": "#18181B",
-      "borderColorDark": "#F4F4F5",
-      "ringColorLight": "rgba(24, 24, 27, 0.14)",
-      "ringColorDark": "rgba(244, 244, 245, 0.18)",
-      "ringStrongLight": "rgba(24, 24, 27, 0.28)",
-      "ringStrongDark": "rgba(244, 244, 245, 0.36)",
+      "borderColorLight": "#0F766E",
+      "borderColorDark": "#2DD4BF",
+      "ringColorLight": "rgba(15, 118, 110, 0.18)",
+      "ringColorDark": "rgba(45, 212, 191, 0.24)",
+      "ringStrongLight": "rgba(15, 118, 110, 0.32)",
+      "ringStrongDark": "rgba(45, 212, 191, 0.42)",
       "underlayLight": "rgba(255, 255, 255, 0.92)",
       "underlayDark": "rgba(24, 24, 27, 0.96)"
     },
@@ -270,7 +270,7 @@ const SITE_CONFIG = {
     }
   },
   "theme": {
-    "defaultMode": "system"
+    "defaultMode": "light"
   },
   "api": {
     "baseUrl": "http://localhost:5002/api",

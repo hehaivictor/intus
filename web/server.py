@@ -3123,9 +3123,9 @@ ADMIN_SITE_SETTINGS_GROUPS: list[dict[str, Any]] = [
                 "theme.defaultMode",
                 "默认主题模式",
                 [
-                    {"value": "system", "label": "system"},
                     {"value": "light", "label": "light"},
                     {"value": "dark", "label": "dark"},
+                    {"value": "system", "label": "system"},
                 ],
                 requires_restart=False,
             ),
@@ -3353,6 +3353,17 @@ def _normalize_site_config_payload(payload: Any) -> dict[str, Any]:
     return copy.deepcopy(payload) if isinstance(payload, dict) else {}
 
 
+def _merge_site_config_defaults(default_values: dict[str, Any], override_values: dict[str, Any]) -> dict[str, Any]:
+    merged = copy.deepcopy(default_values) if isinstance(default_values, dict) else {}
+    overrides = override_values if isinstance(override_values, dict) else {}
+    for key, value in overrides.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _merge_site_config_defaults(merged[key], value)
+            continue
+        merged[key] = copy.deepcopy(value)
+    return merged
+
+
 def _load_site_config_store_values(conn: Any) -> dict[str, Any]:
     row = conn.execute(
         """
@@ -3483,14 +3494,15 @@ def _normalize_runtime_startup_payload(payload: Any) -> dict[str, Any]:
 
 
 def load_runtime_site_config_values() -> dict[str, Any]:
+    default_values = _read_admin_site_config_values(get_admin_site_config_file_path())
     try:
         with get_meta_index_connection() as conn:
             stored = _load_site_config_store_values(conn)
     except Exception:
         stored = {}
     if stored:
-        return stored
-    return _read_admin_site_config_values(get_admin_site_config_file_path())
+        return _merge_site_config_defaults(default_values, stored)
+    return default_values
 
 
 def _mask_admin_sensitive_value(value: object) -> str:
@@ -29225,6 +29237,29 @@ def _clean_generated_question_text(question: str) -> str:
     return re.sub(r"\s+", " ", str(question or "")).strip()
 
 
+def _ensure_generated_question_mark(question: str, max_chars: int = 240) -> str:
+    question_text = _clean_generated_question_text(question)
+    if not question_text:
+        return ""
+
+    if re.search(r"[?？]\s*$", question_text):
+        question_text = re.sub(r"\?\s*$", "？", question_text)
+    else:
+        question_text = re.sub(r"[\s。.!！；;，,、:：]+$", "", question_text).rstrip()
+        if not question_text:
+            return ""
+        question_text = f"{question_text}？"
+
+    if max_chars > 0 and len(question_text) > max_chars:
+        stem = question_text[:-1] if question_text.endswith("？") else question_text
+        stem = stem[: max_chars - 1].rstrip(" \t\r\n。.!！；;，,、:：?？")
+        if not stem:
+            return ""
+        question_text = f"{stem}？"
+
+    return question_text
+
+
 def _find_embedded_option_label_start(question_text: str, option_start: int) -> Optional[int]:
     prefix = str(question_text or "")[:max(0, option_start)]
     label_patterns = [
@@ -29278,6 +29313,43 @@ def _strip_embedded_option_list_from_question(question: str, options: list[str])
     return stripped or question_text
 
 
+def _strip_answer_guidance_from_question(question: str) -> str:
+    """移除 question 字段里跟在问题后的作答说明，避免题干夹带解释浪费上下文。"""
+    question_text = _clean_generated_question_text(question)
+    if not question_text:
+        return ""
+
+    question_mark_match = re.search(r"[？?]", question_text)
+    if not question_mark_match:
+        return question_text
+
+    suffix = question_text[question_mark_match.end():].strip()
+    if not suffix:
+        return question_text
+
+    guidance_prefixes = (
+        "请",
+        "请选择",
+        "请从",
+        "请按",
+        "请结合",
+        "请说明",
+        "请补充",
+        "并说明",
+        "可说明",
+        "可以说明",
+        "说明",
+        "选择",
+        "建议",
+        "如有",
+        "如果",
+    )
+    if suffix.startswith(guidance_prefixes):
+        return question_text[:question_mark_match.end()].strip()
+
+    return question_text
+
+
 def _normalize_generated_option_label(option: str) -> str:
     """统一移除模型常见的选项序号前缀，避免不同 lane 混用 A/B/C/D 或数字编号。"""
     text = str(option or "").strip()
@@ -29309,7 +29381,7 @@ def _normalize_generated_option_list(option_list) -> list[str]:
         if not option or option in seen_options:
             continue
         seen_options.add(option)
-        normalized_options.append(option[:40])
+        normalized_options.append(option)
 
     return normalized_options
 
@@ -29398,9 +29470,11 @@ def normalize_generated_question_result(result: Optional[dict], fallback_contrac
     if len(normalized_options) < 2:
         return None
     question_text = _strip_embedded_option_list_from_question(question_text, normalized_options)
+    question_text = _strip_answer_guidance_from_question(question_text)
+    question_text = _ensure_generated_question_mark(question_text)
     if not question_text:
         return None
-    result["question"] = question_text[:240]
+    result["question"] = question_text
     result["options"] = normalized_options[:6]
     result["question_multi_select"] = original_multi_select
 

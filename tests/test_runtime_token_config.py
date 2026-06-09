@@ -619,10 +619,69 @@ class RuntimeTokenConfigTests(unittest.TestCase):
 
         self.assertEqual(
             normalized.get("question"),
-            "当你们要判断“该由谁拍板、哪些团队必须参与”时，最常依赖哪一种具体证据？请按最主要的一项选择，并说明对应的对象、范围或责任边界",
+            "当你们要判断“该由谁拍板、哪些团队必须参与”时，最常依赖哪一种具体证据？",
         )
         for option in normalized.get("options", []):
             self.assertNotIn(f"A. {option}", normalized.get("question", ""))
+
+    def test_normalize_generated_question_result_strips_answer_guidance_and_keeps_long_options(self):
+        module = load_server_module()
+        long_option = "先打通原材料价格库/行情接口和OA/企业微信消息通知，其他数据先由助理人工补录并标记来源"
+        normalized = module.normalize_generated_question_result(
+            {
+                "question": (
+                    "为保证董事长在5分钟内能看到可用结果，价格查询智能体需要先打通哪些内部数据源或系统边界？"
+                    "请从最关键的集成对象中选择，并说明即使必须实时，哪些可以先人工补录。"
+                ),
+                "options": [
+                    long_option,
+                    "先打通原材料价格库/行情接口、ERP采购模块和历史采购台账，形成完整比价与决策依据",
+                    "先只接入历史采购台账和人工表格上传，由助理整理后再推送给董事长",
+                ],
+                "multi_select": False,
+                "is_follow_up": False,
+            }
+        )
+
+        self.assertEqual(
+            normalized.get("question"),
+            "为保证董事长在5分钟内能看到可用结果，价格查询智能体需要先打通哪些内部数据源或系统边界？",
+        )
+        self.assertIn(long_option, normalized.get("options", []))
+        self.assertGreater(len(long_option), 40)
+
+    def test_normalize_generated_question_result_ensures_question_mark(self):
+        module = load_server_module()
+        normalized = module.normalize_generated_question_result(
+            {
+                "question": "董事长和助理使用原材料价格查询智能体时，通常属于哪几种触发频次",
+                "options": [
+                    "每天固定会查，主要用于例行跟踪和汇报",
+                    "每周或每月集中查一次，主要用于阶段性决策",
+                    "只有价格异动或临时关注时才查",
+                ],
+                "multi_select": True,
+                "is_follow_up": False,
+            }
+        )
+
+        self.assertEqual(
+            normalized.get("question"),
+            "董事长和助理使用原材料价格查询智能体时，通常属于哪几种触发频次？",
+        )
+
+    def test_normalize_generated_question_result_normalizes_ascii_question_mark(self):
+        module = load_server_module()
+        normalized = module.normalize_generated_question_result(
+            {
+                "question": "当前最需要先确认哪个系统边界?",
+                "options": ["价格行情接口", "OA消息通知", "历史采购台账"],
+                "multi_select": False,
+                "is_follow_up": False,
+            }
+        )
+
+        self.assertEqual(normalized.get("question"), "当前最需要先确认哪个系统边界？")
 
     def test_generate_question_strategy_strips_prefixed_options(self):
         module = load_server_module()

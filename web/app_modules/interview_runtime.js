@@ -418,6 +418,18 @@
             return progressByStage[normalizedStageIndex] || 18;
         },
 
+        normalizeVisibleQuestionText(question) {
+            let questionText = String(question || '').replace(/\s+/g, ' ').trim();
+            if (!questionText) return '';
+
+            if (/[?？]\s*$/.test(questionText)) {
+                return questionText.replace(/\?\s*$/, '？');
+            }
+
+            questionText = questionText.replace(/[\s。.!！；;，,、:：]+$/, '').trim();
+            return questionText ? `${questionText}？` : '';
+        },
+
         buildThinkingStageState(stage = {}) {
             const normalizedStageIndex = Math.max(
                 0,
@@ -461,7 +473,7 @@
         },
 
         async startSkeletonFill(result) {
-            const questionText = result.question || '';
+            const questionText = this.normalizeVisibleQuestionText(result.question || '');
             const options = result.options || [];
             const aiRecommendation = this.normalizeAiRecommendation(result);
             const allowsFreeText = result.report_readiness_resume === true
@@ -489,7 +501,7 @@
             this.interactionReady = false;
 
             this.currentQuestion = this.createQuestionState({
-                text: result.question,
+                text: questionText,
                 options: result.options || [],
                 multiSelect: result.multi_select || false,
                 questionMultiSelect: (result.question_multi_select ?? result.multi_select) || false,
@@ -1647,7 +1659,7 @@
 
                 const undoDimension = lastLog.dimension;
                 const savedQuestion = this.createQuestionState({
-                    text: lastLog.question,
+                    text: this.normalizeVisibleQuestionText(lastLog.question || ''),
                     options: lastLog.options || [],
                     multiSelect: (lastLog.question_multi_select ?? lastLog.multi_select) || false,
                     questionMultiSelect: (lastLog.question_multi_select ?? lastLog.multi_select) || false,

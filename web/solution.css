@@ -3944,10 +3944,26 @@ body::after {
 .proposal-metric-card,
 .proposal-track-card,
 .proposal-option-card,
+.proposal-option-column,
+.proposal-option-fit > div,
+.proposal-analogy-card,
 .proposal-case-card,
 .proposal-capability-card,
+.proposal-entry-card,
+.proposal-phase-card,
+.proposal-knowledge-card,
+.proposal-layer-card,
+.proposal-loop-item,
+.proposal-flywheel-center,
+.proposal-flywheel-node,
 .proposal-value-card,
+.proposal-value-board-card,
 .proposal-fit-card,
+.proposal-detail-card,
+.proposal-summary-card,
+.proposal-urgency-card,
+.proposal-integration-card,
+.proposal-comparison-center,
 .proposal-blueprint-block,
 .proposal-blueprint-card,
 .proposal-tab-panel,
@@ -4008,6 +4024,20 @@ body::after {
 .proposal-section-judgement,
 .proposal-hero-judgement,
 .proposal-section-summary,
+.proposal-track-detail,
+.proposal-track-meta,
+.proposal-option-positioning,
+.proposal-option-fit,
+.proposal-tab-panel-summary,
+.proposal-entry-detail,
+.proposal-loop-detail,
+.proposal-value-card-note,
+.proposal-detail-note,
+.proposal-closing p,
+.proposal-case-body p,
+.proposal-fit-card p,
+.proposal-detail-card p,
+.proposal-bullet-list,
 .proposal-text-body,
 .proposal-rich-text,
 .proposal-rich-text p,
@@ -4060,6 +4090,7 @@ body::after {
 .solution-action-btn.is-primary {
     border-color: var(--solution-accent);
     background: var(--solution-accent);
+    background-color: var(--solution-accent);
     color: #ffffff;
 }
 
@@ -4088,6 +4119,183 @@ body::after {
 .solution-share-input {
     border-color: var(--solution-border);
     background: #FAFAFA;
+    color: var(--solution-text);
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --solution-bg: #06111f;
+    --solution-bg-deep: #030813;
+    --solution-surface: rgba(10, 23, 43, 0.82);
+    --solution-surface-strong: rgba(8, 18, 36, 0.92);
+    --solution-surface-soft: rgba(18, 33, 58, 0.7);
+    --solution-surface-warm: rgba(50, 34, 10, 0.36);
+    --solution-border: rgba(132, 161, 199, 0.22);
+    --solution-border-strong: rgba(198, 153, 74, 0.4);
+    --solution-text: #f4f7fb;
+    --solution-text-soft: rgba(228, 235, 245, 0.84);
+    --solution-text-dim: rgba(196, 208, 223, 0.72);
+    --solution-accent: #d7a44a;
+    --solution-accent-strong: #f0b85a;
+    --solution-accent-soft: rgba(215, 164, 74, 0.12);
+    --solution-cyan: #60A5FA;
+    --solution-cyan-soft: rgba(96, 165, 250, 0.16);
+    --solution-shadow: 0 28px 60px rgba(0, 0, 0, 0.34);
+    --solution-shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.22);
+    --solution-shadow-gold: 0 20px 46px rgba(122, 85, 16, 0.18);
+    --solution-radius-xl: 34px;
+    --solution-radius-lg: 26px;
+    --solution-radius-md: 18px;
+    --solution-radius-sm: 12px;
+    --solution-radius-2xl: 40px;
+}
+
+html[data-theme="dark"] body {
+    background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(215, 164, 74, 0.12), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(29, 78, 216, 0.13), transparent 30%),
+        linear-gradient(180deg, #05101c 0%, #060b16 48%, #03070f 100%);
+    color: var(--solution-text);
+}
+
+html[data-theme="dark"] body::before,
+html[data-theme="dark"] body::after {
+    display: block;
+}
+
+html[data-theme="dark"] .solution-state-card,
+html[data-theme="dark"] .solution-evidence-panel,
+html[data-theme="dark"] .solution-topbar-inner,
+html[data-theme="dark"] .solution-quality-strip,
+html[data-theme="dark"] [data-solution-section],
+html[data-theme="dark"] .proposal-hero,
+html[data-theme="dark"] .proposal-metric-card,
+html[data-theme="dark"] .proposal-track-card,
+html[data-theme="dark"] .proposal-option-card,
+html[data-theme="dark"] .proposal-option-column,
+html[data-theme="dark"] .proposal-option-fit > div,
+html[data-theme="dark"] .proposal-analogy-card,
+html[data-theme="dark"] .proposal-case-card,
+html[data-theme="dark"] .proposal-capability-card,
+html[data-theme="dark"] .proposal-entry-card,
+html[data-theme="dark"] .proposal-phase-card,
+html[data-theme="dark"] .proposal-knowledge-card,
+html[data-theme="dark"] .proposal-layer-card,
+html[data-theme="dark"] .proposal-loop-item,
+html[data-theme="dark"] .proposal-flywheel-center,
+html[data-theme="dark"] .proposal-flywheel-node,
+html[data-theme="dark"] .proposal-value-card,
+html[data-theme="dark"] .proposal-value-board-card,
+html[data-theme="dark"] .proposal-fit-card,
+html[data-theme="dark"] .proposal-detail-card,
+html[data-theme="dark"] .proposal-summary-card,
+html[data-theme="dark"] .proposal-urgency-card,
+html[data-theme="dark"] .proposal-integration-card,
+html[data-theme="dark"] .proposal-comparison-center,
+html[data-theme="dark"] .proposal-blueprint-block,
+html[data-theme="dark"] .proposal-blueprint-card,
+html[data-theme="dark"] .proposal-tab-panel,
+html[data-theme="dark"] .solution-share-panel,
+html[data-theme="dark"] .solution-action-bar,
+html[data-theme="dark"] .solution-toc-sticky {
+    border: 1px solid var(--solution-border) !important;
+    border-radius: var(--solution-radius-xl) !important;
+    background:
+        linear-gradient(145deg, rgba(9, 20, 36, 0.94), rgba(6, 12, 24, 0.9)),
+        var(--solution-surface) !important;
+    box-shadow: var(--solution-shadow-soft) !important;
+    color: var(--solution-text) !important;
+}
+
+html[data-theme="dark"] .solution-topbar::before {
+    display: block !important;
+    background: linear-gradient(180deg, rgba(5, 16, 28, 1) 0%, rgba(5, 16, 28, 0.95) 40%, rgba(5, 16, 28, 0) 100%);
+}
+
+html[data-theme="dark"] .solution-state-card::after,
+html[data-theme="dark"] [data-solution-section]::before,
+html[data-theme="dark"] .proposal-metric-card::before,
+html[data-theme="dark"] .proposal-metric-card::after {
+    display: block !important;
+}
+
+html[data-theme="dark"] .solution-state-badge,
+html[data-theme="dark"] .proposal-section-label,
+html[data-theme="dark"] .proposal-eyebrow,
+html[data-theme="dark"] .proposal-year-tag,
+html[data-theme="dark"] .proposal-option-tag,
+html[data-theme="dark"] .proposal-option-chip,
+html[data-theme="dark"] .proposal-tab-panel-tag,
+html[data-theme="dark"] .proposal-capability-tag,
+html[data-theme="dark"] .proposal-fit-tag,
+html[data-theme="dark"] .proposal-urgency-tag,
+html[data-theme="dark"] .proposal-track-label,
+html[data-theme="dark"] .proposal-knowledge-card-label,
+html[data-theme="dark"] .proposal-analogy-label,
+html[data-theme="dark"] .proposal-comparison-center-label,
+html[data-theme="dark"] .proposal-tertiary-label,
+html[data-theme="dark"] .proposal-value-card-label,
+html[data-theme="dark"] .proposal-phase-step,
+html[data-theme="dark"] .solution-evidence-kicker {
+    border-color: rgba(215, 164, 74, 0.18);
+    background: rgba(215, 164, 74, 0.06);
+    color: rgba(245, 208, 148, 0.9);
+}
+
+html[data-theme="dark"] .solution-state-title,
+html[data-theme="dark"] .proposal-hero-title,
+html[data-theme="dark"] .proposal-section-title,
+html[data-theme="dark"] .proposal-metric-value,
+html[data-theme="dark"] .proposal-quality-value,
+html[data-theme="dark"] .solution-brand-title {
+    color: var(--solution-text) !important;
+}
+
+html[data-theme="dark"] .solution-state-text,
+html[data-theme="dark"] .proposal-hero-subtitle,
+html[data-theme="dark"] .proposal-section-judgement,
+html[data-theme="dark"] .proposal-hero-judgement,
+html[data-theme="dark"] .proposal-section-summary,
+html[data-theme="dark"] .proposal-text-body,
+html[data-theme="dark"] .proposal-rich-text,
+html[data-theme="dark"] .proposal-rich-text p,
+html[data-theme="dark"] .proposal-metric-label,
+html[data-theme="dark"] .proposal-quality-detail,
+html[data-theme="dark"] .solution-brand-kicker,
+html[data-theme="dark"] .solution-brand-copy,
+html[data-theme="dark"] .solution-toc-header {
+    color: var(--solution-text-soft) !important;
+}
+
+html[data-theme="dark"] .solution-nav-button,
+html[data-theme="dark"] .solution-topbar-action,
+html[data-theme="dark"] .solution-primary-action,
+html[data-theme="dark"] .solution-action-btn,
+html[data-theme="dark"] .solution-inline-evidence,
+html[data-theme="dark"] .solution-expand-toggle,
+html[data-theme="dark"] .solution-evidence-close,
+html[data-theme="dark"] .solution-share-panel-close {
+    border-color: rgba(124, 155, 197, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--solution-text);
+}
+
+html[data-theme="dark"] .solution-nav-button.is-active,
+html[data-theme="dark"] .solution-nav-button.is-conclusion,
+html[data-theme="dark"] .solution-topbar-action,
+html[data-theme="dark"] .solution-primary-action,
+html[data-theme="dark"] .solution-action-btn.is-primary {
+    border-color: rgba(215, 164, 74, 0.32);
+    background: linear-gradient(135deg, rgba(222, 178, 94, 0.96), rgba(186, 132, 34, 0.92));
+    background-color: #d7a44a;
+    color: #1b1205;
+}
+
+html[data-theme="dark"] .solution-share-input {
+    border-color: rgba(132, 161, 199, 0.26);
+    background: rgba(8, 18, 36, 0.86);
     color: var(--solution-text);
 }
 

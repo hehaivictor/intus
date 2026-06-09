@@ -21,7 +21,7 @@
         (function () {
             const storageKey = 'intus_theme_mode';
             const validModes = ['light', 'dark', 'system'];
-            let mode = 'system';
+            let mode = 'light';
 
             try {
                 const savedMode = localStorage.getItem(storageKey);
@@ -29,7 +29,7 @@
                     mode = savedMode;
                 }
             } catch (error) {
-                mode = 'system';
+                mode = 'light';
             }
 
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -263,6 +263,29 @@
         .logo-dark { display: block; }
         html[data-theme="light"] .logo-light { display: block; }
         html[data-theme="light"] .logo-dark { display: none; }
+
+        html[data-theme="dark"] .hero-title .brand-title {
+            background: none !important;
+            color: #f8fafc !important;
+            -webkit-text-fill-color: #f8fafc !important;
+        }
+
+        html[data-theme="dark"] .hero-title .brand-title-cn {
+            color: #e5e7eb !important;
+        }
+
+        html[data-theme="dark"] .text-\[\#1D4ED8\] {
+            color: #93C5FD !important;
+        }
+
+        html[data-theme="dark"] .text-\[\#6366f1\] {
+            color: #A5B4FC !important;
+        }
+
+        html[data-theme="dark"] .text-gray-500,
+        html[data-theme="dark"] .compare-table td {
+            color: #AEB9C7 !important;
+        }
 
         /* ========== 痛点区域 ========== */
         .pain-section {
@@ -700,6 +723,7 @@
         }
         html[data-theme="light"] .compare-table th:last-child {
             background: linear-gradient(135deg, #1D4ED8 0%, #4f73f3 100%);
+            background-color: #1D4ED8;
             color: #ffffff;
         }
         html[data-theme="light"] .compare-table td {
@@ -734,6 +758,7 @@
         }
         html[data-theme="light"] .cta-button {
             background: linear-gradient(135deg, #2f67e8 0%, #1D4ED8 56%, #4f79ff 100%);
+            background-color: #1D4ED8;
             box-shadow: 0 10px 30px rgba(29, 78, 216, 0.28);
         }
         html[data-theme="light"] .cta-button:hover {
@@ -781,7 +806,7 @@
             color: #475569 !important;
         }
         html[data-theme="light"] .text-gray-400 {
-            color: var(--intro-text-muted) !important;
+            color: #475569 !important;
         }
         html[data-theme="light"] .text-gray-500 {
             color: var(--intro-text-muted) !important;

@@ -4368,6 +4368,61 @@ function intusApp() {
             }
         },
 
+        getReportExportDateSegment() {
+            const candidates = [
+                this.selectedReportMeta?.createdAt,
+                this.selectedReport,
+                this.selectedReportMeta?.name,
+            ].map(value => String(value || '').trim()).filter(Boolean);
+
+            for (const raw of candidates) {
+                const dateMatch = raw.match(/(20\d{2})[-_/]?(\d{2})[-_/]?(\d{2})/);
+                if (dateMatch) {
+                    return `${dateMatch[1]}${dateMatch[2]}${dateMatch[3]}`;
+                }
+            }
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        },
+
+        extractReportExportTopicFromFilename(filename = '') {
+            let base = String(filename || '').trim().replace(/\.[^.]+$/, '');
+            base = base.replace(/^intus-\d{8}-(?:[a-f0-9]{6,16}-)?(?:dv-\d{14}-[a-f0-9]{6,16}-)?/i, '');
+            base = base.replace(/^dv-\d{14}-[a-f0-9]{6,16}-/i, '');
+            base = base.replace(/^intus-\d{8}-/i, '');
+            base = base.replace(/^intus-/i, '');
+            return base;
+        },
+
+        sanitizeExportFilenameSegment(value = '', fallback = '访谈报告', maxLength = 64) {
+            let text = String(value || '').trim();
+            text = text.replace(/\.[a-z0-9]+$/i, '');
+            text = text.replace(/[\u0000-\u001f\\/:*?"<>|]+/g, '');
+            text = text.replace(/\s+/g, '');
+            text = text.replace(/[-_]{2,}/g, '-').replace(/^[-_.]+|[-_.]+$/g, '');
+            if (!text) {
+                text = fallback;
+            }
+            if (text.length > maxLength) {
+                text = text.slice(0, maxLength).replace(/[-_.]+$/g, '');
+            }
+            return text || fallback;
+        },
+
+        getReportExportBaseFilename() {
+            const rawTitle = (
+                String(this.selectedReportMeta?.title || '').trim()
+                || this.extractReportExportTopicFromFilename(this.selectedReport || this.selectedReportMeta?.name || '')
+                || '访谈报告'
+            );
+            const title = this.sanitizeExportFilenameSegment(rawTitle, '访谈报告');
+            return `Intus-${this.getReportExportDateSegment()}-${title}`;
+        },
+
         async downloadReport(format = 'md') {
             if (!this.reportContent || !this.selectedReport) return;
             if (!this.canExportFormat('report', format)) {
@@ -4375,7 +4430,7 @@ function intusApp() {
                 return;
             }
 
-            const baseFilename = this.selectedReport.replace(/\.md$/, '');
+            const baseFilename = this.getReportExportBaseFilename();
 
             switch (format) {
                 case 'md':
@@ -4408,7 +4463,7 @@ function intusApp() {
                 return;
             }
 
-            const baseFilename = this.selectedReport.replace(/\.md$/, '');
+            const baseFilename = this.getReportExportBaseFilename();
             const appendixFilename = `${baseFilename}-完整访谈记录`;
 
             switch (format) {
@@ -4428,7 +4483,9 @@ function intusApp() {
 
         getReportExportContent() {
             if (!this.reportContent) return '';
-            let content = this.stripInlineEvidenceMarkers(this.reportContent);
+            let content = this.stripReportEvidenceTableColumns(
+                this.stripInlineEvidenceMarkers(this.reportContent)
+            );
             const appendixIndex = content.indexOf('## 附录：完整访谈记录');
             if (appendixIndex !== -1) {
                 content = content.slice(0, appendixIndex).trimEnd();
@@ -4437,6 +4494,7 @@ function intusApp() {
             content = content.replace(/(^|\n)###\s*报告质量指标[\s\S]*?(?=\n##\s|\n###\s|$)/g, '\n');
             // 导出时移除“生成方式”行（兼容历史报告）
             content = content.replace(/^\s*\*\*生成方式\*\*:[^\n]*\n?/gm, '');
+            content = this.normalizeMermaidBlocksForExport(content);
             return content.trim();
         },
 
@@ -4449,6 +4507,7 @@ function intusApp() {
             let appendix = content.slice(appendixIndex).trim();
             appendix = appendix.replace(/^\s*\*\*生成方式\*\*:[^\n]*\n?/gm, '');
             appendix = this.normalizeAppendixSummaryText(appendix);
+            appendix = this.normalizeMermaidBlocksForExport(appendix);
             return appendix.trim();
         },
 
@@ -4562,6 +4621,78 @@ function intusApp() {
                 .replace(/\s+([，。！？；：,.!?;:])/g, '$1')
                 .replace(/\n{3,}/g, '\n\n')
                 .trim();
+        },
+
+        parseMarkdownTableRow(line = '') {
+            const raw = String(line || '');
+            const trimmed = raw.trim();
+            if (!trimmed.startsWith('|') || !trimmed.includes('|')) {
+                return null;
+            }
+            return trimmed
+                .replace(/^\|/, '')
+                .replace(/\|$/, '')
+                .split('|')
+                .map(cell => cell.trim());
+        },
+
+        isMarkdownTableDividerRow(cells = []) {
+            return Array.isArray(cells)
+                && cells.length > 0
+                && cells.every(cell => /^:?-{3,}:?$/.test(String(cell || '').trim()));
+        },
+
+        formatMarkdownTableRow(cells = []) {
+            return `| ${cells.map(cell => String(cell || '').trim()).join(' | ')} |`;
+        },
+
+        stripReportEvidenceTableColumns(content = '') {
+            const lines = String(content || '').split('\n');
+            const output = [];
+            let inFence = false;
+
+            for (let index = 0; index < lines.length; index++) {
+                const line = lines[index];
+                if (/^\s*```/.test(line)) {
+                    inFence = !inFence;
+                    output.push(line);
+                    continue;
+                }
+                if (inFence) {
+                    output.push(line);
+                    continue;
+                }
+
+                const headerCells = this.parseMarkdownTableRow(line);
+                const dividerCells = this.parseMarkdownTableRow(lines[index + 1] || '');
+                const evidenceIndexes = (headerCells || [])
+                    .map((cell, cellIndex) => ({ cell: String(cell || '').trim(), cellIndex }))
+                    .filter(item => item.cell === '证据')
+                    .map(item => item.cellIndex);
+
+                if (
+                    headerCells
+                    && dividerCells
+                    && evidenceIndexes.length > 0
+                    && this.isMarkdownTableDividerRow(dividerCells)
+                ) {
+                    const evidenceIndexSet = new Set(evidenceIndexes);
+                    while (index < lines.length) {
+                        const rowCells = this.parseMarkdownTableRow(lines[index]);
+                        if (!rowCells) break;
+                        output.push(this.formatMarkdownTableRow(
+                            rowCells.filter((_cell, cellIndex) => !evidenceIndexSet.has(cellIndex))
+                        ));
+                        index += 1;
+                    }
+                    index -= 1;
+                    continue;
+                }
+
+                output.push(line);
+            }
+
+            return output.join('\n').replace(/\n{3,}/g, '\n\n').trim();
         },
 
         getAppendixExportContentForDocx() {
@@ -5818,9 +5949,11 @@ function intusApp() {
 
         renderMarkdown(content) {
             if (!content) return '';
-            const sanitizedContent = this.stripInlineEvidenceMarkers(
-                String(content)
-                .replace(/^\s*\*\*生成方式\*\*:[^\n]*\n?/gm, '')
+            const sanitizedContent = this.stripReportEvidenceTableColumns(
+                this.stripInlineEvidenceMarkers(
+                    String(content)
+                    .replace(/^\s*\*\*生成方式\*\*:[^\n]*\n?/gm, '')
+                )
             );
             const normalizedContent = this.normalizeLegacyAppendixAnswerLayout(
                 this.normalizeAppendixSummaryText(sanitizedContent)
@@ -5894,6 +6027,71 @@ function intusApp() {
                 .replace(/[“”]/g, '"')
                 .replace(/[‘’]/g, "'")
                 .trim();
+        },
+
+        normalizeMermaidQuadrantDefinition(definition = '') {
+            let fixedDefinition = String(definition || '');
+            if (!fixedDefinition.match(/^quadrantChart\b/m)) {
+                return fixedDefinition;
+            }
+
+            fixedDefinition = fixedDefinition
+                .replace(/^\s*title\s+.*$/gm, '    title Priority Matrix')
+                .replace(/^\s*x-axis\s+.*$/gm, '    x-axis Low --> High')
+                .replace(/^\s*y-axis\s+.*$/gm, '    y-axis Low --> High')
+                .replace(/^\s*quadrant-1\s+.*$/gm, '    quadrant-1 Do First')
+                .replace(/^\s*quadrant-2\s+.*$/gm, '    quadrant-2 Schedule')
+                .replace(/^\s*quadrant-3\s+.*$/gm, '    quadrant-3 Eliminate')
+                .replace(/^\s*quadrant-4\s+.*$/gm, '    quadrant-4 Delegate');
+
+            let reqIndex = 1;
+            fixedDefinition = fixedDefinition.replace(
+                /^\s*"?([^"\n:]*[\u4e00-\u9fa5]+[^"\n:]*)"?\s*:\s*\[/gm,
+                () => `    Req${reqIndex++}: [`
+            );
+
+            if (!/\w+\s*:\s*\[\s*[\d.]+\s*,\s*[\d.]+\s*\]/.test(fixedDefinition)) {
+                fixedDefinition += '\n    Req1: [0.5, 0.5]';
+            }
+            return fixedDefinition;
+        },
+
+        normalizeMermaidForExport(definition = '') {
+            let fixedDefinition = this.normalizeMermaidDefinition(definition);
+            if (!fixedDefinition) return '';
+
+            if (fixedDefinition.match(/^pie\b/m)) {
+                fixedDefinition = this.normalizeMermaidPieDefinition(fixedDefinition);
+            }
+            if (fixedDefinition.match(/^quadrantChart\b/m)) {
+                fixedDefinition = this.normalizeMermaidQuadrantDefinition(fixedDefinition);
+            }
+            if (fixedDefinition.match(/^(graph|flowchart)\s/m)) {
+                fixedDefinition = this.normalizeMermaidFlowchartSubgraphs(fixedDefinition);
+                fixedDefinition = this.normalizeMermaidFlowchartLabels(fixedDefinition);
+                fixedDefinition = fixedDefinition.replace(/<br\s*\/?>/gi, ' ');
+
+                const subgraphCount = (fixedDefinition.match(/subgraph\s/g) || []).length;
+                const endCount = (fixedDefinition.match(/\bend\b/g) || []).length;
+                if (subgraphCount > endCount) {
+                    fixedDefinition += `${'\n    end'.repeat(subgraphCount - endCount)}`;
+                }
+                fixedDefinition = fixedDefinition.replace(
+                    /(\w+)\s+---\s+(\w+)\[/g,
+                    (_match, from, to) => `${from} --> ${to}[`
+                );
+            }
+            return fixedDefinition.trim();
+        },
+
+        normalizeMermaidBlocksForExport(content = '') {
+            return String(content || '').replace(
+                /```mermaid\s*\n([\s\S]*?)```/g,
+                (_match, rawDefinition) => {
+                    const normalized = this.normalizeMermaidForExport(rawDefinition);
+                    return normalized ? `\`\`\`mermaid\n${normalized}\n\`\`\`` : '';
+                }
+            );
         },
 
         normalizeMermaidPieDefinition(definition = '') {
@@ -6044,6 +6242,10 @@ function intusApp() {
                 'Schedule': '计划执行',
                 'Delegate': '可委派',
                 'Eliminate': '低优先级',
+                'P1 High Priority': '立即执行',
+                'P2 Plan': '计划执行',
+                'P3 Later': '低优先级',
+                'Low Priority': '可委派',
                 'Low': '低',
                 'High': '高',
             };
@@ -6102,43 +6304,8 @@ function intusApp() {
                             fixedDefinition = this.normalizeMermaidPieDefinition(fixedDefinition);
                         }
 
-                        // 修复1：检测 quadrantChart 的中文（quadrantChart 对中文支持不好，需要转换）
-                        if (fixedDefinition.includes('quadrantChart')) {
-                            // 替换所有包含冒号的 quadrant 标签（移除冒号后的部分）
-                            fixedDefinition = fixedDefinition
-                                .replace(/quadrant-1\s+[^:\n]*:\s*[^\n]*/g, 'quadrant-1 P1 High Priority')
-                                .replace(/quadrant-2\s+[^:\n]*:\s*[^\n]*/g, 'quadrant-2 P2 Plan')
-                                .replace(/quadrant-3\s+[^:\n]*:\s*[^\n]*/g, 'quadrant-3 P3 Later')
-                                .replace(/quadrant-4\s+[^:\n]*:\s*[^\n]*/g, 'quadrant-4 Low Priority');
-
-                            // 如果没有冒号，则直接替换包含中文的标签
-                            fixedDefinition = fixedDefinition
-                                .replace(/quadrant-1\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'quadrant-1 P1 High Priority')
-                                .replace(/quadrant-2\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'quadrant-2 P2 Plan')
-                                .replace(/quadrant-3\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'quadrant-3 P3 Later')
-                                .replace(/quadrant-4\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'quadrant-4 Low Priority');
-
-                            // 替换标题中的中文
-                            fixedDefinition = fixedDefinition
-                                .replace(/title\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'title Priority Matrix')
-                                .replace(/x-axis\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'x-axis Low --> High')
-                                .replace(/y-axis\s+[^\n]*[\u4e00-\u9fa5]+[^\n]*/g, 'y-axis Low --> High');
-
-                            // 替换中文数据点名称为英文（Req1, Req2, ...）
-                            let reqIndex = 1;
-                            // 匹配任何包含中文的数据点名称（带或不带空格）
-                            fixedDefinition = fixedDefinition.replace(
-                                /^\s*([^\n:]*[\u4e00-\u9fa5]+[^\n:]*?):\s*\[/gm,
-                                (match, chineseName) => {
-                                    const englishName = `Req${reqIndex++}`;
-                                    return `    ${englishName}: [`;
-                                }
-                            );
-
-                            // 确保至少有一个数据点
-                            if (!/\w+:\s*\[\s*[\d.]+\s*,\s*[\d.]+\s*\]/.test(fixedDefinition)) {
-                                fixedDefinition += '\n    Sample: [0.5, 0.5]';
-                            }
+                        if (fixedDefinition.match(/^quadrantChart\b/m)) {
+                            fixedDefinition = this.normalizeMermaidQuadrantDefinition(fixedDefinition);
                         }
 
                         // 修复2：检测 flowchart/graph 中的语法问题（保留中文显示）
@@ -6172,7 +6339,7 @@ function intusApp() {
                         // 替换元素内容为渲染后的 SVG
                         element.innerHTML = svg;
                         element.classList.add('mermaid-rendered');
-                        this.localizeMermaidQuadrantSvg(element, graphDefinition);
+                        this.localizeMermaidQuadrantSvg(element, fixedDefinition);
 
                         // 后处理：统一图表画布底色，避免在深浅主题切换时出现黑块
                         const svgEl = element.querySelector('svg');
@@ -6376,19 +6543,43 @@ function intusApp() {
             return this.getEstimatedQuestionBounds().expected;
         },
 
+        getFallbackEstimatedRemainingQuestions(answered = this.getCurrentQuestionCount()) {
+            const bounds = this.getEstimatedQuestionBounds();
+            const remainingMin = Math.max(0, bounds.min - answered);
+            const remainingMax = Math.max(0, bounds.max - answered);
+            return Math.round((remainingMin + remainingMax) / 2);
+        },
+
+        getProgressAlignedRemainingQuestions(answered, progress, fallbackRemaining) {
+            const normalizedAnswered = Math.max(0, Number(answered) || 0);
+            const normalizedProgress = Math.max(0, Math.min(100, Number(progress) || 0));
+            const normalizedFallback = Math.max(0, Number(fallbackRemaining) || 0);
+
+            if (normalizedProgress >= 100) {
+                return 0;
+            }
+            if (normalizedAnswered <= 0 || normalizedProgress <= 0) {
+                return normalizedFallback;
+            }
+
+            const progressRemaining = Math.ceil(
+                normalizedAnswered * (100 - normalizedProgress) / normalizedProgress
+            );
+            return Math.min(normalizedFallback, Math.max(0, progressRemaining));
+        },
+
         // 获取预估剩余问题数
         getEstimatedRemainingQuestions() {
             if (!this.currentSession) return 0;
 
-            if (this.getTotalProgress() >= 100) {
+            const progress = this.getTotalProgress();
+            if (progress >= 100) {
                 return 0;
             }
 
             const answered = this.getCurrentQuestionCount();
-            const bounds = this.getEstimatedQuestionBounds();
-            const remainingMin = Math.max(0, bounds.min - answered);
-            const remainingMax = Math.max(0, bounds.max - answered);
-            const remaining = Math.round((remainingMin + remainingMax) / 2);
+            const fallbackRemaining = this.getFallbackEstimatedRemainingQuestions(answered);
+            const remaining = this.getProgressAlignedRemainingQuestions(answered, progress, fallbackRemaining);
             return remaining > 50 ? '50+' : remaining;
         },
 
@@ -6412,8 +6603,11 @@ function intusApp() {
 
             const dimProgress = currentDim.coverage;
 
-            if (progress >= 75) {
+            const remainingCount = Number(remaining);
+            if (progress >= 90 || (Number.isFinite(remainingCount) && remainingCount <= 3)) {
                 return { type: 'success', message: '快完成了！还剩最后几个问题' };
+            } else if (progress >= 75) {
+                return { type: 'success', message: `已进入收尾阶段，预计还需 ${remaining} 题左右` };
             } else if (dimProgress >= 75) {
                 return { type: 'info', message: `${this.getDimensionName(this.currentDimension)}维度即将完成` };
             } else if (progress >= 50) {

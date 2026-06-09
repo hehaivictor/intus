@@ -2841,6 +2841,22 @@
                                                             </div>
                                                         </button>
                                                     </div>
+                                                    <div x-show="hasReportEvidenceAppendix()" class="dv-report-overflow-section">
+                                                        <div class="dv-report-overflow-section-title">依据</div>
+                                                        <button type="button"
+                                                                @click="runReportOverflowAction('view-evidence').then(() => closeMenu({ restore: false }))"
+                                                                data-report-overflow-item
+                                                                class="dv-report-overflow-item"
+                                                                role="menuitem">
+                                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+                                                            </svg>
+                                                            <div>
+                                                                <div class="font-medium">查看依据来源</div>
+                                                                <div class="text-xs text-gray-500">跳转到完整访谈记录</div>
+                                                            </div>
+                                                        </button>
+                                                    </div>
                                                     <div x-show="hasAnyReportDownloadOption()" class="dv-report-overflow-section">
                                                         <div class="dv-report-overflow-section-title">下载</div>
                                                         <button type="button"

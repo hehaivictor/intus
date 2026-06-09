@@ -1467,6 +1467,7 @@
         hasReportOverflowActions() {
             return Boolean(
                 this.canGenerateQualityVariantForSelectedReport()
+                || this.hasReportEvidenceAppendix()
                 || this.hasAnyReportDownloadOption()
             );
         },
@@ -1475,6 +1476,10 @@
             const actionName = String(action || '').trim();
             if (actionName === 'quality') {
                 await this.generateQualityReportVariant();
+                return;
+            }
+            if (actionName === 'view-evidence') {
+                this.viewReportEvidenceAppendix();
                 return;
             }
             if (actionName === 'download-md') {
@@ -1488,6 +1493,63 @@
             if (actionName === 'download-docx') {
                 await this.downloadReport('docx');
             }
+        },
+
+        hasReportEvidenceAppendix() {
+            if (String(this.reportContent || '').includes('## 附录：完整访谈记录')) {
+                return true;
+            }
+            return Array.isArray(this.reportDetailModel?.sections)
+                && this.reportDetailModel.sections.some(section => section?.isAppendix);
+        },
+
+        viewReportEvidenceAppendix() {
+            const appendixSection = Array.isArray(this.reportDetailModel?.sections)
+                ? this.reportDetailModel.sections.find(section => section?.isAppendix)
+                : null;
+            const fallbackHeading = appendixSection?.id
+                ? null
+                : Array.from(document.querySelectorAll('h2'))
+                    .find(heading => (heading.textContent || '').includes('附录：完整访谈记录'));
+            if (fallbackHeading && !fallbackHeading.id) {
+                fallbackHeading.id = 'report-section-appendix';
+                fallbackHeading.setAttribute('tabindex', '-1');
+            }
+            const targetSectionId = appendixSection?.id || fallbackHeading?.id || '';
+            if (!targetSectionId) {
+                this.showToast('当前报告暂无可追溯依据', 'warning');
+                return;
+            }
+
+            this.goToReportSection(targetSectionId);
+            const openAppendix = () => {
+                const heading = document.getElementById(targetSectionId);
+                if (!heading) return;
+
+                let rootDetails = null;
+                let cursor = heading.nextElementSibling;
+                while (cursor) {
+                    if (cursor.tagName === 'H2') break;
+                    if (cursor.tagName === 'DETAILS') {
+                        rootDetails = cursor;
+                        break;
+                    }
+                    cursor = cursor.nextElementSibling;
+                }
+
+                if (!rootDetails) return;
+                rootDetails.open = true;
+                rootDetails.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            };
+
+            if (typeof this.$nextTick === 'function') {
+                this.$nextTick(openAppendix);
+            } else {
+                window.setTimeout(openAppendix, 0);
+            }
+            this.showToast('已打开完整访谈记录，可查看报告依据来源', 'info');
         },
 
         isRetriablePresentationPollingError(error) {

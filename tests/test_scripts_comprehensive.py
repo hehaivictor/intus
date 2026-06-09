@@ -897,10 +897,13 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("runReportPrimaryAction()", index_html)
         self.assertIn("hasReportOverflowActions()", index_html)
         self.assertIn("runReportOverflowAction('quality')", index_html)
+        self.assertIn("runReportOverflowAction('view-evidence')", index_html)
         self.assertIn("runReportOverflowAction('download-md')", index_html)
         self.assertIn("getReportPrimaryActionType()", report_runtime_js)
         self.assertIn("runReportPrimaryAction()", report_runtime_js)
         self.assertIn("hasReportOverflowActions()", report_runtime_js)
+        self.assertIn("hasReportEvidenceAppendix()", report_runtime_js)
+        self.assertIn("viewReportEvidenceAppendix()", report_runtime_js)
         self.assertIn(".dv-report-overflow-menu", styles_css)
         self.assertIn(".dv-report-overflow-section-title", styles_css)
         self.assertNotIn("downloadMenuOpen", index_html)
@@ -991,6 +994,179 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn("normalizeVisibleQuestionText(question)", runtime_js)
         self.assertIn("const questionText = this.normalizeVisibleQuestionText(result.question || '');", runtime_js)
         self.assertIn("text: this.normalizeVisibleQuestionText(lastLog.question || ''),", runtime_js)
+
+    def test_interview_remaining_estimate_aligns_with_dimension_progress(self):
+        if not shutil.which("node"):
+            self.skipTest("node runtime is required for frontend progress regression")
+
+        script = f"""
+const fs = require('fs');
+const vm = require('vm');
+
+const appCode = fs.readFileSync({json.dumps(str(ROOT_DIR / "web" / "app.js"))}, 'utf8');
+const context = {{
+  console,
+  setTimeout,
+  clearTimeout,
+  URLSearchParams,
+  SITE_CONFIG: {{ visualPresets: {{ default: 'rational' }} }},
+  window: {{
+    location: {{ origin: 'http://127.0.0.1:5002', pathname: '/index.html', search: '', hash: '' }},
+    history: {{ replaceState() {{}} }},
+  }},
+}};
+context.globalThis = context;
+vm.createContext(context);
+vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
+
+const app = context.__intusApp();
+app.currentSession = {{
+  interview_mode: 'deep',
+  interview_log: Array.from({{ length: 22 }}, (_, index) => ({{ question: `q${{index}}`, answer: `a${{index}}` }})),
+  dimensions: {{
+    customer_needs: {{ coverage: 100 }},
+    business_process: {{ coverage: 100 }},
+    technical_constraints: {{ coverage: 100 }},
+    project_constraints: {{ coverage: 66 }},
+  }},
+}};
+
+const progress = app.getTotalProgress();
+const remaining = app.getEstimatedRemainingQuestions();
+if (progress !== 92) {{
+  throw new Error(`expected progress=92, got ${{progress}}`);
+}}
+if (remaining !== 2) {{
+  throw new Error(`expected progress-aligned remaining=2, got ${{remaining}}`);
+}}
+"""
+        completed = subprocess.run(
+            ["node", "-e", script],
+            cwd=ROOT_DIR,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        self.assertEqual(
+            completed.returncode,
+            0,
+            msg=f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}",
+        )
+
+    def test_report_export_filename_is_readable_and_mermaid_is_export_safe(self):
+        if not shutil.which("node"):
+            self.skipTest("node runtime is required for frontend export regression")
+
+        script = f"""
+const fs = require('fs');
+const vm = require('vm');
+
+const appCode = fs.readFileSync({json.dumps(str(ROOT_DIR / "web" / "app.js"))}, 'utf8');
+const context = {{
+  console,
+  setTimeout,
+  clearTimeout,
+  URLSearchParams,
+  SITE_CONFIG: {{ visualPresets: {{ default: 'rational' }} }},
+  window: {{
+    location: {{ origin: 'http://127.0.0.1:5002', pathname: '/index.html', search: '', hash: '' }},
+    history: {{ replaceState() {{}} }},
+  }},
+}};
+context.globalThis = context;
+vm.createContext(context);
+vm.runInContext(`${{appCode}}\\nglobalThis.__intusApp = intusApp;`, context);
+
+const app = context.__intusApp();
+app.selectedReport = 'intus-20260609-f0a61402-dv-20260609140957-de9d2891-水处理技术部 AI 数字化方案落地访谈.md';
+app.selectedReportMeta = {{
+  name: app.selectedReport,
+  title: '水处理技术部 AI 数字化方案落地访谈',
+  createdAt: '2026-06-09T18:14:00',
+}};
+
+const filename = app.getReportExportBaseFilename();
+if (filename !== 'Intus-20260609-水处理技术部AI数字化方案落地访谈') {{
+  throw new Error(`unexpected readable export filename: ${{filename}}`);
+}}
+if (/f0a61402|dv-20260609140957|de9d2891/.test(filename)) {{
+  throw new Error(`internal ids leaked into export filename: ${{filename}}`);
+}}
+
+app.reportContent = [
+  '# 水处理技术部 AI 数字化方案落地访谈',
+  '',
+  '## 2.2 优先级矩阵（Mermaid）',
+  '',
+  '```mermaid',
+  'quadrantChart',
+  '    title 优先级矩阵',
+  '    x-axis 紧急程度（左低） --> 紧急程度（右高）',
+  '    y-axis 重要程度（下低） --> 重要程度（上高）',
+  '    quadrant-1 立即执行',
+  '    quadrant-2 计划执行',
+  '    quadrant-3 低优先级',
+  '    quadrant-4 可委派',
+  '    Req1: [0.78, 0.82]',
+  '```',
+  '',
+  '### 6.1 风险清单（表格）',
+  '',
+  '| 编号 | 风险项 | 影响 | 缓解措施 | 证据 |',
+  '|:---:|:---|:---|:---|:---|',
+  '| 1 | 预算超支 | 影响上线节奏 | 预留缓冲预算 | Q21、Q24 |',
+].join('\\n');
+const exportContent = app.getReportExportContent();
+for (const unsafeText of ['title 优先级矩阵', 'x-axis 紧急程度', 'y-axis 重要程度', 'quadrant-1 立即执行']) {{
+  if (exportContent.includes(unsafeText)) {{
+    throw new Error(`unsafe Mermaid quadrant label remained: ${{unsafeText}}`);
+  }}
+}}
+for (const safeText of ['title Priority Matrix', 'x-axis Low --> High', 'y-axis Low --> High', 'quadrant-1 Do First']) {{
+  if (!exportContent.includes(safeText)) {{
+    throw new Error(`safe Mermaid quadrant label missing: ${{safeText}}`);
+  }}
+}}
+if (exportContent.includes('| 编号 | 风险项 | 影响 | 缓解措施 | 证据 |') || exportContent.includes('Q21')) {{
+  throw new Error(`evidence column leaked into report export: ${{exportContent}}`);
+}}
+if (!exportContent.includes('| 编号 | 风险项 | 影响 | 缓解措施 |') || !exportContent.includes('| 1 | 预算超支 | 影响上线节奏 | 预留缓冲预算 |')) {{
+  throw new Error(`clean report table missing after evidence stripping: ${{exportContent}}`);
+}}
+"""
+        completed = subprocess.run(
+            ["node", "-e", script],
+            cwd=ROOT_DIR,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+        self.assertEqual(
+            completed.returncode,
+            0,
+            msg=f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}",
+        )
+
+    def test_mermaid_quadrant_render_localizes_legacy_placeholders(self):
+        app_js = (ROOT_DIR / "web" / "app.js").read_text(encoding="utf-8")
+
+        render_block_start = app_js.index("async renderMermaidCharts()")
+        render_block_end = app_js.index("// 使用 mermaid.render() 生成 SVG", render_block_start)
+        render_block = app_js[render_block_start:render_block_end]
+        self.assertIn(
+            "fixedDefinition = this.normalizeMermaidQuadrantDefinition(fixedDefinition);",
+            render_block,
+        )
+
+        for legacy_label, chinese_label in {
+            "P1 High Priority": "立即执行",
+            "P2 Plan": "计划执行",
+            "P3 Later": "低优先级",
+            "Low Priority": "可委派",
+        }.items():
+            self.assertIn(f"'{legacy_label}': '{chinese_label}'", app_js)
 
     def test_default_theme_is_light_without_saved_preference(self):
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")

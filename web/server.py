@@ -25678,13 +25678,13 @@ def _format_report_item_refs_v3(item: dict, limit: int = 6) -> str:
 def _build_priority_matrix_mermaid_for_custom_v3(needs: list) -> str:
     if not isinstance(needs, list) or not needs:
         return """quadrantChart
-    title 优先级矩阵
-    x-axis 紧急程度（左低） --> 紧急程度（右高）
-    y-axis 重要程度（下低） --> 重要程度（上高）
-    quadrant-1 立即执行
-    quadrant-2 计划执行
-    quadrant-3 低优先级
-    quadrant-4 可委派
+    title Priority Matrix
+    x-axis Low --> High
+    y-axis Low --> High
+    quadrant-1 Do First
+    quadrant-2 Schedule
+    quadrant-3 Eliminate
+    quadrant-4 Delegate
     Req1: [0.78, 0.82]
     Req2: [0.62, 0.72]"""
 
@@ -25696,13 +25696,13 @@ def _build_priority_matrix_mermaid_for_custom_v3(needs: list) -> str:
     }
     lines = [
         "quadrantChart",
-        "    title 优先级矩阵",
-        "    x-axis 紧急程度（左低） --> 紧急程度（右高）",
-        "    y-axis 重要程度（下低） --> 重要程度（上高）",
-        "    quadrant-1 立即执行",
-        "    quadrant-2 计划执行",
-        "    quadrant-3 低优先级",
-        "    quadrant-4 可委派",
+        "    title Priority Matrix",
+        "    x-axis Low --> High",
+        "    y-axis Low --> High",
+        "    quadrant-1 Do First",
+        "    quadrant-2 Schedule",
+        "    quadrant-3 Eliminate",
+        "    quadrant-4 Delegate",
     ]
     for idx, item in enumerate(needs[:12], 1):
         priority = str((item or {}).get("priority", "P1")).strip().upper()
@@ -25758,7 +25758,7 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
     source_key = str(source or "").strip()
     if source_key == "needs":
         rows = draft.get("needs", []) if isinstance(draft.get("needs", []), list) else []
-        lines = ["| 编号 | 优先级 | 需求项 | 描述 | 证据 |", "|:---:|:---:|:---|:---|:---|"]
+        lines = ["| 编号 | 优先级 | 需求项 | 描述 |", "|:---:|:---:|:---|:---|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25767,11 +25767,10 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 f"{idx} | "
                 f"{_normalize_markdown_cell_v3(item.get('priority', 'P1'), fallback='P1', max_len=8)} | "
                 f"{_normalize_markdown_cell_v3(item.get('name', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(item.get('description', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('description', ''), fallback='-')} |"
             )
         if len(lines) == 2:
-            lines.append("| - | - | 暂无结构化核心需求 | - | - |")
+            lines.append("| - | - | 暂无结构化核心需求 | - |")
         return lines
 
     if source_key == "priority_list":
@@ -25779,7 +25778,7 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
 
     if source_key == "solutions":
         rows = draft.get("solutions", []) if isinstance(draft.get("solutions", []), list) else []
-        lines = ["| 编号 | 方案建议 | 说明 | Owner | 时间计划 | 验收指标 | 证据 |", "|:---:|:---|:---|:---|:---|:---|:---|"]
+        lines = ["| 编号 | 方案建议 | 说明 | Owner | 时间计划 | 验收指标 |", "|:---:|:---|:---|:---|:---|:---|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25790,16 +25789,15 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 f"{_normalize_markdown_cell_v3(item.get('description', ''), fallback='-')} | "
                 f"{_normalize_markdown_cell_v3(item.get('owner', '待定'), max_len=20)} | "
                 f"{_normalize_markdown_cell_v3(item.get('timeline', '待定'), max_len=24)} | "
-                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} |"
             )
         if len(lines) == 2:
-            lines.append("| - | 暂无结构化方案建议 | - | - | - | - | - |")
+            lines.append("| - | 暂无结构化方案建议 | - | - | - | - |")
         return lines
 
     if source_key == "risks":
         rows = draft.get("risks", []) if isinstance(draft.get("risks", []), list) else []
-        lines = ["| 编号 | 风险项 | 影响 | 缓解措施 | 证据 |", "|:---:|:---|:---|:---|:---|"]
+        lines = ["| 编号 | 风险项 | 影响 | 缓解措施 |", "|:---:|:---|:---|:---|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25808,16 +25806,15 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 f"{idx} | "
                 f"{_normalize_markdown_cell_v3(item.get('risk', ''), fallback='-')} | "
                 f"{_normalize_markdown_cell_v3(item.get('impact', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(item.get('mitigation', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('mitigation', ''), fallback='-')} |"
             )
         if len(lines) == 2:
-            lines.append("| - | 暂无结构化风险项 | - | - | - |")
+            lines.append("| - | 暂无结构化风险项 | - | - |")
         return lines
 
     if source_key == "actions":
         rows = draft.get("actions", []) if isinstance(draft.get("actions", []), list) else []
-        lines = ["| 编号 | 行动项 | Owner | 时间计划 | 验收指标 | 证据 |", "|:---:|:---|:---|:---|:---|:---|"]
+        lines = ["| 编号 | 行动项 | Owner | 时间计划 | 验收指标 |", "|:---:|:---|:---|:---|:---|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25827,16 +25824,15 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 f"{_normalize_markdown_cell_v3(item.get('action', ''), fallback='-')} | "
                 f"{_normalize_markdown_cell_v3(item.get('owner', '待定'), max_len=20)} | "
                 f"{_normalize_markdown_cell_v3(item.get('timeline', '待定'), max_len=24)} | "
-                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} |"
             )
         if len(lines) == 2:
-            lines.append("| - | 暂无结构化下一步行动 | - | - | - | - |")
+            lines.append("| - | 暂无结构化下一步行动 | - | - | - |")
         return lines
 
     if source_key == "open_questions":
         rows = draft.get("open_questions", []) if isinstance(draft.get("open_questions", []), list) else []
-        lines = ["| 编号 | 未决问题 | 原因 | 影响 | 建议补问 | 证据 |", "|:---:|:---|:---|:---|:---|:---|"]
+        lines = ["| 编号 | 未决问题 | 原因 | 影响 | 建议补问 |", "|:---:|:---|:---|:---|:---|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25846,16 +25842,15 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 f"{_normalize_markdown_cell_v3(item.get('question', ''), fallback='-')} | "
                 f"{_normalize_markdown_cell_v3(item.get('reason', ''), fallback='-')} | "
                 f"{_normalize_markdown_cell_v3(item.get('impact', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(item.get('suggested_follow_up', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('suggested_follow_up', ''), fallback='-')} |"
             )
         if len(lines) == 2:
-            lines.append("| - | 暂无未决问题 | - | - | - | - |")
+            lines.append("| - | 暂无未决问题 | - | - | - |")
         return lines
 
     if source_key == "evidence_index":
         rows = draft.get("evidence_index", []) if isinstance(draft.get("evidence_index", []), list) else []
-        lines = ["| 编号 | 关键结论 | 置信度 | 证据 |", "|:---:|:---|:---:|:---|"]
+        lines = ["| 编号 | 关键结论 | 置信度 |", "|:---:|:---|:---:|"]
         for idx, item in enumerate(rows, 1):
             if not isinstance(item, dict):
                 continue
@@ -25863,11 +25858,10 @@ def _render_custom_table_from_source_v3(source: str, draft: dict) -> list[str]:
                 "| "
                 f"{idx} | "
                 f"{_normalize_markdown_cell_v3(item.get('claim', ''), fallback='-')} | "
-                f"{_normalize_markdown_cell_v3(item.get('confidence', 'medium'), max_len=8)} | "
-                f"{_normalize_markdown_cell_v3(_format_report_item_refs_v3(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('confidence', 'medium'), max_len=8)} |"
             )
         if len(lines) == 2:
-            lines.append("| - | 暂无证据索引 | - | - |")
+            lines.append("| - | 暂无关键结论 | - |")
         return lines
 
     # 未识别 source 时回退成文本占位。
@@ -26198,23 +26192,17 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
     def clamp_score(value: float) -> float:
         return max(0.05, min(0.95, value))
 
-    def format_refs(item: dict) -> str:
-        refs = _normalize_evidence_refs(item.get("evidence_refs", []))
-        if not refs:
-            return "-"
-        return "、".join(refs[:6])
-
     def build_priority_matrix_for_needs(needs_items: list) -> tuple[str, list]:
         """构建优先级矩阵 Mermaid 及图例中的数据点说明。"""
         if not needs_items:
             fallback_matrix = """quadrantChart
-    title 优先级矩阵
-    x-axis 紧急程度（左低） --> 紧急程度（右高）
-    y-axis 重要程度（下低） --> 重要程度（上高）
-    quadrant-1 立即执行
-    quadrant-2 计划执行
-    quadrant-3 低优先级
-    quadrant-4 可委派
+    title Priority Matrix
+    x-axis Low --> High
+    y-axis Low --> High
+    quadrant-1 Do First
+    quadrant-2 Schedule
+    quadrant-3 Eliminate
+    quadrant-4 Delegate
     Req1: [0.78, 0.82]
     Req2: [0.62, 0.72]
     Req3: [0.36, 0.32]"""
@@ -26244,13 +26232,13 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
 
         matrix = "\n".join([
             "quadrantChart",
-            "    title 优先级矩阵",
-            "    x-axis 紧急程度（左低） --> 紧急程度（右高）",
-            "    y-axis 重要程度（下低） --> 重要程度（上高）",
-            "    quadrant-1 立即执行",
-            "    quadrant-2 计划执行",
-            "    quadrant-3 低优先级",
-            "    quadrant-4 可委派",
+            "    title Priority Matrix",
+            "    x-axis Low --> High",
+            "    y-axis Low --> High",
+            "    quadrant-1 Do First",
+            "    quadrant-2 Schedule",
+            "    quadrant-3 Eliminate",
+            "    quadrant-4 Delegate",
             *point_lines,
         ])
         return matrix, point_legend
@@ -26281,8 +26269,8 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
     architecture_mermaid = ensure_flowchart_semantic_styles(architecture_mermaid)
 
     needs_table = [
-        "| 编号 | 优先级 | 需求项 | 描述 | 证据 |",
-        "|:---:|:---:|:---|:---|:---|",
+        "| 编号 | 优先级 | 需求项 | 描述 |",
+        "|:---:|:---:|:---|:---|",
     ]
     if needs:
         for idx, item in enumerate(needs, 1):
@@ -26291,11 +26279,10 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
                 f"{idx} | "
                 f"{_normalize_markdown_cell_v3(item.get('priority', 'P1'), fallback='P1', max_len=8)} | "
                 f"{_normalize_markdown_cell_v3(item.get('name', ''))} | "
-                f"{_normalize_markdown_cell_v3(item.get('description', ''))} | "
-                f"{_normalize_markdown_cell_v3(format_refs(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('description', ''))} |"
             )
     else:
-        needs_table.append("| - | - | 暂无结构化核心需求 | - | - |")
+        needs_table.append("| - | - | 暂无结构化核心需求 | - |")
 
     priority_group = {"P0": [], "P1": [], "P2": [], "P3": []}
     for item in needs:
@@ -26315,8 +26302,8 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
     ]
 
     solutions_table = [
-        "| 编号 | 方案建议 | 说明 | Owner | 时间计划 | 验收指标 | 证据 |",
-        "|:---:|:---|:---|:---|:---|:---|:---|",
+        "| 编号 | 方案建议 | 说明 | Owner | 时间计划 | 验收指标 |",
+        "|:---:|:---|:---|:---|:---|:---|",
     ]
     if solutions:
         for idx, item in enumerate(solutions, 1):
@@ -26327,15 +26314,14 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
                 f"{_normalize_markdown_cell_v3(item.get('description', ''))} | "
                 f"{_normalize_markdown_cell_v3(item.get('owner', '待定'), max_len=20)} | "
                 f"{_normalize_markdown_cell_v3(item.get('timeline', '待定'), max_len=24)} | "
-                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} | "
-                f"{_normalize_markdown_cell_v3(format_refs(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} |"
             )
     else:
-        solutions_table.append("| - | 暂无结构化方案建议 | - | - | - | - | - |")
+        solutions_table.append("| - | 暂无结构化方案建议 | - | - | - | - |")
 
     risks_table = [
-        "| 编号 | 风险项 | 影响 | 缓解措施 | 证据 |",
-        "|:---:|:---|:---|:---|:---|",
+        "| 编号 | 风险项 | 影响 | 缓解措施 |",
+        "|:---:|:---|:---|:---|",
     ]
     if risks:
         for idx, item in enumerate(risks, 1):
@@ -26344,15 +26330,14 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
                 f"{idx} | "
                 f"{_normalize_markdown_cell_v3(item.get('risk', ''))} | "
                 f"{_normalize_markdown_cell_v3(item.get('impact', ''), max_len=40)} | "
-                f"{_normalize_markdown_cell_v3(item.get('mitigation', ''), max_len=48)} | "
-                f"{_normalize_markdown_cell_v3(format_refs(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('mitigation', ''), max_len=48)} |"
             )
     else:
-        risks_table.append("| - | 暂无结构化风险项 | - | - | - |")
+        risks_table.append("| - | 暂无结构化风险项 | - | - |")
 
     actions_table = [
-        "| 编号 | 行动项 | Owner | 时间计划 | 验收指标 | 证据 |",
-        "|:---:|:---|:---|:---|:---|:---|",
+        "| 编号 | 行动项 | Owner | 时间计划 | 验收指标 |",
+        "|:---:|:---|:---|:---|:---|",
     ]
     if actions:
         for idx, item in enumerate(actions, 1):
@@ -26362,15 +26347,14 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
                 f"{_normalize_markdown_cell_v3(item.get('action', ''))} | "
                 f"{_normalize_markdown_cell_v3(item.get('owner', '待定'), max_len=20)} | "
                 f"{_normalize_markdown_cell_v3(item.get('timeline', '待定'), max_len=24)} | "
-                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} | "
-                f"{_normalize_markdown_cell_v3(format_refs(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('metric', '待定'), max_len=30)} |"
             )
     else:
-        actions_table.append("| - | 暂无结构化下一步行动 | - | - | - | - |")
+        actions_table.append("| - | 暂无结构化下一步行动 | - | - | - |")
 
     open_questions_table = [
-        "| 编号 | 未决问题 | 原因 | 影响 | 建议补问 | 证据 |",
-        "|:---:|:---|:---|:---|:---|:---|",
+        "| 编号 | 未决问题 | 原因 | 影响 | 建议补问 |",
+        "|:---:|:---|:---|:---|:---|",
     ]
     if open_questions:
         for idx, item in enumerate(open_questions, 1):
@@ -26380,11 +26364,10 @@ def render_report_from_draft_v3(session: dict, draft: dict, quality_meta: dict) 
                 f"{_normalize_markdown_cell_v3(item.get('question', ''))} | "
                 f"{_normalize_markdown_cell_v3(item.get('reason', ''), max_len=36)} | "
                 f"{_normalize_markdown_cell_v3(item.get('impact', ''), max_len=36)} | "
-                f"{_normalize_markdown_cell_v3(item.get('suggested_follow_up', ''), max_len=42)} | "
-                f"{_normalize_markdown_cell_v3(format_refs(item), max_len=30)} |"
+                f"{_normalize_markdown_cell_v3(item.get('suggested_follow_up', ''), max_len=42)} |"
             )
     else:
-        open_questions_table.append("| - | 暂无未决问题 | - | - | - | - |")
+        open_questions_table.append("| - | 暂无未决问题 | - | - | - |")
 
     lines = [
         f"# {topic} 访谈报告",

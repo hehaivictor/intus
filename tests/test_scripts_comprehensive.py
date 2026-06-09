@@ -1019,6 +1019,18 @@ class ComprehensiveScriptTests(unittest.TestCase):
         self.assertIn('"label": "石墨松石"', site_config_js)
         self.assertIn('"ringColorLight": "rgba(15, 118, 110, 0.18)"', site_config_js)
 
+    def test_production_dockerfile_bundles_node_for_site_config_runtime(self):
+        dockerfile = (ROOT_DIR / "deploy" / "Dockerfile.production").read_text(encoding="utf-8")
+
+        self.assertIn("FROM node:22.20.0-bookworm-slim AS node-runtime", dockerfile)
+        self.assertIn("COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node", dockerfile)
+        self.assertIn("ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm", dockerfile)
+        self.assertIn("ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx", dockerfile)
+        self.assertIn("node -v", dockerfile)
+        self.assertIn("npm -v", dockerfile)
+        self.assertIn("_read_admin_site_config_values", dockerfile)
+        self.assertIn("get_admin_site_config_file_path", dockerfile)
+
     def test_solution_page_uses_shared_theme_storage_with_legacy_fallback(self):
         solution_html = (ROOT_DIR / "web" / "solution.html").read_text(encoding="utf-8")
 

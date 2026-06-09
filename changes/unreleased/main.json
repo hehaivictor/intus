@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "9b52c76",
+  "committedAt": "2026-06-09T17:42:42+08:00",
+  "versionType": "patch",
+  "title": "修复生产镜像缺少 Node 运行时",
+  "changes": [
+    "构建：在生产 Dockerfile 中内置 Node 22.20.0 与 npm 10.9.3",
+    "构建：新增 site-config 解析校验，防止线上返回空配置",
+    "测试：补充生产 Dockerfile 运行时依赖回归检查"
+  ],
+  "changedFiles": [
+    "deploy/Dockerfile.production",
+    "tests/test_scripts_comprehensive.py"
+  ]
+}

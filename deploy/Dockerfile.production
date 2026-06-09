@@ -1,3 +1,5 @@
+FROM node:22.20.0-bookworm-slim AS node-runtime
+
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -19,6 +21,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
+    ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 RUN pip install --no-cache-dir \
     uv \
@@ -42,6 +50,10 @@ RUN leaked_sensitive_files="$(find /app -type f \( -name '.env' -o -name '.env.*
       printf '%s\n' "$leaked_sensitive_files" >&2; \
       exit 1; \
     fi
+
+RUN node -v && \
+    npm -v && \
+    python3 -c "from web import server; values = server._read_admin_site_config_values(server.get_admin_site_config_file_path(), strict=True); assert values.get('researchTips') and values.get('colors', {}).get('primary'), 'site-config.js did not parse into runtime values'"
 
 RUN mkdir -p /app/data /app/output /app/artifacts
 

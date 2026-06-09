@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "baseRef": "origin/main",
+  "sourceCommit": "907c4bc",
+  "committedAt": "2026-06-09T17:39:42+08:00",
+  "versionType": "minor",
+  "title": "增加主备模型降级机制",
+  "changes": [
+    "功能：新增核心大模型调用的主备模型候选解析和串行降级。",
+    "运维：在配置中心展示主备模型配置并记录备用模型命中指标。",
+    "测试：补充模型不可用、认证错误、搜索决策、评分和报告草案降级用例。"
+  ],
+  "changedFiles": [
+    "tests/test_runtime_token_config.py",
+    "web/config.py",
+    "web/server.py"
+  ]
+}

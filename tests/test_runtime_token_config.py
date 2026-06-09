@@ -366,6 +366,227 @@ class RuntimeTokenConfigTests(unittest.TestCase):
         self.assertEqual(selected_lane, "assessment")
         self.assertEqual(module.resolve_model_name(call_type="assessment_score"), "glm-assessment")
 
+    def test_call_claude_falls_back_to_backup_model_on_model_not_found(self):
+        module = load_server_module(
+            env_overrides={
+                "QUESTION_MODEL_NAME": "bad-question",
+                "QUESTION_FALLBACK_MODEL_NAME": "good-question",
+            }
+        )
+        module.ENABLE_DEBUG_LOG = False
+
+        model_calls = []
+
+        class DummyMessages:
+            def create(self, **kwargs):
+                model_calls.append(kwargs["model"])
+                if kwargs["model"] == "bad-question":
+                    raise RuntimeError("model_not_found: bad-question")
+                return types.SimpleNamespace(content=[{"type": "text", "text": "备用模型回答"}])
+
+        client = types.SimpleNamespace(messages=DummyMessages())
+
+        with patch.object(module, "resolve_ai_client_with_lane", new=lambda *args, **kwargs: (client, "question", {})), \
+             patch.object(module, "ai_call_priority_slot", new=lambda *args, **kwargs: nullcontext()):
+            text, meta = module.call_claude(
+                "请回答",
+                max_tokens=32,
+                call_type="question",
+                timeout=3.0,
+                return_meta=True,
+            )
+
+        self.assertEqual(text, "备用模型回答")
+        self.assertEqual(model_calls, ["bad-question", "good-question"])
+        self.assertTrue(meta.get("fallback_model_used"))
+        self.assertEqual(meta.get("primary_model"), "bad-question")
+        self.assertEqual(meta.get("fallback_model"), "good-question")
+        self.assertEqual(meta.get("fallback_reason"), "model_not_found")
+
+    def test_call_claude_does_not_fallback_on_auth_error(self):
+        module = load_server_module(
+            env_overrides={
+                "QUESTION_MODEL_NAME": "bad-auth-question",
+                "QUESTION_FALLBACK_MODEL_NAME": "good-question",
+            }
+        )
+        module.ENABLE_DEBUG_LOG = False
+
+        model_calls = []
+
+        class DummyMessages:
+            def create(self, **kwargs):
+                model_calls.append(kwargs["model"])
+                raise RuntimeError("authentication failed: invalid api key")
+
+        client = types.SimpleNamespace(messages=DummyMessages())
+
+        with patch.object(module, "resolve_ai_client_with_lane", new=lambda *args, **kwargs: (client, "question", {})), \
+             patch.object(module, "ai_call_priority_slot", new=lambda *args, **kwargs: nullcontext()):
+            text, meta = module.call_claude(
+                "请回答",
+                max_tokens=32,
+                call_type="question",
+                timeout=3.0,
+                return_meta=True,
+            )
+
+        self.assertIsNone(text)
+        self.assertEqual(model_calls, ["bad-auth-question"])
+        self.assertFalse(meta.get("fallback_model_used"))
+        self.assertEqual(meta.get("failure_reason"), "auth_error")
+
+    def test_report_draft_call_claude_uses_same_lane_fallback_model(self):
+        module = load_server_module(
+            env_overrides={
+                "REPORT_DRAFT_MODEL_NAME": "bad-draft",
+                "REPORT_DRAFT_FALLBACK_MODEL_NAME": "good-draft",
+            }
+        )
+        module.ENABLE_DEBUG_LOG = False
+
+        model_calls = []
+
+        class DummyMessages:
+            def create(self, **kwargs):
+                model_calls.append(kwargs["model"])
+                if kwargs["model"] == "bad-draft":
+                    raise RuntimeError("model_not_found: bad-draft")
+                return types.SimpleNamespace(content=[{"type": "text", "text": '{"overview":"ok"}'}])
+
+        client = types.SimpleNamespace(messages=DummyMessages())
+
+        with patch.object(module, "resolve_ai_client_with_lane", new=lambda *args, **kwargs: (client, "report_draft", {})), \
+             patch.object(module, "ai_call_priority_slot", new=lambda *args, **kwargs: nullcontext()):
+            text, meta = module.call_claude(
+                "生成报告草案",
+                max_tokens=128,
+                call_type="report_v3_draft",
+                preferred_lane="report_draft",
+                timeout=3.0,
+                return_meta=True,
+            )
+
+        self.assertEqual(text, '{"overview":"ok"}')
+        self.assertEqual(model_calls, ["bad-draft", "good-draft"])
+        self.assertTrue(meta.get("fallback_model_used"))
+        self.assertEqual(meta.get("fallback_reason"), "model_not_found")
+
+    def test_search_decision_uses_fallback_model_before_rule_degrade(self):
+        module = load_server_module(
+            env_overrides={
+                "SEARCH_DECISION_MODEL_NAME": "bad-search",
+                "SEARCH_DECISION_FALLBACK_MODEL_NAME": "good-search",
+            }
+        )
+        module.ENABLE_WEB_SEARCH = True
+        module.ENABLE_DEBUG_LOG = False
+
+        model_calls = []
+
+        class DummyMessages:
+            def create(self, **kwargs):
+                model_calls.append(kwargs["model"])
+                if kwargs["model"] == "bad-search":
+                    raise RuntimeError("model_not_found: bad-search")
+                return types.SimpleNamespace(
+                    content=[
+                        {
+                            "type": "text",
+                            "text": '{"need_search": false, "reason": "无需搜索", "search_query": ""}',
+                        }
+                    ]
+                )
+
+        client = types.SimpleNamespace(messages=DummyMessages())
+
+        with patch.object(module, "resolve_ai_client", new=lambda *args, **kwargs: client), \
+             patch.object(module, "ai_call_priority_slot", new=lambda *args, **kwargs: nullcontext()), \
+             patch.object(module, "_build_search_decision_cache_key", new=lambda *args, **kwargs: ""), \
+             patch.object(module, "get_dimension_info_for_session", new=lambda *args, **kwargs: {}):
+            result = module.ai_evaluate_search_need("主题", "customer", {}, [])
+
+        self.assertFalse(result["need_search"])
+        self.assertEqual(model_calls[:2], ["bad-search", "good-search"])
+
+    def test_assessment_score_uses_fallback_model_before_returning_none(self):
+        module = load_server_module(
+            env_overrides={
+                "ASSESSMENT_MODEL_NAME": "bad-assessment",
+                "ASSESSMENT_FALLBACK_MODEL_NAME": "good-assessment",
+            }
+        )
+        module.ENABLE_DEBUG_LOG = False
+
+        model_calls = []
+
+        class DummyMessages:
+            def create(self, **kwargs):
+                model_calls.append(kwargs["model"])
+                if kwargs["model"] == "bad-assessment":
+                    raise RuntimeError("model_not_found: bad-assessment")
+                return types.SimpleNamespace(content=[{"type": "text", "text": "4.5"}])
+
+        client = types.SimpleNamespace(messages=DummyMessages())
+        session = {
+            "scenario_config": {
+                "dimensions": [
+                    {
+                        "id": "communication",
+                        "name": "沟通表达",
+                        "description": "表达结构与清晰度",
+                        "scoring_criteria": {"5": "优秀", "3": "一般", "1": "较差"},
+                    }
+                ]
+            }
+        }
+
+        with patch.object(module, "resolve_ai_client", new=lambda *args, **kwargs: client), \
+             patch.object(module, "ai_call_priority_slot", new=lambda *args, **kwargs: nullcontext()):
+            score = module.score_assessment_answer(session, "communication", "问题", "回答")
+
+        self.assertEqual(score, 4.5)
+        self.assertEqual(model_calls, ["bad-assessment", "good-assessment"])
+
+    def test_search_decision_keeps_dedicated_model_when_reusing_summary_gateway(self):
+        module = load_server_module(
+            env_overrides={
+                "QUESTION_MODEL_NAME": "minimax-question",
+                "SUMMARY_MODEL_NAME": "glm-summary",
+                "SEARCH_DECISION_MODEL_NAME": "kimi-search",
+                "SUMMARY_API_KEY": "sk-shared-valid-123456",
+                "SEARCH_DECISION_API_KEY": "sk-shared-valid-123456",
+                "SUMMARY_BASE_URL": "https://shared.example.com",
+                "SEARCH_DECISION_BASE_URL": "https://shared.example.com",
+            }
+        )
+
+        self.assertEqual(module.resolve_model_name(call_type="summary"), "glm-summary")
+        self.assertEqual(module.resolve_model_name(call_type="search_decision"), "kimi-search")
+        self.assertEqual(
+            module.resolve_model_name_for_lane(call_type="search_decision", selected_lane="search_decision"),
+            "kimi-search",
+        )
+
+    def test_search_decision_inherits_dedicated_summary_before_report_fallback(self):
+        module = load_server_module(
+            env_overrides={
+                "QUESTION_MODEL_NAME": "doubao-question",
+                "REPORT_MODEL_NAME": "doubao-report",
+                "SUMMARY_MODEL_NAME": "kimi-summary",
+                "SEARCH_DECISION_MODEL_NAME": "kimi-summary",
+                "REPORT_API_KEY": "sk-shared-valid-123456",
+                "SUMMARY_API_KEY": "sk-shared-valid-123456",
+                "SEARCH_DECISION_API_KEY": "sk-shared-valid-123456",
+                "REPORT_BASE_URL": "https://shared.example.com",
+                "SUMMARY_BASE_URL": "https://shared.example.com",
+                "SEARCH_DECISION_BASE_URL": "https://shared.example.com",
+            }
+        )
+
+        self.assertEqual(module.resolve_model_name(call_type="summary"), "kimi-summary")
+        self.assertEqual(module.resolve_model_name(call_type="search_decision"), "kimi-summary")
+
     def test_deep_question_model_override_does_not_change_other_lanes(self):
         module = load_server_module(
             {

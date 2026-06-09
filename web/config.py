@@ -10,23 +10,39 @@ Intus 策略配置
 # ============ 模型角色分工 ===========
 # 先看这一组，就能知道问题、报告、摘要、评分各自走哪个模型。
 # 作用：设置全局默认模型名，未单独指定 lane 模型时会回落到这里。
-MODEL_NAME = "deepseek-chat"  # 默认主模型（问题链路）
+MODEL_NAME = "doubao-seed-2-0-pro"  # 默认主模型（问题链路）
 # 作用：设置问题生成链路使用的模型名称。
 QUESTION_MODEL_NAME = MODEL_NAME
 # 作用：设置深度访谈模式下 question lane 的专用模型名称。
-QUESTION_MODEL_NAME_DEEP = "gpt-5.4-mini"
+QUESTION_MODEL_NAME_DEEP = "claude-opus-4-7"
 # 作用：设置报告主链路使用的模型名称；保持轻量基线，避免同网关回退影响摘要/搜索/评分。
-REPORT_MODEL_NAME = "deepseek-chat"
+REPORT_MODEL_NAME = "doubao-seed-2-0-pro"
 # 作用：设置报告草案阶段使用的模型名称。
-REPORT_DRAFT_MODEL_NAME = "glm-4.7"
+REPORT_DRAFT_MODEL_NAME = "gemini-3.1-pro-preview"
 # 作用：设置报告审稿阶段使用的模型名称。
-REPORT_REVIEW_MODEL_NAME = "glm-4.7"
+REPORT_REVIEW_MODEL_NAME = "claude-opus-4-7"
 # 作用：设置摘要链路使用的模型名称。
-SUMMARY_MODEL_NAME = "deepseek-chat"
+SUMMARY_MODEL_NAME = "kimi-for-coding"
 # 作用：设置搜索决策链路使用的模型名称。
-SEARCH_DECISION_MODEL_NAME = "deepseek-chat"
+SEARCH_DECISION_MODEL_NAME = "kimi-for-coding"
 # 作用：设置评分链路使用的模型名称。
-ASSESSMENT_MODEL_NAME = "deepseek-chat"
+ASSESSMENT_MODEL_NAME = "kimi-for-coding"
+# 作用：启用核心模型调用的主备模型降级；密钥和网关仍由 .env 管理。
+MODEL_FALLBACK_ENABLED = True
+# 作用：设置普通问题链路主模型失败后的备用模型。
+QUESTION_FALLBACK_MODEL_NAME = "kimi-for-coding"
+# 作用：设置深度问题链路主模型失败后的备用模型。
+QUESTION_MODEL_NAME_DEEP_FALLBACK = "doubao-seed-2-0-pro"
+# 作用：设置报告草案阶段主模型失败后的备用模型。
+REPORT_DRAFT_FALLBACK_MODEL_NAME = "doubao-seed-2-0-pro"
+# 作用：设置报告审稿阶段主模型失败后的备用模型。
+REPORT_REVIEW_FALLBACK_MODEL_NAME = "gemini-3.1-pro-preview"
+# 作用：设置摘要链路主模型失败后的备用模型。
+SUMMARY_FALLBACK_MODEL_NAME = "doubao-seed-2-0-pro"
+# 作用：设置搜索决策链路主模型失败后的备用模型。
+SEARCH_DECISION_FALLBACK_MODEL_NAME = "doubao-seed-2-0-pro"
+# 作用：设置评分链路主模型失败后的备用模型。
+ASSESSMENT_FALLBACK_MODEL_NAME = "doubao-seed-2-0-pro"
 
 # ============ AI 客户端通用策略 ===========
 # 客户端启动策略保留在 config；接入开关和探测行为请放在 .env。

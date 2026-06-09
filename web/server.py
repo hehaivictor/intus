@@ -606,6 +606,14 @@ REPORT_REVIEW_MODEL_NAME = _cfg_text("REPORT_REVIEW_MODEL_NAME", REPORT_MODEL_NA
 SUMMARY_MODEL_NAME = _cfg_text("SUMMARY_MODEL_NAME", QUESTION_MODEL_NAME) or QUESTION_MODEL_NAME
 SEARCH_DECISION_MODEL_NAME = _cfg_text("SEARCH_DECISION_MODEL_NAME", SUMMARY_MODEL_NAME) or SUMMARY_MODEL_NAME
 ASSESSMENT_MODEL_NAME = _cfg_text("ASSESSMENT_MODEL_NAME", SEARCH_DECISION_MODEL_NAME) or SEARCH_DECISION_MODEL_NAME
+MODEL_FALLBACK_ENABLED = _cfg_bool("MODEL_FALLBACK_ENABLED", True)
+QUESTION_FALLBACK_MODEL_NAME = _cfg_text("QUESTION_FALLBACK_MODEL_NAME", "") or ""
+QUESTION_MODEL_NAME_DEEP_FALLBACK = _cfg_text("QUESTION_MODEL_NAME_DEEP_FALLBACK", "") or ""
+REPORT_DRAFT_FALLBACK_MODEL_NAME = _cfg_text("REPORT_DRAFT_FALLBACK_MODEL_NAME", "") or ""
+REPORT_REVIEW_FALLBACK_MODEL_NAME = _cfg_text("REPORT_REVIEW_FALLBACK_MODEL_NAME", "") or ""
+SUMMARY_FALLBACK_MODEL_NAME = _cfg_text("SUMMARY_FALLBACK_MODEL_NAME", "") or ""
+SEARCH_DECISION_FALLBACK_MODEL_NAME = _cfg_text("SEARCH_DECISION_FALLBACK_MODEL_NAME", "") or ""
+ASSESSMENT_FALLBACK_MODEL_NAME = _cfg_text("ASSESSMENT_FALLBACK_MODEL_NAME", "") or ""
 
 # 鉴权路由配置：兼容 Anthropic x-api-key 与 Bearer Authorization 两种网关模式
 # 未显式配置时，按网关地址自动推断（aicodemirror 默认 Bearer）。
@@ -2141,32 +2149,45 @@ def _resolve_lane_model_name(lane: str) -> str:
 
     if normalized_lane == "search_decision":
         default_model = SEARCH_DECISION_MODEL_NAME or SUMMARY_MODEL_NAME or QUESTION_MODEL_NAME
+        dedicated_model = (
+            bool(SEARCH_DECISION_MODEL_NAME)
+            and SEARCH_DECISION_MODEL_NAME not in {SUMMARY_MODEL_NAME, QUESTION_MODEL_NAME}
+        )
         search_signature = _resolve_lane_signature("search_decision")
+        summary_signature = _resolve_lane_signature("summary")
+        if search_signature == summary_signature and not dedicated_model:
+            return _resolve_lane_model_name("summary")
         report_signature = _resolve_lane_signature("report")
         if (
             search_signature == report_signature
+            and not dedicated_model
             and default_model in {QUESTION_MODEL_NAME, SUMMARY_MODEL_NAME}
             and REPORT_MODEL_NAME
             and REPORT_MODEL_NAME != default_model
         ):
             return REPORT_MODEL_NAME
-        summary_signature = _resolve_lane_signature("summary")
-        if search_signature == summary_signature:
-            return _resolve_lane_model_name("summary")
         return default_model
 
     if normalized_lane == "assessment":
         default_model = ASSESSMENT_MODEL_NAME or SEARCH_DECISION_MODEL_NAME or SUMMARY_MODEL_NAME or QUESTION_MODEL_NAME
+        dedicated_model = (
+            bool(ASSESSMENT_MODEL_NAME)
+            and ASSESSMENT_MODEL_NAME not in {
+                SEARCH_DECISION_MODEL_NAME,
+                SUMMARY_MODEL_NAME,
+                QUESTION_MODEL_NAME,
+            }
+        )
         assessment_signature = _resolve_lane_signature("assessment")
         search_signature = _resolve_lane_signature("search_decision")
-        if assessment_signature == search_signature and default_model in {
+        if assessment_signature == search_signature and not dedicated_model and default_model in {
             SEARCH_DECISION_MODEL_NAME,
             SUMMARY_MODEL_NAME,
             QUESTION_MODEL_NAME,
         }:
             return _resolve_lane_model_name("search_decision")
         summary_signature = _resolve_lane_signature("summary")
-        if assessment_signature == summary_signature and default_model in {
+        if assessment_signature == summary_signature and not dedicated_model and default_model in {
             SUMMARY_MODEL_NAME,
             QUESTION_MODEL_NAME,
         }:
@@ -2231,6 +2252,76 @@ def resolve_model_name_for_lane(call_type: str = "", model_name: str = "", selec
             return lane_model
 
     return resolve_model_name(call_type=call_type, model_name=model_name)
+
+
+def _known_primary_model_fallback(explicit_model: str) -> str:
+    normalized_model = str(explicit_model or "").strip()
+    if not normalized_model:
+        return ""
+    known_pairs = [
+        (QUESTION_MODEL_NAME_DEEP, QUESTION_MODEL_NAME_DEEP_FALLBACK),
+        (QUESTION_MODEL_NAME, QUESTION_FALLBACK_MODEL_NAME),
+        (REPORT_DRAFT_MODEL_NAME, REPORT_DRAFT_FALLBACK_MODEL_NAME),
+        (REPORT_REVIEW_MODEL_NAME, REPORT_REVIEW_FALLBACK_MODEL_NAME),
+        (SUMMARY_MODEL_NAME, SUMMARY_FALLBACK_MODEL_NAME),
+        (SEARCH_DECISION_MODEL_NAME, SEARCH_DECISION_FALLBACK_MODEL_NAME),
+        (ASSESSMENT_MODEL_NAME, ASSESSMENT_FALLBACK_MODEL_NAME),
+    ]
+    for primary_model, fallback_model in known_pairs:
+        if normalized_model == str(primary_model or "").strip():
+            return str(fallback_model or "").strip()
+    return ""
+
+
+def resolve_fallback_model_name_for_lane(call_type: str = "", selected_lane: str = "", model_name: str = "") -> str:
+    """根据调用场景选择同 lane 内的备用模型。"""
+    if not MODEL_FALLBACK_ENABLED:
+        return ""
+
+    explicit = str(model_name or "").strip()
+    if explicit:
+        return _known_primary_model_fallback(explicit)
+
+    lane = str(selected_lane or "").strip().lower()
+    lowered = str(call_type or "").strip().lower()
+    if lane == "question_deep":
+        return str(QUESTION_MODEL_NAME_DEEP_FALLBACK or "").strip()
+    if _is_report_draft_call_type(call_type) or lane == "report_draft":
+        return str(REPORT_DRAFT_FALLBACK_MODEL_NAME or "").strip()
+    if _is_report_review_call_type(call_type) or lane == "report_review":
+        return str(REPORT_REVIEW_FALLBACK_MODEL_NAME or "").strip()
+    if "assessment" in lowered or lane == "assessment":
+        return str(ASSESSMENT_FALLBACK_MODEL_NAME or "").strip()
+    if "search_decision" in lowered or lane == "search_decision":
+        return str(SEARCH_DECISION_FALLBACK_MODEL_NAME or "").strip()
+    if "summary" in lowered or lane == "summary":
+        return str(SUMMARY_FALLBACK_MODEL_NAME or "").strip()
+    if explicit == str(QUESTION_MODEL_NAME_DEEP or "").strip():
+        return str(QUESTION_MODEL_NAME_DEEP_FALLBACK or "").strip()
+    return str(QUESTION_FALLBACK_MODEL_NAME or "").strip()
+
+
+def resolve_model_fallback_candidates(call_type: str = "", model_name: str = "", selected_lane: str = "") -> list[str]:
+    """返回主模型和可选备用模型，保持顺序并去重。"""
+    primary_model = resolve_model_name_for_lane(
+        call_type=call_type,
+        model_name=model_name,
+        selected_lane=selected_lane,
+    )
+    fallback_model = resolve_fallback_model_name_for_lane(
+        call_type=call_type,
+        selected_lane=selected_lane,
+        model_name=model_name,
+    )
+    candidates = []
+    seen = set()
+    for item in [primary_model, fallback_model]:
+        model = str(item or "").strip()
+        if not model or model in seen:
+            continue
+        candidates.append(model)
+        seen.add(model)
+    return candidates
 
 
 def resolve_call_lane(call_type: str = "", model_name: str = "") -> str:
@@ -2962,6 +3053,14 @@ ADMIN_CONFIG_SETTINGS_GROUPS: list[dict[str, Any]] = [
             _admin_setting("SUMMARY_MODEL_NAME", "摘要模型"),
             _admin_setting("SEARCH_DECISION_MODEL_NAME", "搜索决策模型"),
             _admin_setting("ASSESSMENT_MODEL_NAME", "评分模型"),
+            _admin_bool("MODEL_FALLBACK_ENABLED", "启用主备模型降级"),
+            _admin_setting("QUESTION_FALLBACK_MODEL_NAME", "问题备用模型"),
+            _admin_setting("QUESTION_MODEL_NAME_DEEP_FALLBACK", "深度问题备用模型"),
+            _admin_setting("REPORT_DRAFT_FALLBACK_MODEL_NAME", "报告草案备用模型"),
+            _admin_setting("REPORT_REVIEW_FALLBACK_MODEL_NAME", "报告审稿备用模型"),
+            _admin_setting("SUMMARY_FALLBACK_MODEL_NAME", "摘要备用模型"),
+            _admin_setting("SEARCH_DECISION_FALLBACK_MODEL_NAME", "搜索决策备用模型"),
+            _admin_setting("ASSESSMENT_FALLBACK_MODEL_NAME", "评分备用模型"),
         ],
     },
     {
@@ -3415,6 +3514,7 @@ def _normalize_runtime_metrics_payload(payload: Any) -> dict[str, Any]:
             "total_truncations": int(summary.get("total_truncations", 0) or 0),
             "total_cache_hits": int(summary.get("total_cache_hits", 0) or 0),
             "total_hedge_triggered": int(summary.get("total_hedge_triggered", 0) or 0),
+            "total_model_fallbacks": int(summary.get("total_model_fallbacks", 0) or 0),
             "avg_response_time": float(summary.get("avg_response_time", 0) or 0),
             "avg_prompt_length": float(summary.get("avg_prompt_length", 0) or 0),
             "avg_queue_wait_ms": float(summary.get("avg_queue_wait_ms", 0) or 0),
@@ -14391,6 +14491,7 @@ class MetricsCollector:
                 "total_truncations": 0,
                 "total_cache_hits": 0,
                 "total_hedge_triggered": 0,
+                "total_model_fallbacks": 0,
                 "avg_response_time": 0,
                 "avg_prompt_length": 0,
                 "avg_queue_wait_ms": 0,
@@ -14427,6 +14528,7 @@ class MetricsCollector:
         total_truncations = int(summary.get("total_truncations", 0) or 0)
         total_cache_hits = int(summary.get("total_cache_hits", 0) or 0)
         total_hedge_triggered = int(summary.get("total_hedge_triggered", 0) or 0)
+        total_model_fallbacks = int(summary.get("total_model_fallbacks", 0) or 0)
 
         for record in records:
             if not isinstance(record, dict):
@@ -14443,6 +14545,8 @@ class MetricsCollector:
                 total_cache_hits += 1
             if bool(record.get("hedge_triggered", False)):
                 total_hedge_triggered += 1
+            if bool(record.get("fallback_model_used", False)):
+                total_model_fallbacks += 1
 
         if len(calls) > 1000:
             calls = calls[-1000:]
@@ -14477,6 +14581,7 @@ class MetricsCollector:
             "total_truncations": total_truncations,
             "total_cache_hits": total_cache_hits,
             "total_hedge_triggered": total_hedge_triggered,
+            "total_model_fallbacks": total_model_fallbacks,
             "avg_response_time": avg_response_time,
             "avg_prompt_length": avg_prompt_length,
             "avg_queue_wait_ms": avg_queue_wait_ms,
@@ -14563,7 +14668,10 @@ class MetricsCollector:
                        truncated_docs: list = None, max_tokens: int = None,
                        queue_wait_ms: float = 0.0, hedge_triggered: bool = False,
                        cache_hit: bool = False, lane: str = "", model: str = "",
-                       stage: str = "", event_kind: str = "api_call"):
+                       stage: str = "", event_kind: str = "api_call",
+                       fallback_model_used: bool = False, fallback_reason: str = "",
+                       primary_model: str = "", fallback_model: str = "",
+                       model_attempt_index: int = 1):
         """记录 API 调用指标"""
         try:
             try:
@@ -14574,6 +14682,13 @@ class MetricsCollector:
             normalized_model = str(model or "").strip()
             normalized_stage = str(stage or "").strip().lower()
             normalized_event_kind = str(event_kind or "api_call").strip().lower() or "api_call"
+            normalized_primary_model = str(primary_model or "").strip()
+            normalized_fallback_model = str(fallback_model or "").strip()
+            normalized_fallback_reason = str(fallback_reason or "").strip().lower()
+            try:
+                normalized_model_attempt_index = max(1, int(model_attempt_index or 1))
+            except Exception:
+                normalized_model_attempt_index = 1
             call_record = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "type": call_type,  # "question" or "report"
@@ -14591,6 +14706,11 @@ class MetricsCollector:
                 "lane": normalized_lane,
                 "model": normalized_model,
                 "stage": normalized_stage,
+                "fallback_model_used": bool(fallback_model_used),
+                "fallback_reason": normalized_fallback_reason,
+                "primary_model": normalized_primary_model,
+                "fallback_model": normalized_fallback_model,
+                "model_attempt_index": normalized_model_attempt_index,
             }
 
             with self._pending_lock:
@@ -14613,6 +14733,7 @@ class MetricsCollector:
             "total_truncations": 0,
             "total_cache_hits": 0,
             "total_hedge_triggered": 0,
+            "total_model_fallbacks": 0,
             "avg_response_time": 0,
             "avg_prompt_length": 0,
             "avg_queue_wait_ms": 0,
@@ -14673,6 +14794,7 @@ class MetricsCollector:
                         "total_truncations": int(summary_data.get("total_truncations", 0) or 0),
                         "total_cache_hits": int(summary_data.get("total_cache_hits", 0) or 0),
                         "total_hedge_triggered": int(summary_data.get("total_hedge_triggered", 0) or 0),
+                        "total_model_fallbacks": int(summary_data.get("total_model_fallbacks", 0) or 0),
                         "avg_response_time": float(summary_data.get("avg_response_time", 0) or 0),
                         "avg_prompt_length": float(summary_data.get("avg_prompt_length", 0) or 0),
                         "avg_queue_wait_ms": float(summary_data.get("avg_queue_wait_ms", 0) or 0),
@@ -14736,6 +14858,7 @@ class MetricsCollector:
                 "total_truncations": int(summary_data.get("total_truncations", 0) or 0),
                 "total_cache_hits": int(summary_data.get("total_cache_hits", 0) or 0),
                 "total_hedge_triggered": int(summary_data.get("total_hedge_triggered", 0) or 0),
+                "total_model_fallbacks": int(summary_data.get("total_model_fallbacks", 0) or 0),
                 "avg_response_time": float(summary_data.get("avg_response_time", 0) or 0),
                 "avg_prompt_length": float(summary_data.get("avg_prompt_length", 0) or 0),
                 "avg_queue_wait_ms": float(summary_data.get("avg_queue_wait_ms", 0) or 0),
@@ -17782,15 +17905,16 @@ def ai_evaluate_search_need(topic: str, dimension: str, context: dict, recent_qa
                 if attempt["extra_instruction"]:
                     attempt_prompt = f"{prompt}\n\n【额外要求】{attempt['extra_instruction']}"
 
-                with ai_call_priority_slot("search_decision"):
-                    response = ai_client.messages.create(
-                        model=resolve_model_name(call_type="search_decision"),
-                        max_tokens=attempt["max_tokens"],
-                        timeout=attempt["timeout"],
-                        messages=[{"role": "user", "content": attempt_prompt}]
-                    )
-
-                result_text = extract_message_text(response)
+                _response, result_text, _call_meta = create_ai_message_with_model_fallback(
+                    ai_client,
+                    call_type="search_decision",
+                    selected_lane="search_decision",
+                    max_tokens=attempt["max_tokens"],
+                    timeout=attempt["timeout"],
+                    messages=[{"role": "user", "content": attempt_prompt}],
+                    prompt_length=len(attempt_prompt),
+                    require_text=True,
+                )
                 if not result_text:
                     raise ValueError("模型响应中未包含可用文本内容")
 
@@ -18205,54 +18329,30 @@ def summarize_document(content: str, doc_name: str = "文档", topic: str = "") 
 直接输出摘要内容，不要添加"摘要："等前缀。"""
 
     try:
-        import time
-        start_time = time.time()
-
-        with ai_call_priority_slot("doc_summary"):
-            response = summary_client.messages.create(
-                model=resolve_model_name(call_type="summary"),
-                max_tokens=MAX_TOKENS_SUMMARY,
-                timeout=60.0,  # 摘要生成用较短超时
-                messages=[{"role": "user", "content": summary_prompt}]
-            )
-
-        response_time = time.time() - start_time
-        summary = extract_message_text(response)
+        _response, summary, _call_meta = create_ai_message_with_model_fallback(
+            summary_client,
+            call_type="doc_summary",
+            selected_lane="summary",
+            max_tokens=MAX_TOKENS_SUMMARY,
+            timeout=60.0,
+            messages=[{"role": "user", "content": summary_prompt}],
+            prompt_length=len(summary_prompt),
+            require_text=True,
+        )
         if not summary:
             raise ValueError("模型响应中未包含摘要文本")
-
-        # 记录metrics
-        metrics_collector.record_api_call(
-            call_type="doc_summary",
-            prompt_length=len(summary_prompt),
-            response_time=response_time,
-            success=True,
-            timeout=False,
-            max_tokens=MAX_TOKENS_SUMMARY
-        )
 
         # 保存到缓存
         save_summary_cache(doc_hash, summary)
 
         if ENABLE_DEBUG_LOG:
-            print(f"✅ 摘要生成成功: {original_length} -> {len(summary)} 字符 ({response_time:.1f}s)")
+            print(f"✅ 摘要生成成功: {original_length} -> {len(summary)} 字符")
 
         return summary, True
 
     except Exception as e:
         if ENABLE_DEBUG_LOG:
             print(f"⚠️  摘要生成失败，回退到简单截断: {e}")
-
-        # 记录失败的metrics
-        metrics_collector.record_api_call(
-            call_type="doc_summary",
-            prompt_length=len(summary_prompt) if 'summary_prompt' in locals() else 0,
-            response_time=0,
-            success=False,
-            timeout="timeout" in str(e).lower(),
-            error_msg=str(e),
-            max_tokens=MAX_TOKENS_SUMMARY
-        )
 
         # 回退到简单截断
         return content[:MAX_DOC_LENGTH], False
@@ -20470,17 +20570,19 @@ def score_assessment_answer(session: dict, dimension: str, question: str, answer
 【候选人回答】
 {answer}
 
-请严格按照评分标准打分，只返回一个数字（1-5之间的整数或小数，如 3.5），不要有任何其他文字："""
+    请严格按照评分标准打分，只返回一个数字（1-5之间的整数或小数，如 3.5），不要有任何其他文字："""
 
     try:
-        with ai_call_priority_slot("assessment_score"):
-            response = ai_client.messages.create(
-                model=resolve_model_name(call_type="assessment_score"),
-                max_tokens=ASSESSMENT_SCORE_MAX_TOKENS,  # 低 token 容易只返回 thinking，保留可调默认值
-                timeout=15.0,
-                messages=[{"role": "user", "content": prompt}]
-            )
-        raw = extract_message_text(response)
+        _response, raw, _call_meta = create_ai_message_with_model_fallback(
+            ai_client,
+            call_type="assessment_score",
+            selected_lane="assessment",
+            max_tokens=ASSESSMENT_SCORE_MAX_TOKENS,  # 低 token 容易只返回 thinking，保留可调默认值
+            timeout=15.0,
+            messages=[{"role": "user", "content": prompt}],
+            prompt_length=len(prompt),
+            require_text=True,
+        )
         if not raw:
             raise ValueError("模型响应中未包含评分文本")
         # 提取数字
@@ -26578,14 +26680,290 @@ def _build_ai_call_meta(selected_lane: str, effective_model: str, effective_time
     }
 
 
+def _classify_ai_call_exception(raw_error_message: str) -> tuple[str, str, bool]:
+    lowered = str(raw_error_message or "").strip().lower()
+    error_kind = classify_gateway_failure_kind(raw_error_message)
+    timeout_occurred = False
+    if not lowered:
+        return "gateway_error", error_kind, timeout_occurred
+    if lowered == "模型响应中未包含可用文本内容" or "未包含可用文本" in lowered:
+        return "empty_text", "empty_text", timeout_occurred
+    if "authentication" in lowered or "api key" in lowered or "invalid api key" in lowered:
+        return "auth_error", error_kind, timeout_occurred
+    if "model_not_found" in lowered or "model not found" in lowered or "no available channel" in lowered:
+        return "model_not_found", "model_not_found", timeout_occurred
+    if "timeout" in lowered or "timed out" in lowered:
+        timeout_occurred = True
+        return "timeout", "timeout", timeout_occurred
+    if "rate" in lowered or "429" in lowered:
+        return "rate_limited", error_kind, timeout_occurred
+    return "gateway_error", error_kind, timeout_occurred
+
+
+def _should_try_fallback_model(failure_reason: str, error_kind: str = "") -> bool:
+    reason = str(failure_reason or "").strip().lower()
+    kind = str(error_kind or "").strip().lower()
+    if reason == "auth_error":
+        return False
+    return reason in {
+        "timeout",
+        "rate_limited",
+        "empty_text",
+        "model_not_found",
+        "no_client",
+        "gateway_error",
+    } or kind in {"timeout", "http_5xx", "html_payload", "empty_text", "model_not_found"}
+
+
+def _build_model_attempt_summary(call_meta: dict) -> dict:
+    return {
+        "success": bool(call_meta.get("success")),
+        "lane": str(call_meta.get("selected_lane", "") or ""),
+        "model": str(call_meta.get("model", "") or ""),
+        "failure_reason": str(call_meta.get("failure_reason", "") or ""),
+        "error_kind": str(call_meta.get("error_kind", "") or ""),
+        "timeout_occurred": bool(call_meta.get("timeout_occurred", False)),
+        "response_length": int(call_meta.get("response_length", 0) or 0),
+    }
+
+
+def _record_ai_attempt_metric(
+    call_type: str,
+    prompt_length: int,
+    response_time: float,
+    success: bool,
+    timeout_occurred: bool,
+    error_message: str,
+    truncated_docs: list,
+    max_tokens: int,
+    queue_wait_ms: float,
+    hedge_triggered: bool,
+    cache_hit: bool,
+    selected_lane: str,
+    effective_model: str,
+    fallback_model_used: bool = False,
+    fallback_reason: str = "",
+    primary_model: str = "",
+    fallback_model: str = "",
+    model_attempt_index: int = 1,
+) -> None:
+    try:
+        metrics_collector.record_api_call(
+            call_type=call_type,
+            prompt_length=int(prompt_length or 0),
+            response_time=max(0.0, float(response_time or 0.0)),
+            success=bool(success),
+            timeout=bool(timeout_occurred),
+            error_msg=error_message if not success else None,
+            truncated_docs=truncated_docs,
+            max_tokens=max_tokens,
+            queue_wait_ms=queue_wait_ms,
+            hedge_triggered=hedge_triggered,
+            cache_hit=cache_hit,
+            lane=selected_lane,
+            model=effective_model,
+            stage=resolve_generation_stage(call_type=call_type),
+            fallback_model_used=fallback_model_used,
+            fallback_reason=fallback_reason,
+            primary_model=primary_model,
+            fallback_model=fallback_model,
+            model_attempt_index=model_attempt_index,
+        )
+    except Exception:
+        pass
+
+
+def _execute_ai_message_attempt(
+    ai_client,
+    *,
+    call_type: str,
+    selected_lane: str,
+    effective_model: str,
+    max_tokens: int,
+    timeout: float,
+    messages: list,
+    prompt_length: int = 0,
+    truncated_docs: list = None,
+    hedge_triggered: bool = False,
+    cache_hit: bool = False,
+    require_text: bool = True,
+    fallback_model_used: bool = False,
+    fallback_reason: str = "",
+    primary_model: str = "",
+    fallback_model: str = "",
+    model_attempt_index: int = 1,
+) -> tuple[object, str, dict]:
+    import time
+
+    call_meta = _build_ai_call_meta(selected_lane, effective_model, timeout, max_tokens)
+    start_time = time.time()
+    response = None
+    response_text = ""
+    queue_wait_ms = 0.0
+    success = False
+    timeout_occurred = False
+    error_message = ""
+
+    try:
+        with ai_call_priority_slot(call_type) as priority_meta:
+            if isinstance(priority_meta, dict):
+                try:
+                    queue_wait_ms = max(0.0, float(priority_meta.get("queue_wait_ms", 0.0) or 0.0))
+                except Exception:
+                    queue_wait_ms = 0.0
+            response = ai_client.messages.create(
+                model=effective_model,
+                max_tokens=max_tokens,
+                messages=messages,
+                timeout=timeout,
+            )
+        response_text = extract_message_text(response)
+        if require_text and not response_text:
+            call_meta["empty_text"] = True
+            raise ValueError("模型响应中未包含可用文本内容")
+        success = True
+        record_gateway_lane_success(selected_lane)
+    except Exception as exc:
+        raw_error_message = str(exc)
+        error_message = summarize_error_for_log(raw_error_message, limit=320)
+        failure_reason, error_kind, timeout_occurred = _classify_ai_call_exception(raw_error_message)
+        call_meta["failure_reason"] = failure_reason
+        call_meta["error_kind"] = error_kind
+        call_meta["error_message"] = error_message
+        call_meta["timeout_occurred"] = bool(timeout_occurred)
+        call_meta["empty_text"] = failure_reason == "empty_text"
+        circuit_meta = record_gateway_lane_failure(selected_lane, error_kind)
+        if circuit_meta.get("circuit_opened"):
+            cooldown_seconds = int(round(float(circuit_meta.get("cooldown_remaining_seconds", 0.0) or 0.0)))
+            cooldown_seconds = max(1, cooldown_seconds)
+            print(
+                f"⚠️ 网关熔断触发: lane={selected_lane}, "
+                f"error={error_kind}, cooldown={cooldown_seconds}s"
+            )
+    finally:
+        call_meta["success"] = bool(success)
+        call_meta["queue_wait_ms"] = round(queue_wait_ms, 2)
+        if response_text:
+            call_meta["response_length"] = len(response_text)
+        if success:
+            call_meta["failure_reason"] = ""
+            call_meta["error_kind"] = ""
+            call_meta["error_message"] = ""
+            call_meta["empty_text"] = False
+            call_meta["timeout_occurred"] = False
+
+        _record_ai_attempt_metric(
+            call_type=call_type,
+            prompt_length=prompt_length,
+            response_time=time.time() - start_time,
+            success=success,
+            timeout_occurred=timeout_occurred,
+            error_message=error_message,
+            truncated_docs=truncated_docs,
+            max_tokens=max_tokens,
+            queue_wait_ms=queue_wait_ms,
+            hedge_triggered=hedge_triggered,
+            cache_hit=cache_hit,
+            selected_lane=selected_lane,
+            effective_model=effective_model,
+            fallback_model_used=fallback_model_used,
+            fallback_reason=fallback_reason,
+            primary_model=primary_model,
+            fallback_model=fallback_model,
+            model_attempt_index=model_attempt_index,
+        )
+
+    return response, response_text, call_meta
+
+
+def create_ai_message_with_model_fallback(
+    ai_client,
+    *,
+    call_type: str,
+    selected_lane: str,
+    model_name: str = "",
+    max_tokens: int,
+    timeout: float,
+    messages: list,
+    prompt_length: int = 0,
+    truncated_docs: list = None,
+    hedge_triggered: bool = False,
+    cache_hit: bool = False,
+    require_text: bool = True,
+) -> tuple[object, str, dict]:
+    effective_models = resolve_model_fallback_candidates(
+        call_type=call_type,
+        model_name=model_name,
+        selected_lane=selected_lane,
+    )
+    if not effective_models:
+        effective_models = [resolve_model_name_for_lane(call_type=call_type, model_name=model_name, selected_lane=selected_lane)]
+
+    primary_model = effective_models[0] if effective_models else ""
+    fallback_model = effective_models[1] if len(effective_models) > 1 else ""
+    attempts = []
+    final_meta = _build_ai_call_meta(selected_lane, primary_model, timeout, max_tokens)
+    final_meta.update({
+        "primary_model": primary_model,
+        "fallback_model": fallback_model,
+        "fallback_model_used": False,
+        "fallback_reason": "",
+        "model_attempts": attempts,
+    })
+
+    if not ai_client:
+        final_meta["failure_reason"] = "no_client"
+        final_meta["error_kind"] = "no_client"
+        final_meta["error_message"] = "未找到可用 AI 客户端"
+        return None, "", final_meta
+
+    for attempt_index, effective_model in enumerate(effective_models):
+        prior_failure_reason = attempts[0].get("failure_reason", "") if attempts else ""
+        response, response_text, attempt_meta = _execute_ai_message_attempt(
+            ai_client,
+            call_type=call_type,
+            selected_lane=selected_lane,
+            effective_model=effective_model,
+            max_tokens=max_tokens,
+            timeout=timeout,
+            messages=messages,
+            prompt_length=prompt_length,
+            truncated_docs=truncated_docs,
+            hedge_triggered=hedge_triggered,
+            cache_hit=cache_hit,
+            require_text=require_text,
+            fallback_model_used=attempt_index > 0,
+            fallback_reason=prior_failure_reason if attempt_index > 0 else "",
+            primary_model=primary_model,
+            fallback_model=fallback_model,
+            model_attempt_index=attempt_index + 1,
+        )
+        attempts.append(_build_model_attempt_summary(attempt_meta))
+        final_meta = dict(attempt_meta)
+        final_meta.update({
+            "primary_model": primary_model,
+            "fallback_model": fallback_model,
+            "fallback_model_used": attempt_index > 0 and bool(attempt_meta.get("success")),
+            "fallback_reason": attempts[0].get("failure_reason", "") if attempt_index > 0 else "",
+            "model_attempts": attempts,
+        })
+        if attempt_meta.get("success"):
+            return response, response_text, final_meta
+        if attempt_index == 0 and not _should_try_fallback_model(
+            attempt_meta.get("failure_reason", ""),
+            attempt_meta.get("error_kind", ""),
+        ):
+            break
+
+    return None, "", final_meta
+
+
 def _call_claude_internal(prompt: str, max_tokens: int = None, retry_on_timeout: bool = True,
                          call_type: str = "unknown", truncated_docs: list = None,
                          timeout: float = None, model_name: str = "", preferred_lane: str = "",
                          hedge_triggered: bool = False, cache_hit: bool = False,
                          strict_preferred_lane: bool = False) -> tuple[Optional[str], dict]:
     """同步调用 AI 网关，返回文本与执行元信息。"""
-    import time
-
     effective_client, selected_lane, lane_meta = resolve_ai_client_with_lane(
         call_type=call_type,
         model_name=model_name,
@@ -26597,173 +26975,108 @@ def _call_claude_internal(prompt: str, max_tokens: int = None, retry_on_timeout:
         max_tokens = MAX_TOKENS_DEFAULT
 
     effective_timeout = timeout if timeout is not None else API_TIMEOUT
-    effective_model = resolve_model_name_for_lane(
+    effective_models = resolve_model_fallback_candidates(
+        call_type=call_type,
+        model_name=model_name,
+        selected_lane=selected_lane,
+    )
+    effective_model = effective_models[0] if effective_models else resolve_model_name_for_lane(
         call_type=call_type,
         model_name=model_name,
         selected_lane=selected_lane,
     )
     call_meta = _build_ai_call_meta(selected_lane, effective_model, effective_timeout, max_tokens)
+    call_meta.update({
+        "primary_model": effective_model,
+        "fallback_model": effective_models[1] if len(effective_models) > 1 else "",
+        "fallback_model_used": False,
+        "fallback_reason": "",
+        "model_attempts": [],
+    })
     if not effective_client:
         call_meta["failure_reason"] = "no_client"
         call_meta["error_kind"] = "no_client"
         call_meta["error_message"] = "未找到可用 AI 客户端"
         return None, call_meta
 
-    generation_stage = resolve_generation_stage(call_type=call_type)
-    start_time = time.time()
-    success = False
-    timeout_occurred = False
-    error_message = None
-    response_text = None
-    queue_wait_ms = 0.0
     skipped_open_lanes = []
     forced_open_lane = ""
     if isinstance(lane_meta, dict):
         skipped_open_lanes = list(lane_meta.get("skipped_open_lanes", []) or [])
         forced_open_lane = str(lane_meta.get("forced_open_lane", "") or "")
 
-    try:
-        if ENABLE_DEBUG_LOG:
-            print(
-                f"🤖 调用 Claude API，lane={selected_lane or 'unknown'}，"
-                f"model={effective_model}，max_tokens={max_tokens}，timeout={effective_timeout}s"
-            )
-            if skipped_open_lanes:
-                if forced_open_lane:
-                    print(f"⚠️ 熔断告警：候选 lane 处于冷却，临时继续使用 {forced_open_lane}")
-                else:
-                    print(f"ℹ️ 熔断切换：跳过冷却 lane={','.join(skipped_open_lanes)}")
+    if ENABLE_DEBUG_LOG:
+        print(
+            f"🤖 调用 Claude API，lane={selected_lane or 'unknown'}，"
+            f"model={effective_model}，max_tokens={max_tokens}，timeout={effective_timeout}s"
+        )
+        if skipped_open_lanes:
+            if forced_open_lane:
+                print(f"⚠️ 熔断告警：候选 lane 处于冷却，临时继续使用 {forced_open_lane}")
+            else:
+                print(f"ℹ️ 熔断切换：跳过冷却 lane={','.join(skipped_open_lanes)}")
 
-        with ai_call_priority_slot(call_type) as priority_meta:
-            if isinstance(priority_meta, dict):
-                try:
-                    queue_wait_ms = max(0.0, float(priority_meta.get("queue_wait_ms", 0.0) or 0.0))
-                except Exception:
-                    queue_wait_ms = 0.0
-            message = effective_client.messages.create(
-                model=effective_model,
-                max_tokens=max_tokens,
-                messages=[{"role": "user", "content": prompt}],
-                timeout=effective_timeout
-            )
+    _message, response_text, call_meta = create_ai_message_with_model_fallback(
+        effective_client,
+        call_type=call_type,
+        selected_lane=selected_lane,
+        model_name=model_name,
+        max_tokens=max_tokens,
+        timeout=effective_timeout,
+        messages=[{"role": "user", "content": prompt}],
+        prompt_length=len(prompt),
+        truncated_docs=truncated_docs,
+        hedge_triggered=hedge_triggered,
+        cache_hit=cache_hit,
+        require_text=True,
+    )
 
-        response_text = extract_message_text(message)
-        if not response_text:
-            call_meta["empty_text"] = True
-            raise ValueError("模型响应中未包含可用文本内容")
-        success = True
-        record_gateway_lane_success(selected_lane)
-
+    if response_text:
         if ENABLE_DEBUG_LOG:
             print(f"✅ API 响应成功，长度: {len(response_text)} 字符")
+        return response_text, call_meta
 
-    except Exception as e:
-        raw_error_message = str(e)
-        error_message = summarize_error_for_log(raw_error_message, limit=320)
+    error_message = str(call_meta.get("error_message", "") or "")
+    if error_message:
         print(f"❌ Claude API 调用失败: {error_message}")
-        error_kind = classify_gateway_failure_kind(raw_error_message)
-        lower_error = raw_error_message.lower()
-        call_type_lower = str(call_type or "").lower()
-        is_report_call = call_type_lower.startswith("report")
 
-        if raw_error_message == "模型响应中未包含可用文本内容":
-            call_meta["empty_text"] = True
-            call_meta["failure_reason"] = "empty_text"
-            if error_kind in {"", "unknown"}:
-                error_kind = "empty_text"
-        elif "timeout" in lower_error:
-            timeout_occurred = True
-            call_meta["failure_reason"] = "timeout"
-        elif "rate" in lower_error:
-            call_meta["failure_reason"] = "rate_limited"
-        elif "authentication" in lower_error or "api key" in lower_error:
-            call_meta["failure_reason"] = "auth_error"
-        else:
-            call_meta["failure_reason"] = "gateway_error"
-
-        call_meta["error_kind"] = str(error_kind or "")
-        call_meta["error_message"] = str(error_message or "")
-
-        circuit_meta = record_gateway_lane_failure(selected_lane, error_kind)
-        if circuit_meta.get("circuit_opened"):
-            cooldown_seconds = int(round(float(circuit_meta.get("cooldown_remaining_seconds", 0.0) or 0.0)))
-            cooldown_seconds = max(1, cooldown_seconds)
-            print(
-                f"⚠️ 网关熔断触发: lane={selected_lane}, "
-                f"error={error_kind}, cooldown={cooldown_seconds}s"
+    call_type_lower = str(call_type or "").lower()
+    is_report_call = call_type_lower.startswith("report")
+    if call_meta.get("failure_reason") == "timeout":
+        print(f"   原因: API 调用超时（超过{effective_timeout}秒）")
+        should_retry_with_shrink = retry_on_timeout and len(prompt) > 5000 and not is_report_call
+        if should_retry_with_shrink:
+            print("   🔄 尝试容错重试：截断 prompt 后重试...")
+            truncated_prompt = prompt[:int(len(prompt) * 0.7)]
+            truncated_prompt += "\n\n[注意：由于内容过长，部分上下文已被截断，请基于已有信息进行回答]"
+            retry_max_tokens = max(1000, int(max_tokens * 0.8))
+            retry_text = call_claude(
+                truncated_prompt,
+                retry_max_tokens,
+                retry_on_timeout=False,
+                call_type=call_type + "_retry",
+                truncated_docs=truncated_docs,
+                timeout=effective_timeout,
+                model_name=str(call_meta.get("model", "") or effective_model),
+                preferred_lane=preferred_lane,
+                hedge_triggered=hedge_triggered,
+                cache_hit=cache_hit,
             )
+            if retry_text:
+                call_meta["success"] = True
+                call_meta["failure_reason"] = ""
+                call_meta["error_kind"] = ""
+                call_meta["error_message"] = ""
+                call_meta["response_length"] = len(retry_text)
+                return retry_text, call_meta
+    elif call_meta.get("failure_reason") == "empty_text":
+        print("   原因: 模型返回空文本，或仅返回了非 text 内容块")
+    elif call_meta.get("failure_reason") == "rate_limited":
+        print("   原因: API 请求频率限制")
+    elif call_meta.get("failure_reason") == "auth_error":
+        print("   原因: API Key 认证失败")
 
-        if "timeout" in lower_error:
-            timeout_occurred = True
-            print(f"   原因: API 调用超时（超过{effective_timeout}秒）")
-
-            should_retry_with_shrink = retry_on_timeout and len(prompt) > 5000 and not is_report_call
-            if should_retry_with_shrink:
-                print(f"   🔄 尝试容错重试：截断 prompt 后重试...")
-                truncated_prompt = prompt[:int(len(prompt) * 0.7)]
-                truncated_prompt += "\n\n[注意：由于内容过长，部分上下文已被截断，请基于已有信息进行回答]"
-
-                retry_max_tokens = max_tokens
-                retry_timeout = effective_timeout
-                if is_report_call:
-                    retry_max_tokens = max(3000, int(max_tokens * 0.65))
-                    retry_timeout = max(effective_timeout, REPORT_API_TIMEOUT)
-                else:
-                    retry_max_tokens = max(1000, int(max_tokens * 0.8))
-
-                response_text = call_claude(
-                    truncated_prompt, retry_max_tokens,
-                    retry_on_timeout=False,
-                    call_type=call_type + "_retry",
-                    truncated_docs=truncated_docs,
-                    timeout=retry_timeout,
-                    model_name=effective_model,
-                    preferred_lane=preferred_lane,
-                    hedge_triggered=hedge_triggered,
-                    cache_hit=cache_hit,
-                )
-
-                if response_text:
-                    success = True
-
-        elif raw_error_message == "模型响应中未包含可用文本内容":
-            print("   原因: 模型返回空文本，或仅返回了非 text 内容块")
-        elif "rate" in lower_error:
-            print(f"   原因: API 请求频率限制")
-        elif "authentication" in lower_error or "api key" in lower_error:
-            print(f"   原因: API Key 认证失败")
-
-    finally:
-        call_meta["success"] = bool(success and response_text)
-        call_meta["timeout_occurred"] = bool(timeout_occurred)
-        call_meta["queue_wait_ms"] = round(queue_wait_ms, 2)
-        if response_text:
-            call_meta["response_length"] = len(response_text)
-        if call_meta["success"]:
-            call_meta["failure_reason"] = ""
-            call_meta["error_kind"] = ""
-            call_meta["error_message"] = ""
-            call_meta["empty_text"] = False
-
-        response_time = time.time() - start_time
-        metrics_collector.record_api_call(
-            call_type=call_type,
-            prompt_length=len(prompt),
-            response_time=response_time,
-            success=success,
-            timeout=timeout_occurred,
-            error_msg=error_message if not success else None,
-            truncated_docs=truncated_docs,
-            max_tokens=max_tokens,
-            queue_wait_ms=queue_wait_ms,
-            hedge_triggered=hedge_triggered,
-            cache_hit=cache_hit,
-            lane=selected_lane,
-            model=effective_model,
-            stage=generation_stage,
-        )
-
-    return (response_text or None), call_meta
+    return None, call_meta
 
 
 def call_claude(prompt: str, max_tokens: int = None, retry_on_timeout: bool = True,

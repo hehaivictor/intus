@@ -4793,6 +4793,53 @@ class ComprehensiveApiTests(unittest.TestCase):
         get_after_delete = self.client.get(f"/api/scenarios/{scenario_id}")
         self.assertEqual(get_after_delete.status_code, 404)
 
+    def test_custom_scenario_created_by_another_worker_is_available_for_session_creation(self):
+        user = self._register()
+
+        from scripts import scenario_loader as scenario_loader_module
+
+        external_loader = scenario_loader_module.ScenarioLoader(
+            scenarios_dir=self.server.scenario_loader.scenarios_dir,
+            builtin_dir=self.server.scenario_loader.builtin_dir,
+            custom_dir=self.server.scenario_loader.custom_dir,
+            migrate_legacy_custom_dir=self.server.scenario_loader.legacy_custom_dir,
+            meta_index_db_path=self.server.scenario_loader.meta_index_db_path,
+        )
+        scenario_id = external_loader.save_custom_scenario(
+            {
+                "name": "跨进程场景",
+                "description": "模拟生产多 worker 中其他进程创建的自定义场景",
+                "keywords": ["跨进程", "worker"],
+                "dimensions": [
+                    {
+                        "id": "dim_1",
+                        "name": "目标确认",
+                        "description": "确认访谈目标",
+                        "key_aspects": ["目标", "边界"],
+                        "min_questions": 2,
+                        "max_questions": 4,
+                    }
+                ],
+                "report": {"type": "standard", "template": "default"},
+                "owner_user_id": int(user["id"]),
+                self.server.INSTANCE_SCOPE_FIELD: self.server.get_active_instance_scope_key(),
+            }
+        )
+        self.assertIsNone(self.server.scenario_loader.get_scenario(scenario_id))
+
+        list_resp = self.client.get("/api/scenarios")
+        self.assertEqual(list_resp.status_code, 200, list_resp.get_data(as_text=True))
+        self.assertTrue(any(item.get("id") == scenario_id for item in (list_resp.get_json() or [])))
+
+        create_session_resp = self.client.post(
+            "/api/sessions",
+            json={"topic": "跨进程自定义场景访谈", "scenario_id": scenario_id},
+        )
+        self.assertEqual(create_session_resp.status_code, 200, create_session_resp.get_data(as_text=True))
+        payload = create_session_resp.get_json() or {}
+        self.assertEqual(payload.get("scenario_id"), scenario_id)
+        self.assertEqual((payload.get("scenario_config") or {}).get("name"), "跨进程场景")
+
     def test_custom_scenario_is_owner_scoped(self):
         owner = self._register()
         create_resp = self.client.post(

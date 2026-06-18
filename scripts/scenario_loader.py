@@ -312,24 +312,50 @@ class ScenarioLoader:
                     self._cache[scenario["id"]] = scenario
                     self._index_keywords(scenario)
 
-        # 加载自定义场景
+        self._load_custom_scenarios_into_cache()
+
+        print(f"[ScenarioLoader] 已加载 {len(self._cache)} 个场景配置")
+
+    def _load_custom_scenarios_from_storage(self) -> List[Dict[str, Any]]:
+        """从当前持久化后端读取自定义场景。"""
+        scenarios: List[Dict[str, Any]] = []
         if self._use_db_storage:
             for scenario in self._load_custom_scenario_rows_from_db():
                 if scenario and "id" in scenario:
                     scenario["builtin"] = False
                     scenario["custom"] = True
-                    self._cache[scenario["id"]] = scenario
-                    self._index_keywords(scenario)
+                    scenarios.append(scenario)
         elif self.custom_dir.exists():
             for json_file in self.custom_dir.glob("*.json"):
                 scenario = self._load_json(json_file)
                 if scenario and "id" in scenario:
                     scenario["builtin"] = False
                     scenario["custom"] = True
-                    self._cache[scenario["id"]] = scenario
-                    self._index_keywords(scenario)
+                    scenarios.append(scenario)
+        return scenarios
 
-        print(f"[ScenarioLoader] 已加载 {len(self._cache)} 个场景配置")
+    def _load_custom_scenarios_into_cache(self) -> None:
+        """从当前持久化后端加载自定义场景到进程缓存。"""
+        for scenario in self._load_custom_scenarios_from_storage():
+            self._cache[scenario["id"]] = scenario
+            self._index_keywords(scenario)
+
+    def refresh_custom_scenarios(self) -> None:
+        """刷新自定义场景缓存，用于多 worker 间同步新建/删除的场景。"""
+        custom_scenarios = self._load_custom_scenarios_from_storage()
+        stale_ids = [
+            scenario_id
+            for scenario_id, scenario in list(self._cache.items())
+            if isinstance(scenario, dict)
+            and bool(scenario.get("custom", False))
+            and not bool(scenario.get("builtin", False))
+        ]
+        for scenario_id in stale_ids:
+            self._cache.pop(scenario_id, None)
+            self._remove_from_keyword_index(scenario_id)
+        for scenario in custom_scenarios:
+            self._cache[scenario["id"]] = scenario
+            self._index_keywords(scenario)
 
     def _load_json(self, path: Path) -> Optional[Dict[str, Any]]:
         """

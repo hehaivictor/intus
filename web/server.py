@@ -27311,6 +27311,13 @@ def _is_scenario_accessible_to_user(
 
 def get_accessible_scenarios_for_user(user_id: Optional[int] = None) -> list[dict]:
     expected_scope = get_active_instance_scope_key()
+    refresh_custom_scenarios = getattr(scenario_loader, "refresh_custom_scenarios", None)
+    if callable(refresh_custom_scenarios):
+        try:
+            refresh_custom_scenarios()
+        except Exception as exc:
+            if ENABLE_DEBUG_LOG:
+                print(f"⚠️ 刷新自定义场景缓存失败: {exc}")
     scenarios = scenario_loader.get_all_scenarios()
     return [
         scenario
@@ -27320,13 +27327,19 @@ def get_accessible_scenarios_for_user(user_id: Optional[int] = None) -> list[dic
 
 
 def get_accessible_scenario_or_none(scenario_id: str, user_id: Optional[int] = None) -> Optional[dict]:
+    expected_scope = get_active_instance_scope_key()
     scenario = scenario_loader.get_scenario(scenario_id)
-    if not _is_scenario_accessible_to_user(
-        scenario,
-        user_id=user_id,
-        expected_scope=get_active_instance_scope_key(),
-    ):
-        return None
+    if not _is_scenario_accessible_to_user(scenario, user_id=user_id, expected_scope=expected_scope):
+        refresh_custom_scenarios = getattr(scenario_loader, "refresh_custom_scenarios", None)
+        if callable(refresh_custom_scenarios) and str(scenario_id or "").startswith("custom-"):
+            try:
+                refresh_custom_scenarios()
+                scenario = scenario_loader.get_scenario(scenario_id)
+            except Exception as exc:
+                if ENABLE_DEBUG_LOG:
+                    print(f"⚠️ 刷新自定义场景缓存失败: {exc}")
+        if not _is_scenario_accessible_to_user(scenario, user_id=user_id, expected_scope=expected_scope):
+            return None
     return scenario
 
 

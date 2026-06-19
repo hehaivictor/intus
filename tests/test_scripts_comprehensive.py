@@ -753,6 +753,23 @@ class ComprehensiveScriptTests(unittest.TestCase):
             live_extended_ids,
         )
 
+    def test_agent_browser_smoke_interview_refresh_mock_contract_is_covered(self):
+        runner_source = (ROOT_DIR / "scripts" / "agent_browser_smoke_runner.mjs").read_text(encoding="utf-8")
+        self.assertIn("pathname === '/api/sessions/session-demo-001/submit-answer'", runner_source)
+        self.assertIn("pathname.startsWith('/api/status/thinking/')", runner_source)
+        self.assertIn("pathname === '/api/status/web-search'", runner_source)
+
+        marker = "async function scenarioInterviewRefresh"
+        scenario_start = runner_source.index(marker)
+        scenario_end = runner_source.index("async function scenarioReportGenerationRefresh", scenario_start)
+        scenario_source = runner_source[scenario_start:scenario_end]
+
+        self.assertIn("nextQuestionDelayMs: 750", scenario_source)
+        self.assertIn("ignoredConsolePatterns", scenario_source)
+        self.assertIn("获取问题失败: TypeError: Failed to fetch", scenario_source)
+        self.assertIn("正在提交当前回答并准备下一题", scenario_source)
+        self.assertIn("正在等待上一题提交后的预取结果", scenario_source)
+
     def test_index_moves_session_list_to_sidebar(self):
         index_html = (ROOT_DIR / "web" / "index.html").read_text(encoding="utf-8")
         styles_css = (ROOT_DIR / "web" / "styles.css").read_text(encoding="utf-8")

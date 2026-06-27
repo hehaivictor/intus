@@ -20171,6 +20171,42 @@ QUESTION_VISIBLE_GENERIC_QUESTION_PATTERNS = (
     "使用经验更接近哪种",
 )
 
+QUESTION_VISIBLE_LOW_INFORMATION_OPTION_PATTERNS = (
+    r"^(ERP|MES|CRM|CAD|EDA|PLM|BOM|OA|SAP|Oracle|WMS|SRM|SCM|PDM|CAE|CAM|QMS|LIMS|MDM)",
+    r"(接口|系统|文件|数据|工单|物料|BOM|需求|配置器|路线|同步|下发|直连)$",
+)
+
+QUESTION_VISIBLE_HIGH_INFORMATION_OPTION_MARKERS = {
+    "因为",
+    "由于",
+    "导致",
+    "影响",
+    "风险",
+    "频次",
+    "次数",
+    "每天",
+    "每周",
+    "每月",
+    "小时",
+    "分钟",
+    "天内",
+    "角色",
+    "部门",
+    "负责人",
+    "责任",
+    "边界",
+    "验收",
+    "审批",
+    "失败",
+    "延迟",
+    "返工",
+    "阻塞",
+    "范围",
+    "成本",
+    "周期",
+    "合规",
+}
+
 
 def _compact_visible_question_text(text: object) -> str:
     return re.sub(r"[\s，。？！、；：,.?!;:（）()【】\[\]\"'“”‘’]", "", str(text or "").strip())
@@ -20196,6 +20232,16 @@ def _is_generic_visible_option(text: object) -> bool:
     if compact in QUESTION_VISIBLE_GENERIC_OPTION_TERMS:
         return True
     return len(compact) <= 4 and not _has_visible_context_marker(compact)
+
+
+def _is_low_information_context_option(text: object) -> bool:
+    raw = str(text or "").strip()
+    compact = _compact_visible_question_text(raw)
+    if not compact:
+        return True
+    if any(marker in raw for marker in QUESTION_VISIBLE_HIGH_INFORMATION_OPTION_MARKERS):
+        return False
+    return any(re.search(pattern, raw, flags=re.IGNORECASE) for pattern in QUESTION_VISIBLE_LOW_INFORMATION_OPTION_PATTERNS)
 
 
 def evaluate_visible_question_quality_gate(
@@ -20233,9 +20279,18 @@ def evaluate_visible_question_quality_gate(
     placeholder_options = [option for option in options if _is_placeholder_visible_option(option)]
     contextual_options = [option for option in options if _has_visible_context_marker(option)]
     generic_option_ratio = len(generic_options) / max(1, len(options))
+    low_information_context_options = [option for option in options if _is_low_information_context_option(option)]
+    low_information_context_ratio = len(low_information_context_options) / max(1, len(options))
+    requires_high_information = bool(
+        payload.get("requires_rationale", False)
+        or str(payload.get("answer_mode") or "").strip() == "pick_with_reason"
+        or str(payload.get("evidence_intent") or "").strip() == "high"
+    )
 
     if len(placeholder_options) >= 2 or generic_option_ratio >= 0.75 or (generic_question and not contextual_options):
         reasons.append("generic_options")
+    if requires_high_information and len(options) >= 3 and low_information_context_ratio >= 0.75:
+        reasons.append("shallow_context_options")
 
     unique_reasons = []
     for reason in reasons:
@@ -20251,6 +20306,7 @@ def evaluate_visible_question_quality_gate(
         "option_count": len(options),
         "generic_option_ratio": round(generic_option_ratio, 4),
         "contextual_option_count": len(contextual_options),
+        "low_information_context_ratio": round(low_information_context_ratio, 4),
         "interview_mode": get_mode_identifier(session) if isinstance(session, dict) else "",
     }
 
